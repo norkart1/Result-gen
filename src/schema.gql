@@ -1,0 +1,155 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Candidate {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Programme {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Section {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Grade {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type TeamManager {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Team {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Media {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Query {
+  candidates: [Candidate!]!
+  candidate(id: Int!): Candidate!
+  programmes: [Programme!]!
+  programme(id: Int!): Programme!
+  sections: [Section!]!
+  section(id: Int!): Section!
+  grades: [Grade!]!
+  grade(id: Int!): Grade!
+  teamManagers: [TeamManager!]!
+  teamManager(id: Int!): TeamManager!
+  teams: [Team!]!
+  team(id: Int!): Team!
+  media(id: Int!): Media!
+}
+
+type Mutation {
+  createCandidate(createCandidateInput: CreateCandidateInput!): Candidate!
+  updateCandidate(updateCandidateInput: UpdateCandidateInput!): Candidate!
+  removeCandidate(id: Int!): Candidate!
+  createProgramme(createProgrammeInput: CreateProgrammeInput!): Programme!
+  updateProgramme(updateProgrammeInput: UpdateProgrammeInput!): Programme!
+  removeProgramme(id: Int!): Programme!
+  createSection(createSectionInput: CreateSectionInput!): Section!
+  updateSection(updateSectionInput: UpdateSectionInput!): Section!
+  removeSection(id: Int!): Section!
+  createGrade(createGradeInput: CreateGradeInput!): Grade!
+  updateGrade(updateGradeInput: UpdateGradeInput!): Grade!
+  removeGrade(id: Int!): Grade!
+  createTeamManager(createTeamManagerInput: CreateTeamManagerInput!): TeamManager!
+  updateTeamManager(updateTeamManagerInput: UpdateTeamManagerInput!): TeamManager!
+  removeTeamManager(id: Int!): TeamManager!
+  createTeam(createTeamInput: CreateTeamInput!): Team!
+  updateTeam(updateTeamInput: UpdateTeamInput!): Team!
+  removeTeam(id: Int!): Team!
+  createMedia(createMediaInput: CreateMediaInput!): Media!
+  updateMedia(updateMediaInput: UpdateMediaInput!): Media!
+  removeMedia(id: Int!): Media!
+}
+
+input CreateCandidateInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateCandidateInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateProgrammeInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateProgrammeInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateSectionInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateSectionInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateGradeInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateGradeInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateTeamManagerInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateTeamManagerInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateTeamInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateTeamInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateMediaInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateMediaInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
