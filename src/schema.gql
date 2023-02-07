@@ -2,39 +2,186 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Candidate {
-  """Example field (placeholder)"""
-  exampleField: Int!
+type Category {
+  """"""
+  id: Int!
+  name: String!
+  candidates: [Candidate!]
+  programmes: [Programme!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Section {
+  """"""
+  id: Int!
+  name: String!
+  candidates: [Candidate!]
+  programmes: [Programme!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Skill {
+  """"""
+  id: Int!
+  name: String!
+  shortName: String!
+  description: String
+  programmes: [Programme!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Programme {
   """Example field (placeholder)"""
-  exampleField: Int!
+  id: Int!
+  programCode: String!
+  name: String!
+  mode: Models!
+  type: Types!
+  groupCandidatesCount: Int!
+  candidateCount: Int!
+  date: String!
+  time: String!
+  venue: Int!
+  duration: Int!
+  conceptNote: String!
+  resultEntered: Boolean!
+  resultPublished: Boolean!
+  skill: Skill!
+  category: Category!
+  section: Section!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
-type Section {
-  """Example field (placeholder)"""
-  exampleField: Int!
+enum Models {
+  STAGE
+  NON_STAGE
+  OUTDOOR_STAGE
 }
 
-type Grade {
-  """Example field (placeholder)"""
-  exampleField: Int!
+enum Types {
+  SINGLE
+  GROUP
+  HOUSE
+}
+
+type CandidateProgramme {
+  """"""
+  id: Int!
+  status: String!
+  position: String!
+  grade: String!
+  point: Int!
+  programme: Programme!
+  candidate: Candidate!
 }
 
 type TeamManager {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """"""
+  id: Int!
+  username: String!
+  password: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Team {
+  """"""
+  id: Int!
+  name: String!
+  shortName: String!
+  description: String
+  color: String
+  chestNoSeries: Int
+  candidates: [Candidate!]
+  team: TeamManager!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Candidate {
   """Example field (placeholder)"""
-  exampleField: Int!
+  id: Int!
+  name: String!
+  class: Int
+  adno: Float
+  dob: String
+  chestNO: Int
+  candidateProgrammes: [CandidateProgramme!]
+  gender: Gender!
+  team: Team
+  section: Section
+  category: Category
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+type Grade {
+  """"""
+  id: Int!
+  name: String!
+  pointGroup: Int!
+  pointSingle: Int!
+  pointHouse: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Media {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """"""
+  id: Int!
+  username: String!
+  password: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Position {
+  """"""
+  id: Int!
+  name: String!
+  pointGroup: Int!
+  pointSingle: Int!
+  pointHouse: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Controller {
+  """"""
+  id: Int!
+  username: String!
+  password: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Detail {
+  """"""
+  id: Int!
+  name: String!
+  motto: String!
+  institution: String!
+  description: String!
+  isMediaHave: Boolean!
+  isGradeHave: Boolean!
+  isSkillHave: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type Query {
@@ -51,6 +198,14 @@ type Query {
   teams: [Team!]!
   team(id: Int!): Team!
   media(id: Int!): Media!
+  details: [Detail!]!
+  detail(id: Int!): Detail!
+  category(id: Int!): Category!
+  skill(id: Int!): Skill!
+  position(id: Int!): Position!
+  candidateProgramme(id: Int!): CandidateProgramme!
+  controllers: [Controller!]!
+  controller(id: Int!): Controller!
 }
 
 type Mutation {
@@ -75,81 +230,235 @@ type Mutation {
   createMedia(createMediaInput: CreateMediaInput!): Media!
   updateMedia(updateMediaInput: UpdateMediaInput!): Media!
   removeMedia(id: Int!): Media!
+  createDetail(createDetailInput: CreateDetailInput!): Detail!
+  updateDetail(updateDetailInput: UpdateDetailInput!): Detail!
+  removeDetail(id: Int!): Detail!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
+  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
+  removeCategory(id: Int!): Category!
+  createSkill(createSkillInput: CreateSkillInput!): Skill!
+  updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
+  removeSkill(id: Int!): Skill!
+  createPosition(createPositionInput: CreatePositionInput!): Position!
+  updatePosition(updatePositionInput: UpdatePositionInput!): Position!
+  removePosition(id: Int!): Position!
+  createCandidateProgramme(createCandidateProgrammeInput: CreateCandidateProgrammeInput!): CandidateProgramme!
+  updateCandidateProgramme(updateCandidateProgrammeInput: UpdateCandidateProgrammeInput!): CandidateProgramme!
+  removeCandidateProgramme(id: Int!): CandidateProgramme!
+  createController(createControllerInput: CreateControllerInput!): Controller!
+  updateController(updateControllerInput: UpdateControllerInput!): Controller!
+  removeController(id: Int!): Controller!
 }
 
 input CreateCandidateInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  name: String!
+  class: Int
+  adno: Float
+  dob: String
+  chestNO: Int
+  gender: Gender!
+  team_id: Int!
+  section_id: Int!
+  category_id: Int!
 }
 
 input UpdateCandidateInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  name: String
+  class: Int
+  adno: Float
+  dob: String
+  chestNO: Int
+  gender: Gender
+  team_id: Int
+  section_id: Int
+  category_id: Int
   id: Int!
 }
 
 input CreateProgrammeInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  programCode: String!
+  name: String!
+  mode: Mode!
+  type: Type!
+  groupCandidatesCount: Int!
+  candidateCount: Int!
+  date: String!
+  time: String!
+  venue: Int!
+  duration: Int!
+  conceptNote: String!
+  skill_id: Int!
+  category_id: Int!
+  section_id: Int!
+}
+
+enum Mode {
+  STAGE
+  NON_STAGE
+  OUTDOOR_STAGE
+}
+
+enum Type {
+  SINGLE
+  GROUP
+  HOUSE
 }
 
 input UpdateProgrammeInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  programCode: String
+  name: String
+  mode: Mode
+  type: Type
+  groupCandidatesCount: Int
+  candidateCount: Int
+  date: String
+  time: String
+  venue: Int
+  duration: Int
+  conceptNote: String
+  skill_id: Int
+  category_id: Int
+  section_id: Int
   id: Int!
 }
 
 input CreateSectionInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  name: String!
 }
 
 input UpdateSectionInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  name: String
   id: Int!
 }
 
 input CreateGradeInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  name: String!
+  pointGroup: Int!
+  pointSingle: Int!
+  pointHouse: Int!
 }
 
 input UpdateGradeInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  name: String
+  pointGroup: Int
+  pointSingle: Int
+  pointHouse: Int
   id: Int!
 }
 
 input CreateTeamManagerInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  username: String!
+  password: String!
 }
 
 input UpdateTeamManagerInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  username: String
+  password: String
   id: Int!
 }
 
 input CreateTeamInput {
+  name: String!
+  shortName: String!
+  description: String
+  color: String
+}
+
+input UpdateTeamInput {
+  name: String
+  shortName: String
+  description: String
+  color: String
+  id: Int!
+}
+
+input CreateMediaInput {
+  username: String!
+  password: String!
+}
+
+input UpdateMediaInput {
+  username: String
+  password: String
+  id: Int!
+}
+
+input CreateDetailInput {
+  name: String!
+  motto: String!
+  institution: String!
+  description: String!
+  isMediaHave: Boolean!
+  isGradeHave: Boolean!
+  isSkillHave: Boolean!
+}
+
+input UpdateDetailInput {
+  name: String
+  motto: String
+  institution: String
+  description: String
+  isMediaHave: Boolean
+  isGradeHave: Boolean
+  isSkillHave: Boolean
+  id: Int!
+}
+
+input CreateCategoryInput {
+  name: String!
+}
+
+input UpdateCategoryInput {
+  name: String
+  id: Int!
+}
+
+input CreateSkillInput {
+  name: String!
+  description: String!
+  shortName: String!
+}
+
+input UpdateSkillInput {
+  name: String
+  description: String
+  shortName: String
+  id: Int!
+}
+
+input CreatePositionInput {
+  name: String!
+  pointGroup: Int!
+  pointSingle: Int!
+  pointHouse: Int!
+}
+
+input UpdatePositionInput {
+  name: String
+  pointGroup: Int
+  pointSingle: Int
+  pointHouse: Int
+  id: Int!
+}
+
+input CreateCandidateProgrammeInput {
   """Example field (placeholder)"""
   exampleField: Int!
 }
 
-input UpdateTeamInput {
+input UpdateCandidateProgrammeInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
 }
 
-input CreateMediaInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+input CreateControllerInput {
+  username: String!
+  password: String!
 }
 
-input UpdateMediaInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+input UpdateControllerInput {
+  username: String
+  password: String
   id: Int!
 }

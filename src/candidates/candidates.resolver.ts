@@ -3,11 +3,14 @@ import { CandidatesService } from './candidates.service';
 import { Candidate } from './entities/candidate.entity';
 import { CreateCandidateInput } from './dto/create-candidate.input';
 import { UpdateCandidateInput } from './dto/update-candidate.input';
+import { UsePipes } from '@nestjs/common';
+import { CandidatePipe } from './pipe/candidates.pipe';
 
 @Resolver(() => Candidate)
 export class CandidatesResolver {
   constructor(private readonly candidatesService: CandidatesService) {}
 
+  @UsePipes(CandidatePipe)
   @Mutation(() => Candidate)
   createCandidate(@Args('createCandidateInput') createCandidateInput: CreateCandidateInput) {
     return this.candidatesService.create(createCandidateInput);
@@ -23,6 +26,7 @@ export class CandidatesResolver {
     return this.candidatesService.findOne(id);
   }
 
+  @UsePipes(CandidatePipe)
   @Mutation(() => Candidate)
   updateCandidate(@Args('updateCandidateInput') updateCandidateInput: UpdateCandidateInput) {
     return this.candidatesService.update(updateCandidateInput.id, updateCandidateInput);

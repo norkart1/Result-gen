@@ -1,7 +1,14 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
+import { IsNotEmpty } from 'class-validator';
 
 @InputType()
 export class CreateTeamManagerInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+
+  @IsNotEmpty()
+  @Field()
+  username: string;
+
+  @IsNotEmpty()
+  @Field()
+  password: string;
 }

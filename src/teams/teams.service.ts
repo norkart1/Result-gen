@@ -1,26 +1,34 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateTeamInput } from './dto/create-team.input';
 import { UpdateTeamInput } from './dto/update-team.input';
+import { Team } from './entities/team.entity';
 
 @Injectable()
 export class TeamsService {
+
+  constructor(@InjectRepository(Team) private teamRepository:Repository<Team>) {}
+
+
   create(createTeamInput: CreateTeamInput) {
-    return 'This action adds a new team';
+    const newTeamInput = this.teamRepository.create(createTeamInput)
+    return this.teamRepository.save(newTeamInput);
   }
 
   findAll() {
-    return `This action returns all teams`;
+    return this.teamRepository.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} team`;
+    return this.teamRepository.findOneBy({id});
   }
 
   update(id: number, updateTeamInput: UpdateTeamInput) {
-    return `This action updates a #${id} team`;
+    return this.teamRepository.update(id, updateTeamInput);
   }
 
   remove(id: number) {
-    return `This action removes a #${id} team`;
+    return this.teamRepository.delete(id);
   }
 }

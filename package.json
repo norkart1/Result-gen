@@ -22,6 +22,7 @@
   "dependencies": {
     "@nestjs/apollo": "^10.1.7",
     "@nestjs/common": "^9.0.0",
+    "@nestjs/config": "^2.3.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/graphql": "^10.1.7",
     "@nestjs/platform-express": "^9.0.0",
@@ -29,11 +30,13 @@
     "apollo-server-express": "^3.11.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "googleapis": "^110.0.0",
     "graphql": "^16.6.0",
     "mysql2": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
-    "typeorm": "^0.3.11"
+    "typeorm": "^0.3.11",
+    "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

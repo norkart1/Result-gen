@@ -3,11 +3,14 @@ import { MediaService } from './media.service';
 import { Media } from './entities/media.entity';
 import { CreateMediaInput } from './dto/create-media.input';
 import { UpdateMediaInput } from './dto/update-media.input';
+import { AuthPipe } from './pipe/auth.pipe';
+import { UsePipes } from '@nestjs/common';
 
 @Resolver(() => Media)
 export class MediaResolver {
   constructor(private readonly mediaService: MediaService) {}
 
+  @UsePipes(AuthPipe)
   @Mutation(() => Media)
   createMedia(@Args('createMediaInput') createMediaInput: CreateMediaInput) {
     return this.mediaService.create(createMediaInput);
@@ -23,6 +26,7 @@ export class MediaResolver {
     return this.mediaService.findOne(id);
   }
 
+  @UsePipes(AuthPipe)
   @Mutation(() => Media)
   updateMedia(@Args('updateMediaInput') updateMediaInput: UpdateMediaInput) {
     return this.mediaService.update(updateMediaInput.id, updateMediaInput);

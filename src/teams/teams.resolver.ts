@@ -3,11 +3,14 @@ import { TeamsService } from './teams.service';
 import { Team } from './entities/team.entity';
 import { CreateTeamInput } from './dto/create-team.input';
 import { UpdateTeamInput } from './dto/update-team.input';
+import { AuthPipe } from './pipe/auth.pipe';
+import { UsePipes } from '@nestjs/common';
 
 @Resolver(() => Team)
 export class TeamsResolver {
   constructor(private readonly teamsService: TeamsService) {}
 
+  @UsePipes(AuthPipe)
   @Mutation(() => Team)
   createTeam(@Args('createTeamInput') createTeamInput: CreateTeamInput) {
     return this.teamsService.create(createTeamInput);
@@ -23,6 +26,7 @@ export class TeamsResolver {
     return this.teamsService.findOne(id);
   }
 
+  @UsePipes(AuthPipe)
   @Mutation(() => Team)
   updateTeam(@Args('updateTeamInput') updateTeamInput: UpdateTeamInput) {
     return this.teamsService.update(updateTeamInput.id, updateTeamInput);

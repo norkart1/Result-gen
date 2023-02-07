@@ -3,12 +3,15 @@ import { SectionsService } from './sections.service';
 import { Section } from './entities/section.entity';
 import { CreateSectionInput } from './dto/create-section.input';
 import { UpdateSectionInput } from './dto/update-section.input';
+import { UsePipes } from '@nestjs/common';
+import { AuthPipe } from './pipe/auth.pipe';
 
 @Resolver(() => Section)
 export class SectionsResolver {
   constructor(private readonly sectionsService: SectionsService) {}
 
   @Mutation(() => Section)
+  @UsePipes(AuthPipe)
   createSection(@Args('createSectionInput') createSectionInput: CreateSectionInput) {
     return this.sectionsService.create(createSectionInput);
   }
@@ -23,6 +26,7 @@ export class SectionsResolver {
     return this.sectionsService.findOne(id);
   }
 
+  @UsePipes(AuthPipe)
   @Mutation(() => Section)
   updateSection(@Args('updateSectionInput') updateSectionInput: UpdateSectionInput) {
     return this.sectionsService.update(updateSectionInput.id, updateSectionInput);
