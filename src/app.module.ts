@@ -45,7 +45,7 @@ import { DetailsModule } from './details/details.module';
       database: process.env.DB_NAME,
       entities: ['dist/**/entities/*.entity{.ts,.js}'],
       synchronize: true,
-      // ssl: { "rejectUnauthorized": true },
+      ssl: { "rejectUnauthorized": true },
       namingStrategy: new SnakeNamingStrategy()
     }),
 
