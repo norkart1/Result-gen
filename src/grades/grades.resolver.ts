@@ -26,7 +26,7 @@ export class GradesResolver {
     return this.gradesService.findOne(id);
   }
 
-  @UsePipes(AuthPipe)
+  
   @Mutation(() => Grade)
   updateGrade(@Args('updateGradeInput') updateGradeInput: UpdateGradeInput) {
     return this.gradesService.update(updateGradeInput.id, updateGradeInput);

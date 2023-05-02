@@ -18,18 +18,9 @@ export class DetailsResolver {
     return this.detailsService.findAll();
   }
 
-  @Query(() => Detail, { name: 'detail' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.detailsService.findOne(id);
-  }
-
   @Mutation(() => Detail)
   updateDetail(@Args('updateDetailInput') updateDetailInput: UpdateDetailInput) {
     return this.detailsService.update(updateDetailInput.id, updateDetailInput);
   }
 
-  @Mutation(() => Detail)
-  removeDetail(@Args('id', { type: () => Int }) id: number) {
-    return this.detailsService.remove(id);
-  }
 }

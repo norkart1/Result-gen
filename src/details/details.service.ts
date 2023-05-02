@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateDetailInput } from './dto/create-detail.input';
@@ -8,27 +8,44 @@ import { Detail } from './entities/detail.entity';
 @Injectable()
 export class DetailsService {
 
-  constructor(@InjectRepository(Detail) private detailRepository:Repository<Detail>) {}
+  constructor(@InjectRepository(Detail) private detailRepository: Repository<Detail>) { }
 
 
-  create(createDetailInput: CreateDetailInput) {
-    const newDetailInput = this.detailRepository.create(createDetailInput)
-    return  this.detailRepository.save(newDetailInput)
+  async create(createDetailInput: CreateDetailInput) {
+    // it can have only one row
+
+    // check how many row are there currently
+    const count: number = await this.detailRepository.count()
+    if (count > 1) {
+      // if there is already a row, update it
+      return this.detailRepository.update(1, createDetailInput)
+    }
+
+    // create a new row
+    try {
+      const newDetailInput = this.detailRepository.create(createDetailInput)
+      return this.detailRepository.save(newDetailInput)
+    } catch (e) {
+      throw new HttpException("An Error have when inserting data ", HttpStatus.INTERNAL_SERVER_ERROR, {  cause: e })
+    }
+
+
   }
 
   findAll() {
-    return this.detailRepository.find();
+    try {
+      return this.detailRepository.find();
+    } catch (e) {
+      throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR, {  cause: e })
+    }
   }
 
-  findOne(id: number) {
-    return this.detailRepository.findOneBy({id})
+  update(id: number = 1, updateDetailInput: UpdateDetailInput) {
+    try {
+      return this.detailRepository.update(id, updateDetailInput);
+    } catch (e) {
+      throw new HttpException("An Error have when updating data ", HttpStatus.INTERNAL_SERVER_ERROR, {  cause: e })
+    }
   }
 
-  update(id: number, updateDetailInput: UpdateDetailInput) {
-    return this.detailRepository.update(id, updateDetailInput);
-  }
-
-  remove(id: number) {
-    return this.detailRepository.delete(id);
-  }
 }

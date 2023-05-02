@@ -1,6 +1,6 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 import { Gender } from '../entities/candidate.entity';
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty } from 'class-validator';
 
 @InputType()
 export class CreateCandidateInput {
@@ -8,11 +8,11 @@ export class CreateCandidateInput {
   @Field()
   name: string;
 
-
+  @IsInt()
   @Field(() => Int, { nullable: true })
   class: number;
 
-
+  @IsInt()
   @Field({ nullable: true })
   adno: number;
 
@@ -20,20 +20,21 @@ export class CreateCandidateInput {
   @Field({ nullable: true })
   dob: string;
 
-
+  @IsInt()
   @Field(() => Int, { nullable: true })
-  chestNO: number;
+  chestNO : number;
 
 
+  @IsEnum(Gender)
   @Field(() => Gender)
   gender: Gender;
 
-  @Field(()=> Int )
-  team_id:number;
+  @Field( { nullable: true })
+  team: string;
 
-  @Field(()=> Int )
-  section_id:number;
+  @Field( { nullable: true })
+  section: string;
 
-  @Field(()=> Int)
-  category_id:number;
+  @Field({ nullable: true })
+  category: string;
 }

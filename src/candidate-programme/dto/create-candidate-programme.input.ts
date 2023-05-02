@@ -1,7 +1,16 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
+import { IsNotEmpty } from 'class-validator';
 
 @InputType()
 export class CreateCandidateProgrammeInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field()
+  @IsNotEmpty()
+  programme_code: string;
+
+  @IsNotEmpty()
+  @Field(()=>Int)
+  chestNo: number;
+
+  @Field(()=>Int , {nullable:true})
+  groupNumber : number ;
 }

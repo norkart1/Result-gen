@@ -2,12 +2,15 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Category {
+type Grade {
   """"""
   id: Int!
   name: String!
-  candidates: [Candidate!]
-  programmes: [Programme!]
+  pointGroup: Int!
+  pointSingle: Int!
+  pointHouse: Int!
+  percentage: Int!
+  candidateProgramme: CandidateProgramme!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -17,10 +20,23 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Position {
+  """"""
+  id: Int!
+  name: String!
+  pointGroup: Int!
+  pointSingle: Int!
+  pointHouse: Int!
+  candidateProgramme: CandidateProgramme!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Section {
   """"""
   id: Int!
   name: String!
+  categories: [Category!]
   candidates: [Candidate!]
   programmes: [Programme!]
   createdAt: DateTime!
@@ -45,18 +61,18 @@ type Programme {
   name: String!
   mode: Models!
   type: Types!
-  groupCandidatesCount: Int!
+  groupCount: Int!
   candidateCount: Int!
-  date: String!
-  time: String!
+  date: DateTime!
   venue: Int!
   duration: Int!
   conceptNote: String!
   resultEntered: Boolean!
   resultPublished: Boolean!
-  skill: Skill!
-  category: Category!
-  section: Section!
+  candidateProgramme: [CandidateProgramme!]!
+  skill: Skill
+  category: Category
+  section: Section
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -76,12 +92,19 @@ enum Types {
 type CandidateProgramme {
   """"""
   id: Int!
-  status: String!
-  position: String!
-  grade: String!
-  point: Int!
+  checkToReadNo: Int
+  point: Int
+  link: String
+  groupNumber: Int
+  markOne: Int
+  markTwo: Int
+  markThree: Int
+  position: Position
+  grade: Grade
   programme: Programme!
   candidate: Candidate!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 type TeamManager {
@@ -89,6 +112,8 @@ type TeamManager {
   id: Int!
   username: String!
   password: String!
+  team: Team
+  categories: [Category!]!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -101,8 +126,8 @@ type Team {
   description: String
   color: String
   chestNoSeries: Int
+  manager: TeamManager
   candidates: [Candidate!]
-  team: TeamManager!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -115,13 +140,14 @@ type Candidate {
   adno: Float
   dob: String
   chestNO: Int
-  candidateProgrammes: [CandidateProgramme!]
   gender: Gender!
+  candidateProgrammes: [CandidateProgramme!]
   team: Team
   section: Section
   category: Category
   createdAt: DateTime!
   updatedAt: DateTime!
+  user: Section!
 }
 
 enum Gender {
@@ -130,38 +156,42 @@ enum Gender {
   OTHER
 }
 
-type Grade {
+type CategorySettings {
+  id: Int!
+  maxProgram: Int!
+  maxSingle: Int!
+  minProgram: Int!
+  minSingle: Int!
+  maxGroup: Int!
+  minGroup: Int!
+  category: Category!
+}
+
+type Controller {
+  """"""
+  id: Int!
+  username: String!
+  password: String!
+  categories: [Category!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Category {
   """"""
   id: Int!
   name: String!
-  pointGroup: Int!
-  pointSingle: Int!
-  pointHouse: Int!
+  settings: CategorySettings!
+  candidates: [Candidate!]
+  programmes: [Programme!]
+  section: Section!
+  controllers: [Controller!]
+  teamManagers: [TeamManager!]
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
 type Media {
-  """"""
-  id: Int!
-  username: String!
-  password: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type Position {
-  """"""
-  id: Int!
-  name: String!
-  pointGroup: Int!
-  pointSingle: Int!
-  pointHouse: Int!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type Controller {
   """"""
   id: Int!
   username: String!
@@ -178,8 +208,6 @@ type Detail {
   institution: String!
   description: String!
   isMediaHave: Boolean!
-  isGradeHave: Boolean!
-  isSkillHave: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -187,67 +215,76 @@ type Detail {
 type Query {
   candidates: [Candidate!]!
   candidate(id: Int!): Candidate!
-  programmes: [Programme!]!
-  programme(id: Int!): Programme!
+  teams: [Team!]!
+  team(id: Int!): Team!
+  categories: [Category!]!
+  category(id: Int!): Category!
   sections: [Section!]!
   section(id: Int!): Section!
+  programmes: [Programme!]!
+  programme(id: Int!): Programme!
+  skill(id: Int!): Skill!
   grades: [Grade!]!
   grade(id: Int!): Grade!
   teamManagers: [TeamManager!]!
   teamManager(id: Int!): TeamManager!
-  teams: [Team!]!
-  team(id: Int!): Team!
   media(id: Int!): Media!
   details: [Detail!]!
-  detail(id: Int!): Detail!
-  category(id: Int!): Category!
-  skill(id: Int!): Skill!
+  positions: [Position!]!
   position(id: Int!): Position!
+  candidateProgrammes: [CandidateProgramme!]!
   candidateProgramme(id: Int!): CandidateProgramme!
   controllers: [Controller!]!
   controller(id: Int!): Controller!
+  categorySettings: [CategorySettings!]!
+  categorySetting(id: Int!): CategorySettings!
 }
 
 type Mutation {
   createCandidate(createCandidateInput: CreateCandidateInput!): Candidate!
   updateCandidate(updateCandidateInput: UpdateCandidateInput!): Candidate!
   removeCandidate(id: Int!): Candidate!
-  createProgramme(createProgrammeInput: CreateProgrammeInput!): Programme!
-  updateProgramme(updateProgrammeInput: UpdateProgrammeInput!): Programme!
-  removeProgramme(id: Int!): Programme!
+  uploadFile(file: Upload!): Boolean!
+  createTeam(createTeamInput: CreateTeamInput!): Team!
+  updateTeam(updateTeamInput: UpdateTeamInput!): Team!
+  removeTeam(id: Int!): Team!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
+  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
+  removeCategory(id: Int!): Category!
   createSection(createSectionInput: CreateSectionInput!): Section!
   updateSection(updateSectionInput: UpdateSectionInput!): Section!
   removeSection(id: Int!): Section!
+  createProgramme(createProgrammeInput: CreateProgrammeInput!): Programme!
+  updateProgramme(updateProgrammeInput: UpdateProgrammeInput!): Programme!
+  removeProgramme(id: Int!): Programme!
+  setSchedule(createScheduleInput: CreateSchedule!): Programme!
+  createSkill(createSkillInput: CreateSkillInput!): Skill!
+  updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
+  removeSkill(id: Int!): Skill!
   createGrade(createGradeInput: CreateGradeInput!): Grade!
   updateGrade(updateGradeInput: UpdateGradeInput!): Grade!
   removeGrade(id: Int!): Grade!
   createTeamManager(createTeamManagerInput: CreateTeamManagerInput!): TeamManager!
   updateTeamManager(updateTeamManagerInput: UpdateTeamManagerInput!): TeamManager!
   removeTeamManager(id: Int!): TeamManager!
-  createTeam(createTeamInput: CreateTeamInput!): Team!
-  updateTeam(updateTeamInput: UpdateTeamInput!): Team!
-  removeTeam(id: Int!): Team!
   createMedia(createMediaInput: CreateMediaInput!): Media!
   updateMedia(updateMediaInput: UpdateMediaInput!): Media!
   removeMedia(id: Int!): Media!
   createDetail(createDetailInput: CreateDetailInput!): Detail!
   updateDetail(updateDetailInput: UpdateDetailInput!): Detail!
-  removeDetail(id: Int!): Detail!
-  createCategory(createCategoryInput: CreateCategoryInput!): Category!
-  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
-  removeCategory(id: Int!): Category!
-  createSkill(createSkillInput: CreateSkillInput!): Skill!
-  updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
-  removeSkill(id: Int!): Skill!
   createPosition(createPositionInput: CreatePositionInput!): Position!
   updatePosition(updatePositionInput: UpdatePositionInput!): Position!
   removePosition(id: Int!): Position!
   createCandidateProgramme(createCandidateProgrammeInput: CreateCandidateProgrammeInput!): CandidateProgramme!
   updateCandidateProgramme(updateCandidateProgrammeInput: UpdateCandidateProgrammeInput!): CandidateProgramme!
   removeCandidateProgramme(id: Int!): CandidateProgramme!
+  addNormalResult(programmeCode: String!, addResult: [AddResult!]!): [CandidateProgramme!]!
   createController(createControllerInput: CreateControllerInput!): Controller!
   updateController(updateControllerInput: UpdateControllerInput!): Controller!
   removeController(id: Int!): Controller!
+  createCategorySetting(createCategorySettingInput: CreateCategorySettingInput!): CategorySettings!
+  updateCategorySetting(updateCategorySettingInput: UpdateCategorySettingInput!): CategorySettings!
+  removeCategorySetting(id: Int!): CategorySettings!
 }
 
 input CreateCandidateInput {
@@ -257,9 +294,9 @@ input CreateCandidateInput {
   dob: String
   chestNO: Int
   gender: Gender!
-  team_id: Int!
-  section_id: Int!
-  category_id: Int!
+  team: String
+  section: String
+  category: String
 }
 
 input UpdateCandidateInput {
@@ -269,9 +306,47 @@ input UpdateCandidateInput {
   dob: String
   chestNO: Int
   gender: Gender
-  team_id: Int
-  section_id: Int
-  category_id: Int
+  team: String
+  section: String
+  category: String
+  id: Int!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input CreateTeamInput {
+  name: String!
+  shortName: String!
+  description: String
+  color: String
+}
+
+input UpdateTeamInput {
+  name: String
+  shortName: String
+  description: String
+  color: String
+  id: Int!
+}
+
+input CreateCategoryInput {
+  name: String!
+  section: String!
+}
+
+input UpdateCategoryInput {
+  name: String
+  section: String
+  id: Int!
+}
+
+input CreateSectionInput {
+  name: String!
+}
+
+input UpdateSectionInput {
+  name: String
   id: Int!
 }
 
@@ -280,16 +355,17 @@ input CreateProgrammeInput {
   name: String!
   mode: Mode!
   type: Type!
-  groupCandidatesCount: Int!
+  groupCount: Int
+  groupNumber: Int!
   candidateCount: Int!
-  date: String!
-  time: String!
-  venue: Int!
+  date: String
+  time: String
+  venue: Int
   duration: Int!
   conceptNote: String!
-  skill_id: Int!
-  category_id: Int!
-  section_id: Int!
+  skill: String!
+  category: String!
+  section: String!
 }
 
 enum Mode {
@@ -309,30 +385,42 @@ input UpdateProgrammeInput {
   name: String
   mode: Mode
   type: Type
-  groupCandidatesCount: Int
+  groupCount: Int
+  groupNumber: Int
   candidateCount: Int
   date: String
   time: String
   venue: Int
   duration: Int
   conceptNote: String
-  skill_id: Int
-  category_id: Int
-  section_id: Int
+  skill: String
+  category: String
+  section: String
   id: Int!
 }
 
-input CreateSectionInput {
-  name: String!
+input CreateSchedule {
+  code: String!
+  date: DateTime!
+  venue: Int
 }
 
-input UpdateSectionInput {
+input CreateSkillInput {
+  name: String!
+  description: String!
+  shortName: String!
+}
+
+input UpdateSkillInput {
   name: String
+  description: String
+  shortName: String
   id: Int!
 }
 
 input CreateGradeInput {
   name: String!
+  percentage: Int!
   pointGroup: Int!
   pointSingle: Int!
   pointHouse: Int!
@@ -340,6 +428,7 @@ input CreateGradeInput {
 
 input UpdateGradeInput {
   name: String
+  percentage: Int
   pointGroup: Int
   pointSingle: Int
   pointHouse: Int
@@ -354,21 +443,6 @@ input CreateTeamManagerInput {
 input UpdateTeamManagerInput {
   username: String
   password: String
-  id: Int!
-}
-
-input CreateTeamInput {
-  name: String!
-  shortName: String!
-  description: String
-  color: String
-}
-
-input UpdateTeamInput {
-  name: String
-  shortName: String
-  description: String
-  color: String
   id: Int!
 }
 
@@ -389,8 +463,6 @@ input CreateDetailInput {
   institution: String!
   description: String!
   isMediaHave: Boolean!
-  isGradeHave: Boolean!
-  isSkillHave: Boolean!
 }
 
 input UpdateDetailInput {
@@ -399,30 +471,6 @@ input UpdateDetailInput {
   institution: String
   description: String
   isMediaHave: Boolean
-  isGradeHave: Boolean
-  isSkillHave: Boolean
-  id: Int!
-}
-
-input CreateCategoryInput {
-  name: String!
-}
-
-input UpdateCategoryInput {
-  name: String
-  id: Int!
-}
-
-input CreateSkillInput {
-  name: String!
-  description: String!
-  shortName: String!
-}
-
-input UpdateSkillInput {
-  name: String
-  description: String
-  shortName: String
   id: Int!
 }
 
@@ -442,14 +490,23 @@ input UpdatePositionInput {
 }
 
 input CreateCandidateProgrammeInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  programme_code: String!
+  chestNo: Int!
+  groupNumber: Int
 }
 
 input UpdateCandidateProgrammeInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  programme_code: String
+  chestNo: Int
+  groupNumber: Int
   id: Int!
+}
+
+input AddResult {
+  chestNo: Int!
+  markOne: Float!
+  markTwo: Float
+  markThree: Float
 }
 
 input CreateControllerInput {
@@ -460,5 +517,26 @@ input CreateControllerInput {
 input UpdateControllerInput {
   username: String
   password: String
+  id: Int!
+}
+
+input CreateCategorySettingInput {
+  category: String!
+  maxProgram: Int!
+  maxSingle: Int!
+  minProgram: Int!
+  minSingle: Int!
+  maxGroup: Int!
+  minGroup: Int!
+}
+
+input UpdateCategorySettingInput {
+  category: String
+  maxProgram: Int
+  maxSingle: Int
+  minProgram: Int
+  minSingle: Int
+  maxGroup: Int
+  minGroup: Int
   id: Int!
 }

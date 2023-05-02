@@ -4,9 +4,14 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 @ObjectType()
 @Entity()
 export class Detail {
+
+  // Primary generated ID
+
   @Field(() => Int, { description: '' })
   @PrimaryGeneratedColumn()
   id:number;
+
+  // Normal Columns
 
   @Column()
   @Field()
@@ -27,16 +32,8 @@ export class Detail {
   @Column()
   @Field()
   isMediaHave : Boolean;
-
-  @Column()
-  @Field()
-  isGradeHave : Boolean;
-
-  @Column()
-  @Field()
-  isSkillHave : Boolean;
-
-
+  
+  // Dates
 
   @CreateDateColumn()
   @Field(() => Date)

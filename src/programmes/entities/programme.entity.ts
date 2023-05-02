@@ -30,9 +30,14 @@ registerEnumType(Type, {
 @ObjectType()
 @Entity()
 export class Programme {
+
+  // Primary generated ID
+  
   @Field(() => Int, { description: 'Example field (placeholder)' })
   @PrimaryGeneratedColumn()
   id: number;
+
+  // Normal columns
 
   @Column({unique:true})
   @Field()
@@ -42,10 +47,6 @@ export class Programme {
   @Field()
   name: string;
 
-  @OneToMany(() => CandidateProgramme, (CandidateProgramme) => CandidateProgramme.programme)
-  @JoinTable()
-  candidateProgramme: CandidateProgramme[];
-
   @Column()
   @Field(()=> Mode)
   mode: Mode;
@@ -54,23 +55,19 @@ export class Programme {
   @Field(()=> Type)
   type: Type;
 
-  @Column()
+  @Column({nullable:true})
   @Field(()=> Int)
-  groupCandidatesCount: number;
+  groupCount: number;
 
   @Column()
   @Field(()=> Int )
   candidateCount: number;
 
-  @Column()
-  @Field()
-  date: string;
+  @Column({nullable:true})
+  @Field(()=> Date )
+  date: Date;
 
-  @Column()
-  @Field()
-  time: string;
-
-  @Column()
+  @Column({nullable:true})
   @Field(()=> Int )
   venue: number;
 
@@ -90,17 +87,28 @@ export class Programme {
   @Field(()=> Boolean)
   resultPublished: Boolean;
 
-  @ManyToOne(()=> Skill, (skill) => skill.programmes)
-  @Field(()=> Skill)
+  // OneToMany relations
+
+  @OneToMany(() => CandidateProgramme, (CandidateProgramme) => CandidateProgramme.programme)
+  @JoinTable()
+  @Field(()=> [CandidateProgramme])
+  candidateProgramme: CandidateProgramme[];
+
+  // ManyTOOne relations
+
+  @ManyToOne(()=> Skill, (skill) => skill.programmes , { eager: true , onDelete : 'SET NULL'} )
+  @Field(()=> Skill , { nullable: true })
   skill: Skill;
 
-  @ManyToOne(()=> Category, (category) => category.programmes)
-  @Field(()=> Category)
+  @ManyToOne(()=> Category, (category) => category.programmes , { eager: true , onDelete : 'SET NULL'})
+  @Field(()=> Category , { nullable: true })
   category : Category;
 
-  @ManyToOne(()=> Section, (section) => section.programmes)
-  @Field(()=> Section)
+  @ManyToOne(()=> Section, (section) => section.programmes , { eager: true , onDelete : 'SET NULL'})
+  @Field(()=> Section , { nullable: true })
   section: Section;
+
+  // Dates
 
   @Expose()
   @Field(()=> Date)

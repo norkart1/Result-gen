@@ -5,6 +5,7 @@ import { CreateCandidateProgrammeInput } from './dto/create-candidate-programme.
 import { UpdateCandidateProgrammeInput } from './dto/update-candidate-programme.input';
 import { UsePipes } from '@nestjs/common';
 import { CandidateProgrammePipe } from './pipe/candidate-programme.pipe';
+import { AddResult } from './dto/add-result.dto';
 
 @Resolver(() => CandidateProgramme)
 export class CandidateProgrammeResolver {
@@ -16,7 +17,7 @@ export class CandidateProgrammeResolver {
     return this.candidateProgrammeService.create(createCandidateProgrammeInput);
   }
 
-  @Query(() => [CandidateProgramme], { name: 'candidateProgramme' })
+  @Query(() => [CandidateProgramme], { name: 'candidateProgrammes' })
   findAll() {
     return this.candidateProgrammeService.findAll();
   }
@@ -36,4 +37,10 @@ export class CandidateProgrammeResolver {
   removeCandidateProgramme(@Args('id', { type: () => Int }) id: number) {
     return this.candidateProgrammeService.remove(id);
   }
+  
+  @Mutation(() => [CandidateProgramme])
+  addNormalResult(@Args('programmeCode') programmeCode: string , @Args({ name: 'addResult', type: () => [AddResult] }) addResult:AddResult[]) {
+    return this.candidateProgrammeService.addResult(programmeCode,addResult)
+  }
+
 }

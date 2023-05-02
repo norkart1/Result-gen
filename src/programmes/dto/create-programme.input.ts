@@ -42,26 +42,26 @@ export class CreateProgrammeInput {
   @Field(()=> Type)
   type: Type;
 
-  @IsNumber()
+  
+  @Field(()=> Int , {nullable:true})
+  groupCount: number;
+
   @Field(()=> Int)
-  groupCandidatesCount: number;
+  groupNumber: number;
 
   @IsNotEmpty()
   @IsNumber()
   @Field(()=> Int )
   candidateCount: number;
 
-  @IsNotEmpty()
-  @Field()
+  @Field({nullable:true})
   date: string;
 
-  @IsNotEmpty()
-  @Field()
+  @Field({nullable:true})
   time: string;
 
-  @IsNotEmpty()
   @IsNumber()
-  @Field(()=> Int )
+  @Field(()=> Int ,{nullable:true} )
   venue: number;
 
   @IsNotEmpty()
@@ -75,18 +75,16 @@ export class CreateProgrammeInput {
 
   @IsNotEmpty()
   @Field()
-  @Field(()=> Int)
-  skill_id: number;
+  @Field()
+  skill: string ;
 
   @IsNotEmpty()
-  @IsNumber()
-  @Field(()=> Int)
-  category_id : number;
+  @Field()
+  category : string;
 
   @IsNotEmpty()
-  @IsNumber()
-  @Field(()=> Int)
-  section_id: number;
+  @Field()
+  section: string ;
 
 
 }

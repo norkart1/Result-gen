@@ -21,6 +21,9 @@ import { PositionModule } from './position/position.module';
 import { CandidateProgrammeModule } from './candidate-programme/candidate-programme.module';
 import { ControllersModule } from './controllers/controllers.module';
 import { DetailsModule } from './details/details.module';
+import { CategorySettingsModule } from './category-settings/category-settings.module';
+import { CategorySettings } from './category-settings/entities/category-setting.entity';
+import { CamelNamingStrategy } from './utils/naming';
 
 
 @Module({
@@ -46,7 +49,7 @@ import { DetailsModule } from './details/details.module';
       entities: ['dist/**/entities/*.entity{.ts,.js}'],
       synchronize: true,
       // ssl: { "rejectUnauthorized": true },
-      namingStrategy: new SnakeNamingStrategy()
+      // namingStrategy: new SnakeNamingStrategy()
     }),
 
 
@@ -71,6 +74,7 @@ import { DetailsModule } from './details/details.module';
     PositionModule,
     CandidateProgrammeModule,
     ControllersModule,
+    CategorySettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

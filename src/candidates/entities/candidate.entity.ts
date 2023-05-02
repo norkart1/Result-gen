@@ -20,9 +20,13 @@ registerEnumType(Gender, {
 @ObjectType()
 export class Candidate {
 
+  // Primary generated ID
+
   @PrimaryGeneratedColumn()
   @Field(() => Int, { description: 'Example field (placeholder)' })
   id: number;
+
+  // Normal columns
 
   @Column()
   @Field()
@@ -44,9 +48,6 @@ export class Candidate {
   @Field(()=> Int ,{nullable:true})
   chestNO: number;
 
-  @OneToMany(() => CandidateProgramme, (candidateProgramme) => candidateProgramme.candidate)
-  @Field(() => [CandidateProgramme], { nullable: true })
-  candidateProgrammes: CandidateProgramme[];
 
   // @Column({ nullable: true, type: 'json' })
   // @Field(() => Photo ,{nullable:true})
@@ -56,17 +57,27 @@ export class Candidate {
   @Field(()=> Gender)
   gender: Gender;
 
-  @ManyToOne(()=> Team , (team) => team.candidates)
+  // OneTOMany relations
+
+  @OneToMany(() => CandidateProgramme, (candidateProgramme) => candidateProgramme.candidate)
+  @Field(() => [CandidateProgramme], { nullable: true })
+  candidateProgrammes: CandidateProgramme[];
+
+  // ManyToOne relations
+
+  @ManyToOne(()=> Team , (team) => team.candidates , { eager: true , onDelete : 'SET NULL'})
   @Field(()=> Team , {nullable:true})
   team:Team;
 
-  @ManyToOne(()=> Section , (section) => section.candidates)
+  @ManyToOne(()=> Section , (section) => section.candidates , { eager: true , onDelete : 'SET NULL'})
   @Field(()=> Section , {nullable:true})
   section:Section;
 
-  @ManyToOne(()=> Category , (category) => category.candidates)
+  @ManyToOne(()=> Category , (category) => category.candidates , { eager: true , onDelete : 'SET NULL'})
   @Field(()=> Category , {nullable:true})
   category:Category;
+
+  // Dates
 
   @CreateDateColumn()
   @Field(() => Date)

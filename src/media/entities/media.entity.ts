@@ -4,10 +4,14 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 @ObjectType()
 @Entity()
 export class Media {
+
+  // Primary Generated ID
+
   @Field(() => Int, { description: '' })
   @PrimaryGeneratedColumn()
   id:number;
 
+  // Normal columns
   @Column({unique:true})
   @Field()
   username:string;
@@ -16,6 +20,8 @@ export class Media {
   @Field()
   password:string;
 
+  // Dates
+  
   @CreateDateColumn()
   @Field(() => Date)
   createdAt: Date;

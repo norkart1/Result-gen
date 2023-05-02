@@ -5,6 +5,7 @@ import { CreateProgrammeInput } from './dto/create-programme.input';
 import { UpdateProgrammeInput } from './dto/update-programme.input';
 import { UsePipes } from '@nestjs/common';
 import { AuthPipe } from './pipe/auth.pipe';
+import { CreateSchedule } from './dto/create-schedule.dto';
 
 @Resolver(() => Programme)
 export class ProgrammesResolver {
@@ -35,5 +36,10 @@ export class ProgrammesResolver {
   @Mutation(() => Programme)
   removeProgramme(@Args('id', { type: () => Int }) id: number) {
     return this.programmesService.remove(id);
+  }
+
+  @Mutation(()=> Programme)
+  setSchedule(@Args('createScheduleInput') createSchedule : CreateSchedule){
+    return this.programmesService.setSchedule(createSchedule)
   }
 }

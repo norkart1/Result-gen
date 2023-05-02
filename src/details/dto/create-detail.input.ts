@@ -20,11 +20,4 @@ export class CreateDetailInput {
   @IsBoolean()
   isMediaHave : Boolean;
  
-  @Field()
-  @IsBoolean()
-  isGradeHave : Boolean;
- 
-  @Field()
-  @IsBoolean()
-  isSkillHave : Boolean;
 }

@@ -6,6 +6,7 @@ import { Section } from './entities/section.entity';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Section])],
-  providers: [SectionsResolver, SectionsService]
+  providers: [SectionsResolver, SectionsService],
+  exports:[SectionsService]
 })
 export class SectionsModule {}

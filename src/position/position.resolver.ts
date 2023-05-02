@@ -16,7 +16,7 @@ export class PositionResolver {
     return this.positionService.create(createPositionInput);
   }
 
-  @Query(() => [Position], { name: 'position' })
+  @Query(() => [Position], { name: 'positions' })
   findAll() {
     return this.positionService.findAll();
   }

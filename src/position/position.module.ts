@@ -6,6 +6,7 @@ import { Position } from './entities/position.entity';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Position])],
-  providers: [PositionResolver, PositionService]
+  providers: [PositionResolver, PositionService],
+  exports:[PositionService]
 })
 export class PositionModule {}

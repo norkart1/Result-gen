@@ -6,6 +6,7 @@ import { Grade } from './entities/grade.entity';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Grade])],
-  providers: [GradesResolver, GradesService]
+  providers: [GradesResolver, GradesService],
+  exports:[GradesService]
 })
 export class GradesModule {}

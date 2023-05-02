@@ -6,4 +6,7 @@ export class CreateCategoryInput {
   @Field()
   name: string;
 
+
+  @Field()
+  section : string;
 }

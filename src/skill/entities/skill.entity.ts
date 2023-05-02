@@ -5,9 +5,13 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Up
 @ObjectType()
 @Entity()
 export class Skill {
+
+  // Primary generated ID
   @Field(() => Int, { description: '' })
   @PrimaryGeneratedColumn()
   id: number;
+
+  // Normal columns
 
   @Column({unique:true})
   @Field()
@@ -21,10 +25,14 @@ export class Skill {
   @Field({ nullable: true })
   description: string;
 
+  // OneToMany relations
+
   @OneToMany(() => Programme, (programme) => programme.skill)
   @Field(() => [Programme], { nullable: true })
   programmes: Programme[];
 
+  // Dates
+  
   @CreateDateColumn()
   @Field(() => Date)
   createdAt: Date;
