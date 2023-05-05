@@ -464,6 +464,7 @@ export class CandidateProgrammeService {
 
 
   // generating grade
+  
  async generateGrade(candidateProgramme){
     const allGrades : Grade[]= await this.gradeService.findAll()
     // Descending sorting
