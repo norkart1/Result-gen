@@ -31,7 +31,6 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "exceljs": "^4.3.0",
-    "googleapis": "^110.0.0",
     "graphql": "^16.6.0",
     "graphql-upload": "^16.0.2",
     "mysql2": "^3.1.0",
