@@ -1,6 +1,2 @@
-RUN apt-get install -y git-core curl build-essential openssl libssl-dev \
- && git clone https://github.com/nodejs/node.git \
- && cd node \
- && ./configure \
- && make \
- && sudo make install
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - 
+RUN apt-get install -y nodejs
