@@ -10,5 +10,5 @@ ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN node --version
 RUN npm --version
 # RUN npm install
-RUN npm run build
-RUn npm run start
+# RUN npm run build
+# RUn npm run start:dev
