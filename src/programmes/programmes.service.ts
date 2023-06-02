@@ -36,12 +36,15 @@ export class ProgrammesService {
       // --------------------
 
       //  checking is skill exist
+      
 
       const skill_id = await this.skillService.findOneByName(createProgrammeInput.skill)
 
       if (!skill_id) {
         throw new HttpException(`Cant find a skill named ${createProgrammeInput.skill} ,ie: check on skill of ${createProgrammeInput.name}`, HttpStatus.BAD_REQUEST)
       }
+
+      
 
       //  checking is category exist
 
@@ -86,6 +89,12 @@ export class ProgrammesService {
         throw new HttpException(`candidate Count must be a number  ,ie: check on candidateCount of ${createProgrammeInput.name}`, HttpStatus.BAD_REQUEST);
       }
 
+      // validating is there conceptnote
+
+      if(!createProgrammeInput.conceptNote){
+        throw new HttpException(`Concept note is required ,ie: check on concept Note of  ${createProgrammeInput.programCode} ${createProgrammeInput.name}`, HttpStatus.BAD_REQUEST)
+      }
+
       // // validating is Venue int
 
       // if (isNaN(createProgrammeInput.venue)) {
@@ -103,7 +112,6 @@ export class ProgrammesService {
       if (!Object.values(Mode).includes(createProgrammeInput.mode)) {
         throw new HttpException(`Invalid Type of Mode  ,ie: check on mode of ${createProgrammeInput.name}`, HttpStatus.BAD_REQUEST)
       }
-
     }
 
 
@@ -119,7 +127,7 @@ export class ProgrammesService {
       for (let index = 0; index < createProgrammeInputArray.length; index++) {
         const data = createProgrammeInputArray[index];
 
-
+        
         // Double checking
 
         //  checking is skill exist
@@ -162,9 +170,8 @@ export class ProgrammesService {
         input.type = data.type;
         // input.venue = data.venue;
         input.groupCount = data.groupCount;
-        // input.groupNumber = data.groupNumber ;
         input.conceptNote = data.conceptNote;
-
+        
 
         let saveData = await this.programmeRepository.save(input)
 
@@ -179,7 +186,8 @@ export class ProgrammesService {
       }
 
     } catch (e) {
-
+      console.log(e);
+      
       throw new HttpException("An Error have when inserting data , please check the all required fields are filled ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
 
     }
@@ -238,7 +246,6 @@ export class ProgrammesService {
       input.type = createProgrammeInput.type;
       // input.venue = createProgrammeInput.venue;
       input.groupCount = createProgrammeInput.groupCount;
-      // input.groupNumber = createProgrammeInput.groupNumber ;
       input.conceptNote = createProgrammeInput.conceptNote;
 
 
@@ -257,7 +264,7 @@ export class ProgrammesService {
 
   findAll() {
     try{
-      return this.programmeRepository.find({ relations: ['category', 'section', 'skill' , 'candidateProgramme' ,'candidateProgramme.candidate', 'candidateProgramme.programme', 'candidateProgramme.candidate.team'] })
+      return this.programmeRepository.find({ relations: ['category', 'section', 'skill' , 'candidateProgramme' ] })
     } catch {
       throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -269,7 +276,7 @@ export class ProgrammesService {
       where: {
         id
       },
-      relations: ['category', 'section', 'skill' , 'candidateProgramme' ,'candidateProgramme.candidate', 'candidateProgramme.programme', 'candidateProgramme.candidate.team']
+      relations: ['category', 'section', 'skill' , 'candidateProgramme' ]
     })
   }
 
@@ -277,7 +284,7 @@ export class ProgrammesService {
     try{
       return this.programmeRepository.findOne({
         where: { programCode },
-        relations: ['category', 'section', 'skill' , 'candidateProgramme' , 'candidateProgramme.candidate' , 'candidateProgramme.programme','candidateProgramme.candidate.team']
+        relations: ['category', 'section', 'skill' , 'candidateProgramme', 'candidateProgramme.candidate' ,'candidateProgramme.candidate.team' ]
       })
     }catch(e){
       throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR)
@@ -340,7 +347,6 @@ export class ProgrammesService {
       input.type = updateProgrammeInput.type;
       // input.venue = updateProgrammeInput.venue;
       input.groupCount = updateProgrammeInput.groupCount;
-      // input.groupNumber = updateProgrammeInput.groupNumber ;
       input.conceptNote = updateProgrammeInput.conceptNote;
 
 

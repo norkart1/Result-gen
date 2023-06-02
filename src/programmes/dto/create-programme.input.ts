@@ -46,9 +46,6 @@ export class CreateProgrammeInput {
   @Field(()=> Int , {nullable:true})
   groupCount: number;
 
-  @Field(()=> Int)
-  groupNumber: number;
-
   @IsNotEmpty()
   @IsNumber()
   @Field(()=> Int )
@@ -56,9 +53,6 @@ export class CreateProgrammeInput {
 
   @Field({nullable:true})
   date: string;
-
-  @Field({nullable:true})
-  time: string;
 
   @IsNumber()
   @Field(()=> Int ,{nullable:true} )

@@ -223,6 +223,7 @@ type Query {
   section(id: Int!): Section!
   programmes: [Programme!]!
   programme(id: Int!): Programme!
+  skills: [Skill!]!
   skill(id: Int!): Skill!
   grades: [Grade!]!
   grade(id: Int!): Grade!
@@ -356,10 +357,8 @@ input CreateProgrammeInput {
   mode: Mode!
   type: Type!
   groupCount: Int
-  groupNumber: Int!
   candidateCount: Int!
   date: String
-  time: String
   venue: Int
   duration: Int!
   conceptNote: String!
@@ -386,10 +385,8 @@ input UpdateProgrammeInput {
   mode: Mode
   type: Type
   groupCount: Int
-  groupNumber: Int
   candidateCount: Int
   date: String
-  time: String
   venue: Int
   duration: Int
   conceptNote: String

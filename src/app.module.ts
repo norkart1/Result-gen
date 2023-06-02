@@ -60,7 +60,7 @@ import { CategorySettingsModule } from './category-settings/category-settings.mo
         database: configService.get<string>('DB_NAME'),
         entities:  ['dist/**/entities/*.entity{.ts,.js}'],
         autoLoadEntities: true,
-        synchronize: configService.get<boolean>('DB_SYNC'),
+        // synchronize: true,
         ssl: { "rejectUnauthorized": true },
         // migrationsTableName: 'migrations',
         // migrations: ['dist/src/database/migrations/*.js'],

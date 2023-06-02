@@ -16,7 +16,7 @@ export class SkillResolver {
     return this.skillService.create(createSkillInput);
   }
 
-  @Query(() => [Skill], { name: 'skill' })
+  @Query(() => [Skill], { name: 'skills' })
   findAll() {
     return this.skillService.findAll();
   }

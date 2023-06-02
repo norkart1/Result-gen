@@ -257,8 +257,7 @@ console.log(createCandidateInput.chestNO);
 
   findAll() {
     try {
-
-      return this.candidateRepository.find({ relations: ['category', 'category.candidates', 'section', 'section.candidates', 'team', 'team.candidates', 'candidateProgrammes', 'candidateProgrammes.programme'] });
+      return this.candidateRepository.find({ relations: ['category', 'section',  'team',  'candidateProgrammes'  ] });
     } catch (e) {
       throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
     }
@@ -270,7 +269,7 @@ console.log(createCandidateInput.chestNO);
         where: {
           id
         },
-        relations: ['category', 'category.candidates', 'section', 'section.candidates', 'team', 'team.candidates', 'candidateProgrammes', 'candidateProgrammes.programme']
+        relations: ['category', 'section',  'team',  'candidateProgrammes'  ] 
       });
 
       if (!candidate) {
@@ -291,7 +290,7 @@ console.log(createCandidateInput.chestNO);
         where: {
           chestNO
         },
-        relations: ['category', 'category.candidates', 'section', 'section.candidates', 'team', 'team.candidates', 'candidateProgrammes', 'candidateProgrammes.programme']
+        relations:['category', 'section',  'team',  'candidateProgrammes'  ] 
       });
 
       if (!candidate) {

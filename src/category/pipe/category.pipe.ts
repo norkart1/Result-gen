@@ -17,9 +17,9 @@ export class CategoryPipe implements PipeTransform {
       },
     })
     if (user) {
-      console.log('Candidate already exists');
+      console.log('Category already exists');
 
-      throw new HttpException("Candidate already exists", HttpStatus.BAD_REQUEST);
+      throw new HttpException("Category already exists", HttpStatus.BAD_REQUEST);
 
     }
 

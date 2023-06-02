@@ -34,6 +34,8 @@ export class CandidateProgrammeService {
 
   teamCandidates(candidateProgrammes: CandidateProgramme[], team: Team) {
     return candidateProgrammes.filter((e: CandidateProgramme) => {
+      console.log(`${e.candidate.team }  == ${team}`);
+      
       return e.candidate.team.name == team.name
     })
   }
@@ -144,7 +146,8 @@ export class CandidateProgrammeService {
       const programmeCandidates: CandidateProgramme[] = programme.candidateProgramme;
       // candidates on the team
 
-
+      console.log(programmeCandidates);
+      
       const onTeamCandidates = this.teamCandidates(programmeCandidates, team)
 
       if (onTeamCandidates.length >= programme.candidateCount) {
@@ -229,7 +232,7 @@ export class CandidateProgrammeService {
 
     const isSameSection: boolean = candidate.section?.name == programme.section?.name
 
-// console.log(`is samesection ${isSameSection}  and ${candidate.section?.name} and ${programme.section?.name}`);
+    // console.log(`is samesection ${isSameSection}  and ${candidate.section?.name} and ${programme.section?.name}`);
 
 
     if (!isSameSection) {
@@ -240,7 +243,7 @@ export class CandidateProgrammeService {
 
     const isSameCategory: boolean = candidate.category?.name == programme.category?.name
 
-// console.log(`is samesection ${isSameCategory}  and ${candidate.category?.name} and ${programme.category?.name}`);
+    // console.log(`is samesection ${isSameCategory}  and ${candidate.category?.name} and ${programme.category?.name}`);
 
 
     if (!isSameCategory) {
@@ -361,6 +364,9 @@ export class CandidateProgrammeService {
     return programme.candidateProgramme;
   }
 
+  // ---------------------------
+  // ----- RESULT GEN ----------
+  // ---------------------------
 
   // upload Normal Result 
 
@@ -373,9 +379,9 @@ export class CandidateProgrammeService {
 
     // sorting data
 
-   const sortedCandidateProgramme = candidateProgrammeOfProgramme.sort((a: CandidateProgramme, b: CandidateProgramme) => {
-    console.log(a.candidate?.chestNO);
-    
+    const sortedCandidateProgramme = candidateProgrammeOfProgramme.sort((a: CandidateProgramme, b: CandidateProgramme) => {
+      console.log(a.candidate?.chestNO);
+
       return a.candidate?.chestNO - b.candidate?.chestNO
     })
 
@@ -383,105 +389,141 @@ export class CandidateProgrammeService {
       return a.chestNo - b.chestNo
     })
 
+    
     if (!isSameLength) {
       throw new HttpException(`An error form or result upload , please check the result of all candidates of programme ${programCode} is uploaded`, HttpStatus.BAD_REQUEST)
-      
-    }else{
+
+    } else {
       for (let index = 0; index < input.length; index++) {
         const eOne: AddResult = sortedInput[index];
+        
         const eTwo: CandidateProgramme = sortedCandidateProgramme[index];
 
-        console.log(`${eTwo?.candidate?.chestNO}  and   ${eOne?.chestNo}`);
+        
 
-        if(eOne?.chestNo != eTwo.candidate?.chestNO){
+        if (eOne?.chestNo != eTwo.candidate?.chestNO) {
           throw new HttpException(`An error form or result upload , please check the candidate ${eOne.chestNo} is in programme ${programCode}`, HttpStatus.BAD_REQUEST)
         }
-        
+
+        // Total Mark 
+       var totalMark = this.addMark(eOne)
+       
+       console.log(totalMark);
+
+      //  Genarating Grade
+
+      eTwo.grade = await  this.generateGrade(totalMark , eTwo)
+
+      // Generate Position
+
+
+       
       }
-      console.log("same length");
 
     }
 
     // adding the mark
 
-    for (let index = 0; index < input.length; index++) {
-      const e: AddResult = sortedInput[index];
-      const candidateProgramme: CandidateProgramme = sortedCandidateProgramme[index];
+//     for (let index = 0; index < input.length; index++) {
+//       const e: AddResult = sortedInput[index];
+//       const candidateProgramme: CandidateProgramme = sortedCandidateProgramme[index];
+      
+//       console.log(index ,"   " , e);
+      
+//       // checking is eligible for any grade
+//       // const totalMark: number = e.markOne + e.markTwo + e.markThree
+//       console.log(`${totalMark}   `)
+//       const allGrades: Grade[] = await this.gradeService.findAll()
+//       // Descending sorting
+//       const sortedGrade: Grade[] = allGrades.sort((a: Grade, b: Grade) => {
+//         return b.percentage - a.percentage
+//       })
+      
 
-      // checking is eligible for any grade
-      const totalMark : number = e.markOne + e.markTwo + e.markThree
-      const allGrades : Grade[]= await this.gradeService.findAll()
-      // Descending sorting
-      const sortedGrade : Grade[] = allGrades.sort((a: Grade, b: Grade) => {
-        return  b.percentage - a.percentage
-      })
-
-    //  checking each grades percentage and the eligibility of the candidate
-      for (let index = 0; index < sortedGrade.length; index++) {
-        const grade: Grade = sortedGrade[index];
-        if(totalMark >= (grade.percentage/100) * 30){
-          candidateProgramme.grade = grade
-          break;
-        }
-      }
-
-      // sorting the candidateProgramme by the totalMark
-      const sortedCandidateProgrammeByTotalMark = input.sort((a: AddResult, b: AddResult) => {
-        return (b.markOne + b.markTwo + b.markThree) - (a.markOne + a.markTwo + a.markThree)
-      })
-
-      // giving them position
-      const allPositions : Position[] =await this.positionService.findAll()
-
-      // sort the position by its mark
-      const sortedPosition : Position[] = allPositions.sort((a: Position, b: Position) => {
-        return b.pointSingle - a.pointSingle
-      })
-
-      // giving the position to the candidate
-      for (let i = 0; i < sortedPosition.length; i++) {
-        const e = sortedPosition[i];
-        const c = sortedCandidateProgrammeByTotalMark[i]
-
+//       //  checking each grades percentage and the eligibility of the candidate
+//       for (let index = 0; index < sortedGrade.length; index++) {
+//         const grade: Grade = sortedGrade[index];
         
         
-      }
-      
-      
+//         if (totalMark >= (grade.percentage / 100) * 30) {  // on the place 30 need to be dynamic
+//           candidateProgramme.grade = grade
+//           break;
+//         }
+//       }
 
-      
-      // candidateProgramme.markOne = e.markOne;
-      // candidateProgramme.markTwo = e.markTwo;
-      // candidateProgramme.markThree = e.markThree;
+//       // sorting the candidateProgramme by the totalMark
+//       const sortedCandidateProgrammeByTotalMark = input.sort((a: AddResult, b: AddResult) => {
+//         return (b.markOne + b.markTwo + b.markThree) - (a.markOne + a.markTwo + a.markThree)
+//       })
 
-      // await this.candidateProgrammeRepository.save(candidateProgramme)
-    }
+//       // giving them position
+//       const allPositions: Position[] = await this.positionService.findAll()
+
+//       // sort the position by its mark
+//       const sortedPosition: Position[] = allPositions.sort((a: Position, b: Position) => {
+//         return b.pointSingle - a.pointSingle
+//       })
+
+//       // giving the position to the candidate
+//       for (let i = 0; i < sortedPosition.length; i++) {
+//         const e = sortedPosition[i];
+//         const c = sortedCandidateProgrammeByTotalMark[i]
 
 
-    return candidateProgrammeOfProgramme ;
 
+//       }
+
+
+
+// // Posting to database 
+
+//       // candidateProgramme.markOne = e.markOne;
+//       // candidateProgramme.markTwo = e.markTwo;
+//       // candidateProgramme.markThree = e.markThree;
+
+//       // await this.candidateProgrammeRepository.save(candidateProgramme)
+//     }
+
+
+    return candidateProgrammeOfProgramme;
+
+  }
+
+  // add the mark
+  addMark(addMark:AddResult){
+  const {markOne , markThree , markTwo} = addMark
+    return markOne + markThree + markTwo
   }
 
 
   // generating grade
-  
- async generateGrade(candidateProgramme){
-    const allGrades : Grade[]= await this.gradeService.findAll()
+
+  async generateGrade(totalMark : number , candidateProgramme : CandidateProgramme) {
+    const allGrades: Grade[] = await this.gradeService.findAll()
     // Descending sorting
-    const sortedGrade : Grade[] = allGrades.sort((a: Grade, b: Grade) => {
-      return  b.percentage - a.percentage
+    const sortedGrade: Grade[] = allGrades.sort((a: Grade, b: Grade) => {
+      return b.percentage - a.percentage
     })
 
-  //  checking each grades percentage and the eligibility of the candidate
+    //  checking each grades percentage and the eligibility of the candidate
     for (let index = 0; index < sortedGrade.length; index++) {
       const grade: Grade = sortedGrade[index];
-      // if(totalMark >= (grade.percentage/100) * 30){
-      //   candidateProgramme.grade = grade
-      //   break;
-      // }
+      if(totalMark >= (grade.percentage/100) * 30){ // on the place 30 need to be dynamic
+        return grade
+      }
     }
   }
 
+
+  // generate position 
+
+  async generatePosition(){
+
+  }
+
+
+  // DYNAMIC RESULT ADDING
+  
 
 
 }
