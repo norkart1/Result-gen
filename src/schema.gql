@@ -245,7 +245,6 @@ type Mutation {
   createCandidate(createCandidateInput: CreateCandidateInput!): Candidate!
   updateCandidate(updateCandidateInput: UpdateCandidateInput!): Candidate!
   removeCandidate(id: Int!): Candidate!
-  uploadFile(file: Upload!): Boolean!
   createTeam(createTeamInput: CreateTeamInput!): Team!
   updateTeam(updateTeamInput: UpdateTeamInput!): Team!
   removeTeam(id: Int!): Team!
@@ -312,9 +311,6 @@ input UpdateCandidateInput {
   category: String
   id: Int!
 }
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
 
 input CreateTeamInput {
   name: String!

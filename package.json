@@ -7,7 +7,6 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "CI=false nest build",
-    "install": "npm install",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -34,13 +33,13 @@
     "exceljs": "^4.3.0",
     "googleapis": "^110.0.0",
     "graphql": "^16.6.0",
-    "graphql-upload": "^14.0.0",
+    "graphql-upload": "^16.0.2",
     "mysql2": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "typeorm": "^0.3.11",
     "typeorm-naming-strategies": "^4.1.0",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.2/xlsx-0.19.2.tgz"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

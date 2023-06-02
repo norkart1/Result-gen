@@ -4,7 +4,7 @@ import { Candidate } from './entities/candidate.entity';
 import { CreateCandidateInput } from './dto/create-candidate.input';
 import { UpdateCandidateInput } from './dto/update-candidate.input';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
-import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
+// import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import { CandidatePipe } from './pipe/candidates.pipe';
 import { CreateCandidateByGoogleSheetInput } from './dto/create-cadidate-by-google-sheet.dto';
 import { GoogleSheetPipe } from './pipe/googleSheet.pipe';
@@ -78,49 +78,49 @@ export class CandidatesResolver {
   // free data
   
 
-  @Mutation(() => Boolean)
-    async uploadFile(@Args({name: 'file', type: () => GraphQLUpload}) 
-    {
-        createReadStream,
-        filename,
-        mimetype,
-        encoding,
-    }: FileUpload): Promise<boolean> {
-        console.log('uploadFile: ', filename);
-        console.log('uploadFile: ', createReadStream);
-        console.log('uploadFile: ', mimetype);
-        console.log('uploadFile: ', encoding);
+//   @Mutation(() => Boolean)
+//     async uploadFile(@Args({name: 'file', type: () => GraphQLUpload}) 
+//     {
+//         createReadStream,
+//         filename,
+//         mimetype,
+//         encoding,
+//     }: FileUpload): Promise<boolean> {
+//         console.log('uploadFile: ', filename);
+//         console.log('uploadFile: ', createReadStream);
+//         console.log('uploadFile: ', mimetype);
+//         console.log('uploadFile: ', encoding);
         
 
-        // read the file and get the buffer value to a variable called FileBuffer
-        const FileBuffer = await new Promise((resolve, reject) => {
-             const chunks = [];
-            createReadStream()
-                .on('data', (chunk) => chunks.push(chunk))
-                .on('error', reject)
-                .on('end', () => resolve(Buffer.concat(chunks)));
-        }); 
+//         // read the file and get the buffer value to a variable called FileBuffer
+//         const FileBuffer = await new Promise((resolve, reject) => {
+//              const chunks = [];
+//             createReadStream()
+//                 .on('data', (chunk) => chunks.push(chunk))
+//                 .on('error', reject)
+//                 .on('end', () => resolve(Buffer.concat(chunks)));
+//         }); 
 
-        // write the buffer value to a file
-            console.log(FileBuffer);
+//         // write the buffer value to a file
+//             console.log(FileBuffer);
             
-        // read the buffer 
-        const wb = read(FileBuffer, {type: 'buffer'});
-        console.log(wb.SheetNames);
+//         // read the buffer 
+//         const wb = read(FileBuffer, {type: 'buffer'});
+//         console.log(wb.SheetNames);
 
-        // taking first worksheet from workbook to read data
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const values : CreateCandidateInput[] = utils.sheet_to_json(ws)
-        console.log(values);
+//         // taking first worksheet from workbook to read data
+//         const ws = wb.Sheets[wb.SheetNames[0]];
+//         const values : CreateCandidateInput[] = utils.sheet_to_json(ws)
+//         console.log(values);
 
-        // values.forEach( (data : CreateCandidateInput ,i : number) =>{
-        //   // console.log(data.name)
-        //   this.candidatesService.create(data)
-        // })
+//         // values.forEach( (data : CreateCandidateInput ,i : number) =>{
+//         //   // console.log(data.name)
+//         //   this.candidatesService.create(data)
+//         // })
 
-//  this.candidatesService.createMany(values)
+// //  this.candidatesService.createMany(values)
 
 
-        return true;
-    }
+//         return true;
+//     }
 }
