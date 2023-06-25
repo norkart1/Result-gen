@@ -2,24 +2,17 @@ import {
   ArgumentMetadata,
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   PipeTransform,
-  ValidationPipe,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Credential } from '../entities/credential.entity';
 import { CreateCredentialInput } from '../dto/create-credential.input';
-import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class AuthPipe implements PipeTransform {
   constructor(
-    @Inject(forwardRef(() => ValidationPipe))
-    private readonly validationPipe: ValidationPipe,
-    @Inject(REQUEST) private readonly request: Request,
     @InjectRepository(Credential) private Repository: Repository<Credential>,
   ) {}
   async transform(value: CreateCredentialInput, metadata: ArgumentMetadata) {
