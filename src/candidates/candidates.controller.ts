@@ -1,7 +1,6 @@
 import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CandidatesService } from './candidates.service';
-import { read, utils } from 'xlsx';
 import { CreateCandidateInput } from './dto/create-candidate.input';
 
 @Controller('candidates')

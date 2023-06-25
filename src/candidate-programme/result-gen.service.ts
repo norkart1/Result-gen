@@ -8,7 +8,6 @@ import { Grade } from 'src/grades/entities/grade.entity';
 import { PositionService } from 'src/position/position.service';
 import { Position } from 'src/position/entities/position.entity';
 import { CandidateProgrammeService } from './candidate-programme.service';
-import { initializeApp } from 'firebase-admin/app';
 var firebase = require('firebase/app');
 var firebasedb = require('firebase/database');
 

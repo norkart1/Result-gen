@@ -1,7 +1,6 @@
 import { Controller, Get, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ProgrammesService } from './programmes.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { read, utils } from 'xlsx';
 import { CreateProgrammeInput } from './dto/create-programme.input';
 import { CreateSchedule } from './dto/create-schedule.dto';
 
