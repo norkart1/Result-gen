@@ -21,9 +21,6 @@ export class CandidatesService {
     private sectionService: SectionsService,
   ) {}
 
-  // #############################
-  // #############################
-  // #############################
 
   //  To create many candidates at a time , usually using on Excel file upload
 
@@ -196,9 +193,6 @@ export class CandidatesService {
     }
   }
 
-  // #############################
-  // #############################
-  // #############################
 
   // create a single candidate
   async create(createCandidateInput: CreateCandidateInput, user: Credential): Promise<Candidate> {
@@ -276,14 +270,11 @@ export class CandidatesService {
     }
   }
 
-  // #############################
-  // #############################
-  // #############################
 
   findAll() {
     try {
       return this.candidateRepository.find({
-        relations: ['category', 'section', 'team', 'candidateProgrammes'],
+        relations: ['category', 'team', 'candidateProgrammes'],
       });
     } catch (e) {
       throw new HttpException(
@@ -300,7 +291,7 @@ export class CandidatesService {
         where: {
           category: In(categories),
         },
-        relations: ['category', 'section', 'team', 'candidateProgrammes'],
+        relations: ['category', 'team', 'candidateProgrammes'],
       });
     } catch (e) {
       throw new HttpException(
@@ -311,9 +302,6 @@ export class CandidatesService {
     }
   }
 
-  // #############################
-  // #############################
-  // #############################
 
   async findOne(id: number) {
     try {
@@ -321,7 +309,7 @@ export class CandidatesService {
         where: {
           id,
         },
-        relations: ['category', 'section', 'team', 'candidateProgrammes'],
+        relations: ['category', 'team', 'candidateProgrammes'],
       });
 
       if (!candidate) {
@@ -338,9 +326,6 @@ export class CandidatesService {
     }
   }
 
-  // #############################
-  // #############################
-  // #############################
 
   async findOneByChestNo(chestNO: number) {
     try {
@@ -348,7 +333,7 @@ export class CandidatesService {
         where: {
           chestNO,
         },
-        relations: ['category', 'section', 'team', 'candidateProgrammes'],
+        relations: ['category', 'team', 'candidateProgrammes'],
       });
 
       if (!candidate) {
@@ -368,9 +353,6 @@ export class CandidatesService {
     }
   }
 
-  // #############################
-  // #############################
-  // #############################
 
   // Update data
 
@@ -446,9 +428,6 @@ export class CandidatesService {
     }
   }
 
-  // #############################
-  // #############################
-  // #############################
 
   async remove(id: number, user: Credential) {
     // --------------------
@@ -493,9 +472,6 @@ export class CandidatesService {
     }
   }
 
-  // #############################
-  // #############################
-  // #############################
 
   // check candidates programme
 

@@ -274,7 +274,7 @@ export class ProgrammesService {
   findAll() {
     try {
       return this.programmeRepository.find({
-        relations: ['category', 'section', 'skill', 'candidateProgramme'],
+        relations: ['category', 'skill', 'candidateProgramme'],
       });
     } catch {
       throw new HttpException('An Error have when finding data ', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -285,7 +285,7 @@ export class ProgrammesService {
     try {
       return this.programmeRepository.findOne({
         where: { id },
-        relations: ['category', 'section', 'skill', 'candidateProgramme'],
+        relations: ['category', 'skill', 'candidateProgramme'],
       });
     } catch {
       throw new HttpException('An Error have when finding data ', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -316,7 +316,7 @@ export class ProgrammesService {
         where: {
           category: In(categories),
         },
-        relations: ['category', 'section', 'skill', 'candidateProgramme'],
+        relations: ['category', 'skill', 'candidateProgramme'],
       });
     } catch (e) {
       throw new HttpException(
