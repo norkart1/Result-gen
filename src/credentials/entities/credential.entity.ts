@@ -22,7 +22,7 @@ export class Credential {
   @Column({ nullable: false })
   password: string;
 
-  @Field()
+  @Field(()=> [String])
   @Column('json')
   roles: string;
 

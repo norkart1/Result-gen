@@ -99,7 +99,7 @@ type CandidateProgramme {
 type Credential {
   id: Int!
   username: String!
-  roles: String!
+  roles: [String!]!
   categories: [Category!]!
   team: Team
 }

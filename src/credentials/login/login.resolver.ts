@@ -24,6 +24,8 @@ export class LoginResolver {
     
     try {
       const val = await this.loginService.login(username, password);
+      console.log(val);
+      
       if (!val) {
         throw new Error('Invalid Username or Password');
       }
