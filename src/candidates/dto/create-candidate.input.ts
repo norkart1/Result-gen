@@ -32,9 +32,6 @@ export class CreateCandidateInput {
   @Field( { nullable: true })
   team: string;
 
-  @Field( { nullable: true })
-  section: string;
-
   @Field({ nullable: true })
   category: string;
 }

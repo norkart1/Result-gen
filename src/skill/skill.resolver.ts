@@ -4,7 +4,9 @@ import { Skill } from './entities/skill.entity';
 import { CreateSkillInput } from './dto/create-skill.input';
 import { UpdateSkillInput } from './dto/update-skill.input';
 import { AuthPipe } from './pipe/auth.pipe';
-import { UsePipes } from '@nestjs/common';
+import { UseGuards, UsePipes } from '@nestjs/common';
+import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
+import { Roles } from 'src/credentials/roles/roles.enum';
 
 @Resolver(() => Skill)
 export class SkillResolver {
@@ -12,6 +14,8 @@ export class SkillResolver {
 
   @UsePipes(AuthPipe)
   @Mutation(() => Skill)
+  @HasRoles(Roles.Admin)
+  @UseGuards(RolesGuard)
   createSkill(@Args('createSkillInput') createSkillInput: CreateSkillInput) {
     return this.skillService.create(createSkillInput);
   }
@@ -26,13 +30,16 @@ export class SkillResolver {
     return this.skillService.findOne(id);
   }
 
-  @UsePipes(AuthPipe)
   @Mutation(() => Skill)
+  @HasRoles(Roles.Admin)
+  @UseGuards(RolesGuard)
   updateSkill(@Args('updateSkillInput') updateSkillInput: UpdateSkillInput) {
     return this.skillService.update(updateSkillInput.id, updateSkillInput);
   }
 
   @Mutation(() => Skill)
+  @HasRoles(Roles.Admin)
+  @UseGuards(RolesGuard)
   removeSkill(@Args('id', { type: () => Int }) id: number) {
     return this.skillService.remove(id);
   }

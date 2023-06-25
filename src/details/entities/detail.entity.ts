@@ -1,38 +1,66 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
 export class Detail {
-
   // Primary generated ID
 
   @Field(() => Int, { description: '' })
   @PrimaryGeneratedColumn()
-  id:number;
+  id: number;
 
   // Normal Columns
 
   @Column()
   @Field()
-  name:string;
+  name: string;
 
-  @Column({default:'Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print,'})
-  @Field()
-  motto:string;
+  @Column({
+    default:
+      'Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print,',
+  })
 
-  @Column()
   @Field()
-  institution:string;
-
-  @Column({default:'Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print,'})
-  @Field()
-  description:string;
+  motto: string;
 
   @Column()
   @Field()
-  isMediaHave : Boolean;
-  
+  institution: string;
+
+  @Column()
+  @Field()
+  logoId: string;
+
+  @Column()
+  @Field()
+  coverId: string;
+
+  @Column({
+    default:
+      'Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print,',
+  })
+  @Field()
+  description: string;
+
+  @Column({default:true })
+  @Field(()=> Boolean , {defaultValue:true})
+  isMediaHave: boolean;
+
+  @Column({default:true})
+  @Field(()=> Boolean , {defaultValue:true})
+  isSkillHave: boolean; 
+
+  @Column({default:false})
+  @Field(()=> Boolean , {defaultValue:false})
+  isResultReady: boolean;
+
   // Dates
 
   @CreateDateColumn()

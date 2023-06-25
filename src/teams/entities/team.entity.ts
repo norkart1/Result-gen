@@ -2,7 +2,7 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Candidate } from 'src/candidates/entities/candidate.entity';
 import { Expose } from 'class-transformer';
-import { TeamManager } from '../../team-managers/entities/team-manager.entity';
+import { Credential } from 'src/credentials/entities/credential.entity';
 
 @ObjectType()
 @Entity()
@@ -44,10 +44,9 @@ export class Team {
 
   // OneToOne relations
 
-  @OneToMany(() => TeamManager , (manager) => manager.team)
-  @JoinColumn()
-  @Field(()=>TeamManager , {nullable:true})
-  manager : TeamManager;
+  @OneToMany(() => Credential , (creadetial) => creadetial.team)
+  @Field(()=>[Credential] , {nullable:true})
+  creadentials : Credential[] ;
 
   // OneToMany relations
 

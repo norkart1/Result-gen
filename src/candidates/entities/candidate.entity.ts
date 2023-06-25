@@ -69,9 +69,6 @@ export class Candidate {
   @Field(()=> Team , {nullable:true})
   team:Team;
 
-  @ManyToOne(()=> Section , (section) => section.candidates , { eager: true , onDelete : 'SET NULL'})
-  @Field(()=> Section , {nullable:true})
-  section:Section;
 
   @ManyToOne(()=> Category , (category) => category.candidates , { eager: true , onDelete : 'SET NULL'})
   @Field(()=> Category , {nullable:true})

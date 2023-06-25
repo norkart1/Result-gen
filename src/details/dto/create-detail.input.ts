@@ -5,19 +5,26 @@ import { IsBoolean, IsNotEmpty } from 'class-validator';
 export class CreateDetailInput {
   @IsNotEmpty()
   @Field()
-  name:string;
+  name: string;
 
   @Field()
-  motto:string;
- 
-  @Field()
-  institution:string;
+  motto: string;
 
   @Field()
-  description:string;
- 
+  institution: string;
+
   @Field()
-  @IsBoolean()
-  isMediaHave : Boolean;
- 
+  description: string;
+
+  @Field(() => Boolean , {defaultValue:true})
+  isMediaHave: boolean;
+
+  @Field(()=> Boolean , {defaultValue:true})
+  isSkillHave: boolean;
+
+  @Field()
+  logoId: string;
+
+  @Field()
+  coverId: string;
 }

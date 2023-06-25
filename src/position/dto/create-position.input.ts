@@ -8,6 +8,12 @@ export class CreatePositionInput {
   @Field()
   name: string;
 
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Field(()=> Int)
+  value: number;
+
   @IsNotEmpty()
   @IsNumber()
   @Field(()=> Int)

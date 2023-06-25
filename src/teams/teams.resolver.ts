@@ -4,7 +4,9 @@ import { Team } from './entities/team.entity';
 import { CreateTeamInput } from './dto/create-team.input';
 import { UpdateTeamInput } from './dto/update-team.input';
 import { AuthPipe } from './pipe/auth.pipe';
-import { UsePipes } from '@nestjs/common';
+import { UseGuards, UsePipes } from '@nestjs/common';
+import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
+import { Roles } from 'src/credentials/roles/roles.enum';
 
 @Resolver(() => Team)
 export class TeamsResolver {
@@ -12,6 +14,8 @@ export class TeamsResolver {
 
   @UsePipes(AuthPipe)
   @Mutation(() => Team)
+  @HasRoles(Roles.Admin)
+  @UseGuards(RolesGuard)
   createTeam(@Args('createTeamInput') createTeamInput: CreateTeamInput) {
     return this.teamsService.create(createTeamInput);
   }
@@ -26,13 +30,16 @@ export class TeamsResolver {
     return this.teamsService.findOne(id);
   }
 
-  @UsePipes(AuthPipe)
   @Mutation(() => Team)
+  @HasRoles(Roles.Admin)
+  @UseGuards(RolesGuard)
   updateTeam(@Args('updateTeamInput') updateTeamInput: UpdateTeamInput) {
     return this.teamsService.update(updateTeamInput.id, updateTeamInput);
   }
 
   @Mutation(() => Team)
+  @HasRoles(Roles.Admin)
+  @UseGuards(RolesGuard)
   removeTeam(@Args('id', { type: () => Int }) id: number) {
     return this.teamsService.remove(id);
   }

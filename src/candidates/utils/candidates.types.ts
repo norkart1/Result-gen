@@ -4,7 +4,7 @@ import { Section } from "src/sections/entities/section.entity";
 import { Category } from "src/category/entities/category.entity";
 
 export type createCandidateType = {
-   
+
   name: string;
 
   class: number;

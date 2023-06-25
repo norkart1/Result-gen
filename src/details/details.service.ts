@@ -7,36 +7,52 @@ import { Detail } from './entities/detail.entity';
 
 @Injectable()
 export class DetailsService {
-
-  constructor(@InjectRepository(Detail) private detailRepository: Repository<Detail>) { }
-
+  constructor(@InjectRepository(Detail) private detailRepository: Repository<Detail>) {}
 
   async create(createDetailInput: CreateDetailInput) {
     // it can have only one row
 
     // check how many row are there currently
-    const count: number = await this.detailRepository.count()
+    const count: number = await this.detailRepository.count();
     if (count > 1) {
       // if there is already a row, update it
-      return this.detailRepository.update(1, createDetailInput)
+      return this.detailRepository.update(1, createDetailInput);
     }
 
     // create a new row
     try {
-      const newDetailInput = this.detailRepository.create(createDetailInput)
-      return this.detailRepository.save(newDetailInput)
+      const newDetailInput = this.detailRepository.create(createDetailInput);
+      return this.detailRepository.save(newDetailInput);
     } catch (e) {
-      throw new HttpException("An Error have when inserting data ", HttpStatus.INTERNAL_SERVER_ERROR, {  cause: e })
+      throw new HttpException(
+        'An Error have when inserting data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
-
-
   }
 
   findAll() {
     try {
       return this.detailRepository.find();
     } catch (e) {
-      throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR, {  cause: e })
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+  findIt() {
+    try {
+      return this.detailRepository.findOneBy({ id: 1 });
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
@@ -44,8 +60,34 @@ export class DetailsService {
     try {
       return this.detailRepository.update(id, updateDetailInput);
     } catch (e) {
-      throw new HttpException("An Error have when updating data ", HttpStatus.INTERNAL_SERVER_ERROR, {  cause: e })
+      throw new HttpException(
+        'An Error have when updating data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
+  async ReadyToResult() {
+    try {
+      const detail = await this.detailRepository.findOneBy({ id: 1 });
+
+      if (detail) {
+        return new HttpException(
+          'An Error have when finding data ',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      detail.isResultReady = true;
+
+      return this.detailRepository.save(detail);
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
 }

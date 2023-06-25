@@ -1,20 +1,37 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { ProgrammesService } from './programmes.service';
 import { Programme } from './entities/programme.entity';
 import { CreateProgrammeInput } from './dto/create-programme.input';
 import { UpdateProgrammeInput } from './dto/update-programme.input';
-import { UsePipes } from '@nestjs/common';
-import { AuthPipe } from './pipe/auth.pipe';
+import { UseGuards } from '@nestjs/common';
 import { CreateSchedule } from './dto/create-schedule.dto';
+import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
+import { Roles } from 'src/credentials/roles/roles.enum';
 
 @Resolver(() => Programme)
 export class ProgrammesResolver {
   constructor(private readonly programmesService: ProgrammesService) {}
 
-  @UsePipes(AuthPipe)
+  // @UsePipes(AuthPipe)
   @Mutation(() => Programme)
-  createProgramme(@Args('createProgrammeInput') createProgrammeInput: CreateProgrammeInput) {
-    return this.programmesService.create(createProgrammeInput);
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  createProgramme(
+    @Args('createProgrammeInput') createProgrammeInput: CreateProgrammeInput,
+    @Context('req') req: any,
+  ) {
+    return this.programmesService.create(createProgrammeInput, req.user);
+  }
+
+  @Mutation(() => [Programme])
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  createManyProgrammes(
+    @Args('createProgrammeInput', { type: () => [CreateProgrammeInput] })
+    createProgrammeInput: CreateProgrammeInput[],
+    @Context('req') req: any,
+  ) {
+    return this.programmesService.createMany(createProgrammeInput, req.user);
   }
 
   @Query(() => [Programme], { name: 'programmes' })
@@ -27,19 +44,47 @@ export class ProgrammesResolver {
     return this.programmesService.findOne(id);
   }
 
-  @UsePipes(AuthPipe)
   @Mutation(() => Programme)
-  updateProgramme(@Args('updateProgrammeInput') updateProgrammeInput: UpdateProgrammeInput) {
-    return this.programmesService.update(updateProgrammeInput.id, updateProgrammeInput);
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  updateProgramme(
+    @Args('updateProgrammeInput') updateProgrammeInput: UpdateProgrammeInput,
+    @Context('req') req: any,
+  ) {
+    return this.programmesService.update(updateProgrammeInput.id, updateProgrammeInput, req.user);
   }
 
   @Mutation(() => Programme)
-  removeProgramme(@Args('id', { type: () => Int }) id: number) {
-    return this.programmesService.remove(id);
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  removeProgramme(@Args('id', { type: () => Int }) id: number, @Context('req') req: any) {
+    return this.programmesService.remove(id, req.user);
   }
 
-  @Mutation(()=> Programme)
-  setSchedule(@Args('createScheduleInput') createSchedule : CreateSchedule){
-    return this.programmesService.setSchedule(createSchedule)
+  @Mutation(() => Programme)
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  setSchedule(
+    @Args('createScheduleInput') createSchedule: CreateSchedule,
+    @Context('req') req: any,
+  ) {
+    return this.programmesService.setSchedule(createSchedule, req.user);
+  }
+
+  @Mutation(() => [Programme])
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  setManySchedule(
+    @Args('createScheduleInput', { type: () => [CreateSchedule] }) createSchedule: CreateSchedule[],
+    @Context('req') req: any,
+  ) {
+    return this.programmesService.setManySchedule(createSchedule, req.user);
+  }
+
+  @Mutation(() => Programme)
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  removeSchedule(@Args('code', { type: () => Int }) code: string, @Context('req') req: any) {
+    return this.programmesService.removeSchedule(code, req.user);
   }
 }

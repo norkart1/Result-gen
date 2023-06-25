@@ -4,19 +4,27 @@ import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-p
 import { Category } from 'src/category/entities/category.entity';
 import { Section } from 'src/sections/entities/section.entity';
 import { Skill } from 'src/skill/entities/skill.entity';
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum Mode {
   STAGE = 'STAGE',
   NON_STAGE = 'NON_STAGE',
-  OUTDOOR_STAGE = 'OUTDOOR_STAGE'
+  OUTDOOR_STAGE = 'OUTDOOR_STAGE',
 }
 
 export enum Type {
   SINGLE = 'SINGLE',
   GROUP = 'GROUP',
-  HOUSE = 'HOUSE'
+  HOUSE = 'HOUSE',
 }
 
 registerEnumType(Mode, {
@@ -30,16 +38,15 @@ registerEnumType(Type, {
 @ObjectType()
 @Entity()
 export class Programme {
-
   // Primary generated ID
-  
+
   @Field(() => Int, { description: 'Example field (placeholder)' })
   @PrimaryGeneratedColumn()
   id: number;
 
   // Normal columns
 
-  @Column({unique:true})
+  @Column({ unique: true })
   @Field()
   programCode: string;
 
@@ -48,77 +55,71 @@ export class Programme {
   name: string;
 
   @Column()
-  @Field(()=> Mode)
+  @Field(() => Mode)
   mode: Mode;
 
   @Column()
-  @Field(()=> Type)
+  @Field(() => Type)
   type: Type;
 
-  @Column({nullable:true})
-  @Field(()=> Int)
+  @Column({ nullable: true })
+  @Field(() => Int, { nullable: true })
   groupCount: number;
 
   @Column()
-  @Field(()=> Int )
+  @Field(() => Int)
   candidateCount: number;
 
-  @Column({nullable:true})
-  @Field(()=> Date )
+  @Column({ nullable: true })
+  @Field(() => Date, { nullable: true })
   date: Date;
 
-  @Column({nullable:true})
-  @Field(()=> Int )
+  @Column({ nullable: true })
+  @Field(() => Int, { nullable: true })
   venue: number;
 
   @Column()
-  @Field(()=> Int)
+  @Field(() => Int)
   duration: number;
 
   @Column()
   @Field()
   conceptNote: string;
 
-  @Column({default: false})
-  @Field(()=> Boolean)
+  @Column({ default: false })
+  @Field(() => Boolean)
   resultEntered: Boolean;
 
-  @Column({default: false})
-  @Field(()=> Boolean)
+  @Column({ default: false })
+  @Field(() => Boolean)
   resultPublished: Boolean;
 
   // OneToMany relations
 
-  @OneToMany(() => CandidateProgramme, (CandidateProgramme) => CandidateProgramme.programme)
+  @OneToMany(() => CandidateProgramme, CandidateProgramme => CandidateProgramme.programme)
   @JoinTable()
-  @Field(()=> [CandidateProgramme])
+  @Field(() => [CandidateProgramme])
   candidateProgramme: CandidateProgramme[];
 
   // ManyTOOne relations
 
-  @ManyToOne(()=> Skill, (skill) => skill.programmes , { eager: true , onDelete : 'SET NULL'} )
-  @Field(()=> Skill , { nullable: true })
+  @ManyToOne(() => Skill, skill => skill.programmes, { eager: true, onDelete: 'SET NULL' })
+  @Field(() => Skill, { nullable: true })
   skill: Skill;
 
-  @ManyToOne(()=> Category, (category) => category.programmes , { eager: true , onDelete : 'SET NULL'})
-  @Field(()=> Category , { nullable: true })
-  category : Category;
-
-  @ManyToOne(()=> Section, (section) => section.programmes , { eager: true , onDelete : 'SET NULL'})
-  @Field(()=> Section , { nullable: true })
-  section: Section;
+  @ManyToOne(() => Category, category => category.programmes, { eager: true, onDelete: 'SET NULL' })
+  @Field(() => Category)
+  category: Category;
 
   // Dates
 
   @Expose()
-  @Field(()=> Date)
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 
   @Expose()
-  @Field(()=> Date)
+  @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
-
-  
 }

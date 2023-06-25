@@ -7,11 +7,12 @@ import { TeamsModule } from 'src/teams/teams.module';
 import { CategoryModule } from 'src/category/category.module';
 import { SectionsModule } from 'src/sections/sections.module';
 import { CandidatesController } from './candidates.controller';
+import { CredentialsModule } from 'src/credentials/credentials.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Candidate]) , TeamsModule , CategoryModule , SectionsModule],
+  imports: [TypeOrmModule.forFeature([Candidate]), TeamsModule, CategoryModule, SectionsModule , CredentialsModule],
   providers: [CandidatesResolver, CandidatesService],
   controllers: [CandidatesController],
-  exports:[CandidatesService]
+  exports: [CandidatesService],
 })
 export class CandidatesModule {}

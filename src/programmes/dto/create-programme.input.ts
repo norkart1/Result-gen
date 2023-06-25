@@ -1,4 +1,4 @@
-import { InputType, Int, Field, registerEnumType } from '@nestjs/graphql';
+import { InputType, Int, Field, registerEnumType, ObjectType } from '@nestjs/graphql';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export enum Mode {
@@ -21,7 +21,6 @@ registerEnumType(Mode, {
 registerEnumType(Type, {
   name: 'Type',
 });
-
 
 @InputType()
 export class CreateProgrammeInput {
@@ -51,10 +50,10 @@ export class CreateProgrammeInput {
   @Field(()=> Int )
   candidateCount: number;
 
-  @Field({nullable:true})
+  @Field({nullable:true})                                                                                           
   date: string;
 
-  @IsNumber()
+  
   @Field(()=> Int ,{nullable:true} )
   venue: number;
 
@@ -67,7 +66,7 @@ export class CreateProgrammeInput {
   @Field()
   conceptNote: string;
 
-  @IsNotEmpty()
+  @IsNotEmpty()                                             
   @Field()
   @Field()
   skill: string ;
@@ -75,10 +74,4 @@ export class CreateProgrammeInput {
   @IsNotEmpty()
   @Field()
   category : string;
-
-  @IsNotEmpty()
-  @Field()
-  section: string ;
-
-
 }

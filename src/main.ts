@@ -2,7 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-// import * as graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
+import * as cookieParser from 'cookie-parser';
+import * as admin from 'firebase-admin';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,8 +14,18 @@ async function bootstrap() {
   // adding configuration
   const configService : ConfigService = app.get(ConfigService)
 
-  // file upload
-  // app.use(graphqlUploadExpress({ maxFileSize: 1000000000, maxFiles: 10    }));
+  // setting cookie parser
+  app.use(cookieParser());
+
+  // setting firebase admin
+  // admin.initializeApp({
+  //   credential: admin.credential.cert({
+  //     projectId: configService.get('FIREBASE_PROJECT_ID'),
+  //     privateKey: configService.get('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n'),
+  //     clientEmail: configService.get('FIREBASE_CLIENT_EMAIL'),
+  //   }),
+  //   databaseURL: configService.get('FIREBASE_DATABASE_URL'),
+  // });
 
   await app.listen(configService.get('PORT') || 3000);
 }

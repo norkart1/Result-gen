@@ -7,11 +7,20 @@ import { ProgrammesController } from './programmes.controller';
 import { SkillModule } from 'src/skill/skill.module';
 import { SectionsModule } from 'src/sections/sections.module';
 import { CategoryModule } from 'src/category/category.module';
+import { CredentialsModule } from 'src/credentials/credentials.module';
+import { DetailsModule } from 'src/details/details.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Programme]),SkillModule , SectionsModule , CategoryModule],
+  imports: [
+    TypeOrmModule.forFeature([Programme]),
+    SkillModule,
+    SectionsModule,
+    CategoryModule,
+    CredentialsModule,
+    DetailsModule
+  ],
   providers: [ProgrammesResolver, ProgrammesService],
   controllers: [ProgrammesController],
-  exports:[ProgrammesService]
+  exports: [ProgrammesService],
 })
 export class ProgrammesModule {}

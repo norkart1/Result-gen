@@ -9,19 +9,19 @@ import { CandidatesModule } from './candidates/candidates.module';
 import { ProgrammesModule } from './programmes/programmes.module';
 import { SectionsModule } from './sections/sections.module';
 import { GradesModule } from './grades/grades.module';
-import { TeamManagersModule } from './team-managers/team-managers.module';
 import { TeamsModule } from './teams/teams.module';
-import { MediaModule } from './media/media.module';
-import { LoginModule } from './login/login.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CategoryModule } from './category/category.module';
 import { SkillModule } from './skill/skill.module';
 import { PositionModule } from './position/position.module';
 import { CandidateProgrammeModule } from './candidate-programme/candidate-programme.module';
-import { ControllersModule } from './controllers/controllers.module';
 import { DetailsModule } from './details/details.module';
 import { CategorySettingsModule } from './category-settings/category-settings.module';
-
+import { CredentialsModule } from './credentials/credentials.module';
+import { dataSourceOptions } from 'db/data-source';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { CustomContextProvider } from './utils/custom';
 
 @Module({
   imports: [
@@ -32,21 +32,17 @@ import { CategorySettingsModule } from './category-settings/category-settings.mo
       isGlobal: true,
     }),
 
+    // config of JWT
 
-    // connecting to mysql server locally
-
-    // TypeOrmModule.forRoot({
-    //   type: "mysql",
-    //   host: process.env.DB_HOST,
-    //   port: parseInt(process.env.DB_PORT),
-    //   username: process.env.DB_USERNAME,
-    //   password: process.env.DB_PASSWORD,
-    //   database: process.env.DB_NAME,
-    //   entities: ['dist/**/entities/*.entity{.ts,.js}'],
-    //   synchronize: true,
-    //   // ssl: { "rejectUnauthorized": true },
-    //   // namingStrategy: new SnakeNamingStrategy()
+    // PassportModule.register({ defaultStrategy: 'jwt' }),
+    // JwtModule.registerAsync({
+    //   useFactory: async () => ({
+    //     secret: process.env.JWT_SECRET,
+    //     signOptions: { expiresIn: '1d' },
+    //   }),
     // }),
+  
+
 
     // connecting to mysql planetscale server
 
@@ -54,11 +50,11 @@ import { CategorySettingsModule } from './category-settings/category-settings.mo
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
-        port:configService.get<number>('DB_PORT'),
+        port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities:  ['dist/**/entities/*.entity{.ts,.js}'],
+        entities: ['dist/**/entities/*.entity{.ts,.js}'],
         autoLoadEntities: true,
         // synchronize: true,
         ssl: { "rejectUnauthorized": true },
@@ -71,10 +67,8 @@ import { CategorySettingsModule } from './category-settings/category-settings.mo
         // namingStrategy: new SnakeNamingStrategy(),
         // url:configService.get<string>('DATABASE_URL'),
       }),
-      
-      inject: [ConfigService],
 
-      
+      inject: [ConfigService],
     }),
 
     // graphql configuration
@@ -82,25 +76,33 @@ import { CategorySettingsModule } from './category-settings/category-settings.mo
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      context: ({ req , res }) => ({ req, res }),
+      playground:{
+        settings: {
+          'request.credentials': 'include',
+        },
+      },
+      cors: {
+        credentials: true,
+        origin: true
+      }
+   
     }),
 
     CandidatesModule,
     ProgrammesModule,
     SectionsModule,
     GradesModule,
-    TeamManagersModule,
     TeamsModule,
-    MediaModule,
-    LoginModule,
     DetailsModule,
     CategoryModule,
     SkillModule,
     PositionModule,
     CandidateProgrammeModule,
-    ControllersModule,
     CategorySettingsModule,
+    CredentialsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService , CustomContextProvider],
 })
 export class AppModule { }

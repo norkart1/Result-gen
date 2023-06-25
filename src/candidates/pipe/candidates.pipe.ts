@@ -12,16 +12,16 @@ export class CandidatePipe implements PipeTransform {
   async transform(value: CreateCandidateInput, metadata: ArgumentMetadata) {
 
     let { chestNO } = value
-    console.log( value.chestNO);
-    
+    console.log(value.chestNO);
+
     const user = await this.Repository.findOne({
       where: {
-        chestNO : value.chestNO ,
+        chestNO: value.chestNO,
       },
     })
     if (user) {
       // console.log(user);
-      
+
       console.log('Candidate already exists');
 
       throw new HttpException("Candidate already exists", HttpStatus.BAD_REQUEST);

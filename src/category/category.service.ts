@@ -8,163 +8,164 @@ import { SectionsService } from 'src/sections/sections.service';
 
 @Injectable()
 export class CategoryService {
-
-  constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>,
-    private readonly sectionService: SectionsService
-  ) { }
-
+  constructor(
+    @InjectRepository(Category) private categoryRepository: Repository<Category>,
+    private readonly sectionService: SectionsService,
+  ) {}
 
   async create(createCategoryInput: CreateCategoryInput) {
-
-    // --------------------
-    // checking .........
-    // --------------------
-
     //  checking is section exist
 
-    const section = await this.sectionService.findOneByName(createCategoryInput.section)
+    const section = await this.sectionService.findOneByName(createCategoryInput.section);
 
     if (!section) {
-      throw new HttpException(`Cant find a section named ${createCategoryInput.section}  ,ie: check on Section of ${createCategoryInput.name}`, HttpStatus.BAD_REQUEST)
+      throw new HttpException(
+        `Cant find a section named ${createCategoryInput.section}  ,ie: check on Section of ${createCategoryInput.name}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     try {
-
       const newCategoryInput = this.categoryRepository.create({
         name: createCategoryInput.name,
-        section
-      })
+        section,
+      });
       return this.categoryRepository.save(newCategoryInput);
-
     } catch (e) {
-
-      throw new HttpException("An Error have when inserting data , please check the all required fields are filled ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
-
+      throw new HttpException(
+        'An Error have when inserting data , please check the all required fields are filled ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
-
   }
 
   findAll() {
     try {
-
-      return this.categoryRepository.find({ relations: ['section', 'candidates', 'candidates.team', 'programmes', 'settings'] });
+      return this.categoryRepository.find({
+        relations: ['section', 'candidates', 'candidates.team', 'programmes', 'settings'],
+      });
     } catch (e) {
-
-      throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
-
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
   findOne(id: number) {
     if (!id) {
-      throw new  HttpException(`category cannot be undefined`, HttpStatus.BAD_REQUEST)
+      throw new HttpException(`category cannot be undefined`, HttpStatus.BAD_REQUEST);
     }
     try {
       const category = this.categoryRepository.findOne({
         where: {
-          id
+          id,
         },
-        relations: ['section', 'candidates', 'programmes', 'settings', 'candidates.team']
+        relations: ['section', 'candidates', 'programmes', 'settings', 'candidates.team'],
       });
       if (!category) {
-        throw new HttpException(`can't find category with id ${id}`, HttpStatus.BAD_REQUEST)
+        throw new HttpException(`can't find category with id ${id}`, HttpStatus.BAD_REQUEST);
       }
 
-      return category
+      return category;
     } catch (e) {
-
-      throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
-
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
-
   }
 
   findOneByName(name: string) {
     if (!name) {
-      throw new  HttpException(`category cannot be undefined`, HttpStatus.BAD_REQUEST)
+      throw new HttpException(`category cannot be undefined`, HttpStatus.BAD_REQUEST);
     }
     try {
       const category = this.categoryRepository.findOne({
         where: {
-          name
+          name,
         },
-        relations: ['section', 'candidates', 'programmes', 'settings', 'candidates.team']
+        relations: ['section', 'candidates', 'programmes', 'settings', 'candidates.team'],
       });
       if (!category) {
-        throw new HttpException(`can't find category with id ${name}`, HttpStatus.BAD_REQUEST)
+        throw new HttpException(`can't find category with id ${name}`, HttpStatus.BAD_REQUEST);
       }
 
-      return category
+      return category;
     } catch (e) {
-
-      throw new HttpException("An Error have when finding data ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
-
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
   async update(id: number, updateCategoryInput: UpdateCategoryInput) {
-    // --------------------
-    // checking .........
-    // --------------------
-
     //  checking is section exist
 
-    const section = await this.sectionService.findOneByName(updateCategoryInput.section)
+    const section = await this.sectionService.findOneByName(updateCategoryInput.section);
 
     if (!section) {
-      throw new HttpException(`Cant find a section named ${updateCategoryInput.section}  ,ie: check on Section of ${updateCategoryInput.name}`, HttpStatus.BAD_REQUEST)
+      throw new HttpException(
+        `Cant find a section named ${updateCategoryInput.section}  ,ie: check on Section of ${updateCategoryInput.name}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     try {
-
       const newCategoryInput = this.categoryRepository.create({
         name: updateCategoryInput.name,
-        section
-      })
+        section,
+      });
       return this.categoryRepository.save(newCategoryInput);
-
     } catch (e) {
-
-      throw new HttpException("An Error have when updating data , please check the all required fields are filled ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
-
+      throw new HttpException(
+        'An Error have when updating data , please check the all required fields are filled ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
-
   }
 
   async remove(id: number) {
-    const programme = await this.categoryRepository.findOneBy({ id })
+    const programme = await this.categoryRepository.findOneBy({ id });
 
     if (!programme) {
-      throw new HttpException(`Cant find a category to delete`, HttpStatus.BAD_REQUEST)
+      throw new HttpException(`Cant find a category to delete`, HttpStatus.BAD_REQUEST);
     }
 
     try {
       return this.categoryRepository.delete(id);
     } catch (e) {
-      throw new HttpException("An Error have when deleting data ", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
+      throw new HttpException(
+        'An Error have when deleting data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
-  //  ----------------------
-  //  custom methods
-  //  ----------------------
 
   async addSettingsToCategory(id: number, category: Category) {
     // checking is category exist
-    const categoryData = this.categoryRepository.findOneBy({ id })
-
-    
+    const categoryData = this.categoryRepository.findOneBy({ id });
 
     if (!categoryData) {
-      throw new HttpException("Invalid category name ", HttpStatus.INTERNAL_SERVER_ERROR)
+      throw new HttpException('Invalid category name ', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
-
-      return this.categoryRepository.save(category)
+      return this.categoryRepository.save(category);
     } catch (e) {
-      throw new HttpException("An Error have when finding data of category", HttpStatus.INTERNAL_SERVER_ERROR, { cause: e })
+      throw new HttpException(
+        'An Error have when finding data of category',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
-
   }
 }

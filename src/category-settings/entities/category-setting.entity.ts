@@ -13,7 +13,7 @@ export class CategorySettings {
   @Field(() => Int)
   @Column()
   maxProgram: number;
-
+ 
   @Field(() => Int)
   @Column()
   maxSingle: number;
@@ -33,6 +33,10 @@ export class CategorySettings {
   @Field(() => Int)
   @Column()
   minGroup : number;
+
+  @Field(() => Boolean)
+  @Column()
+  isProgrammeListUpdatable: boolean;
 
   @OneToOne(()=> Category , (category)=> category.settings)
   @Field(()=>Category)

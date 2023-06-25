@@ -22,9 +22,6 @@ export class CandidateProgrammePipe implements PipeTransform {
     // checking is candidate exist
     let { chestNo , programme_code } = value
 
-    console.log("Hahsim T");
-    
-
     let candidate : Candidate = await this.candidateService.findOneByChestNo(chestNo)
 
     if(!candidate){
