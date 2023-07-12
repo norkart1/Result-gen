@@ -190,6 +190,24 @@ type Detail {
   updatedAt: DateTime!
 }
 
+type Judge {
+  """"""
+  id: Int!
+  username: String!
+  password: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Substitute {
+  """"""
+  id: Int!
+  chestNo: String!
+  programmeCode: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Query {
   candidates: [Candidate!]!
   candidate(id: Int!): Candidate!
@@ -215,6 +233,8 @@ type Query {
   candidateProgramme(id: Int!): CandidateProgramme!
   categorySettings: [CategorySettings!]!
   categorySetting(id: Int!): CategorySettings!
+  judge(id: Int!): Judge!
+  substitute(id: Int!): Substitute!
 }
 
 type Mutation {
@@ -262,6 +282,12 @@ type Mutation {
   createCategorySetting(createCategorySettingInput: CreateCategorySettingInput!): CategorySettings!
   updateCategorySetting(updateCategorySettingInput: UpdateCategorySettingInput!): CategorySettings!
   removeCategorySetting(id: Int!): CategorySettings!
+  createJudge(createJudgeInput: CreateJudgeInput!): Judge!
+  updateJudge(updateJudgeInput: UpdateJudgeInput!): Judge!
+  removeJudge(id: Int!): Judge!
+  createSubstitute(createSubstituteInput: CreateSubstituteInput!): Substitute!
+  updateSubstitute(updateSubstituteInput: UpdateSubstituteInput!): Substitute!
+  removeSubstitute(id: Int!): Substitute!
 }
 
 input CreateCandidateInput {
@@ -507,5 +533,27 @@ input UpdateCategorySettingInput {
   minSingle: Int
   maxGroup: Int
   minGroup: Int
+  id: Int!
+}
+
+input CreateJudgeInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateJudgeInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateSubstituteInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateSubstituteInput {
+  """Example field (placeholder)"""
+  exampleField: Int
   id: Int!
 }

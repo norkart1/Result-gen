@@ -2,6 +2,7 @@ import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { Expose } from 'class-transformer';
 import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-programme.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { Judge } from 'src/judge/entities/judge.entity';
 import { Section } from 'src/sections/entities/section.entity';
 import { Skill } from 'src/skill/entities/skill.entity';
 import {
@@ -101,7 +102,13 @@ export class Programme {
   @Field(() => [CandidateProgramme])
   candidateProgramme: CandidateProgramme[];
 
+  // @OneToMany(()=> Judge , (judge)=> judge.programme , {nullable:true})
+  // @Field(()=>[Judge])
+  // @JoinTable()
+  // judges : Judge[] ;
+
   // ManyTOOne relations
+  
 
   @ManyToOne(() => Skill, skill => skill.programmes, { eager: true, onDelete: 'SET NULL' })
   @Field(() => Skill, { nullable: true })

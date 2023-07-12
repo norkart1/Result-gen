@@ -49,6 +49,14 @@ export class CandidateProgramme {
   @Column({nullable:true})
   markThree : number ;
 
+  // @Field(()=>Int , {nullable:true})
+  // @Column({nullable:true})
+  // judge1 : number ;
+
+  // @Field(()=>Int , {nullable:true})
+  // @Column({nullable:true})
+  // judge2 : number ;
+
   
   // ManyToOne relations
   

@@ -22,6 +22,8 @@ import { dataSourceOptions } from 'db/data-source';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { CustomContextProvider } from './utils/custom';
+import { JudgeModule } from './judge/judge.module';
+import { SubstituteModule } from './substitute/substitute.module';
 
 @Module({
   imports: [
@@ -101,6 +103,8 @@ import { CustomContextProvider } from './utils/custom';
     CandidateProgrammeModule,
     CategorySettingsModule,
     CredentialsModule,
+    JudgeModule,
+    SubstituteModule,
   ],
   controllers: [AppController],
   providers: [AppService , CustomContextProvider],
