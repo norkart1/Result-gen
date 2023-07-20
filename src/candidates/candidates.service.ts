@@ -11,6 +11,10 @@ import { Gender } from './entities/candidate.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { Section } from 'src/sections/entities/section.entity';
 import { Credential } from 'src/credentials/entities/credential.entity';
+import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-programme.entity';
+import { CandidateProgrammeService } from 'src/candidate-programme/candidate-programme.service';
+import { Team } from 'src/teams/entities/team.entity';
+import { CreateInput } from './dto/create-input.dto';
 
 @Injectable()
 export class CandidatesService {
@@ -19,23 +23,29 @@ export class CandidatesService {
     private teamService: TeamsService,
     private categoryService: CategoryService,
     private sectionService: SectionsService,
+    private candidateProgrammeService: CandidateProgrammeService,
   ) {}
 
+  //  To create many candidates at a time , Normally using on Excel file upload
 
-  //  To create many candidates at a time , usually using on Excel file upload
-
-  async createMany(createCandidateInputArray: CreateCandidateInput[], user: Credential) {
+  async createMany(createCandidateInputArray: CreateInput, user: Credential) {
     // the final data variable
-    var FinalData: CreateCandidateInput[] = [];
+    var FinalData: Candidate[] = [];
+    var allData: {
+      adno: number;
+      category: Category;
+      chestNO: number;
+      class: number;
+      dob: string;
+      name: string;
+      gender: Gender;
+      team: Team;
+    }[] = [];
 
     // Iterate the values and taking all the individuals
 
-    for (let index = 0; index < createCandidateInputArray.length; index++) {
-      const createCandidateInput = createCandidateInputArray[index];
-
-      // --------------------
-      // checking .........
-      // --------------------
+    for (let index = 0; index < createCandidateInputArray.inputs.length; index++) {
+      const createCandidateInput = createCandidateInputArray.inputs[index];
 
       //  checking is category exist
 
@@ -45,16 +55,6 @@ export class CandidatesService {
         throw new HttpException(
           `Cant find a category named ${createCandidateInput.category}  ,ie: check on Category of ${createCandidateInput.name}`,
           HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      // authenticating the user have permission to update the category
-      const categoryExists = user.categories?.some(category => category.name === category_id.name);
-
-      if (!categoryExists) {
-        throw new HttpException(
-          `You dont have permission to access the category ${category_id.name} `,
-          HttpStatus.UNAUTHORIZED,
         );
       }
 
@@ -83,107 +83,65 @@ export class CandidatesService {
         );
       }
 
-      // --------------------
-      // validating .........
-      // --------------------
+      // checking is chestNo already exist in the array
 
-      // validating is class int
+      const chestNoExists = allData.some(data => data.chestNO === createCandidateInput.chestNO);
 
-      if (isNaN(createCandidateInput.class)) {
+      if (chestNoExists) {
         throw new HttpException(
-          `Class must be a number  ,ie: check on class of ${createCandidateInput.name}`,
+          `Multiple candidates have same chest no ${createCandidateInput.chestNO} ,ie: check on chestNo of ${createCandidateInput.name}`,
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      // validating is adno int
-
-      if (isNaN(createCandidateInput.adno)) {
-        throw new HttpException(
-          `Admission number must be a number  ,ie: check on Adm of ${createCandidateInput.name}`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      // validating is chess no int
-
-      if (isNaN(createCandidateInput.chestNO)) {
-        throw new HttpException(
-          `Chest number must be a number  ,ie: check on chessNo of ${createCandidateInput.name}`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      // validating gender by Gender Enum if it is not listed in Gender Enum throw a exception
-
-      if (!Object.values(Gender).includes(createCandidateInput.gender)) {
-        throw new HttpException(
-          `Invalid Type of Gender  ,ie: check on Gender of ${createCandidateInput.name}`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      allData.push({
+        adno: createCandidateInput.adno,
+        category: category_id,
+        chestNO: createCandidateInput.chestNO,
+        class: createCandidateInput.class,
+        dob: createCandidateInput.dob,
+        name: createCandidateInput.name,
+        gender : createCandidateInput.gender,
+        team : team_id
+      } );
     }
-
-    // --------------------
-    // After all validation
-    // --------------------
 
     // looping the values
 
     try {
-      // createCandidateInputArray.forEach(async (data, i) => {
 
-      for (let index = 0; index < createCandidateInputArray.length; index++) {
-        const data = createCandidateInputArray[index];
+      // checking all candidates are checked
 
-        // Double checking
+      if(allData.length !== createCandidateInputArray.inputs.length){
+        throw new HttpException(
+          `Some candidates are not eligible to create ,ie: check on candidates`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-        //  checking is team exist
 
-        const team_id = await this.teamService.findOneByName(data.team);
-
-        if (!team_id) {
-          throw new HttpException(
-            `Cant find a team named ${data.team} ,ie: check on Team of ${data.name}`,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-
-        //  checking is category exist
-
-        const category_id: Category = await this.categoryService.findOneByName(data.category);
-
-        if (!category_id) {
-          throw new HttpException(
-            `Cant find a category named ${data.category}  ,ie: check on Category of ${data.name}`,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+      for (let index = 0; index < allData.length; index++) {
+        const data = allData[index];
 
         // creating a instance of Candidate
         const input = new Candidate();
 
         // updating Value to candidate
         input.adno = data.adno;
-        input.category = category_id;
+        input.category = data.category;
         input.chestNO = data.chestNO;
         input.class = data.class;
         input.dob = data.dob;
         input.gender = data.gender;
         input.name = data.name;
-        input.team = team_id;
+        input.team = data.team;
 
         let saveData = await this.candidateRepository.save(input);
 
-        FinalData.push(data);
+        FinalData.push(saveData);
       }
 
-      console.log(FinalData);
-
-      return {
-        status: 'success',
-        data: FinalData,
-      };
+      return FinalData;
     } catch (e) {
       throw new HttpException(
         'An Error have when inserting data , please check the all required fields are filled ',
@@ -192,7 +150,6 @@ export class CandidatesService {
       );
     }
   }
-
 
   // create a single candidate
   async create(createCandidateInput: CreateCandidateInput, user: Credential): Promise<Candidate> {
@@ -270,38 +227,41 @@ export class CandidatesService {
     }
   }
 
-
   findAll() {
     try {
       return this.candidateRepository.find({
-        relations: ['category', 'team', 'candidateProgrammes'],
+        relations: ['category', 'team', 'candidateProgrammes', 'candidateProgrammesOfGroup'],
       });
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding candidates ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
   }
 
-  findByCaterories(categories: string[]) {
+  findByCategories(categories: string[]) {
     try {
-      return this.candidateRepository.find({
+      const candidates = this.candidateRepository.find({
         where: {
           category: In(categories),
         },
         relations: ['category', 'team', 'candidateProgrammes'],
       });
+
+      if (!candidates) {
+        throw new HttpException(
+          `Cant find candidates with categories ${categories} `,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return candidates;
     } catch (e) {
-      throw new HttpException(
-        'An Error have when finding data ',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        { cause: e },
-      );
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR, { cause: e });
     }
   }
-
 
   async findOne(id: number) {
     try {
@@ -315,17 +275,12 @@ export class CandidatesService {
       if (!candidate) {
         throw new HttpException(`Cant find candidate with id ${id} `, HttpStatus.BAD_REQUEST);
       }
-
+      await this.candidateProgrammeService.getCandidatesOfGroupOfCandidate(candidate.chestNO);
       return candidate;
     } catch (e) {
-      throw new HttpException(
-        'An Error have when finding data ',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        { cause: e },
-      );
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR, { cause: e });
     }
   }
-
 
   async findOneByChestNo(chestNO: number) {
     try {
@@ -338,21 +293,41 @@ export class CandidatesService {
 
       if (!candidate) {
         throw new HttpException(
-          `Cant find candidate with name ${chestNO} `,
+          `Cant find candidate with chest no ${chestNO} `,
           HttpStatus.BAD_REQUEST,
         );
       }
 
       return candidate;
     } catch (e) {
-      throw new HttpException(
-        'An Error have when finding data ',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        { cause: e },
-      );
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR, { cause: e });
     }
   }
 
+  // check is candidate in a programme
+
+  async findOneByChestNoAndProgrammeId(chestNO: number, programmeCode: string) {
+    // checking is candidate exist
+
+    const candidate = await this.candidateRepository.findOne({
+      where: {
+        chestNO,
+      },
+      relations: ['candidateProgrammes'],
+    });
+
+    if (!candidate) {
+      throw new HttpException(`Cant find candidate with name ${chestNO} `, HttpStatus.BAD_REQUEST);
+    }
+
+    // checking is candidate in programme
+
+    const candidateProgramme = candidate.candidateProgrammes?.find(
+      candidateProgramme => candidateProgramme.programme?.programCode === programmeCode,
+    );
+
+    return candidateProgramme;
+  }
 
   // Update data
 
@@ -428,7 +403,6 @@ export class CandidatesService {
     }
   }
 
-
   async remove(id: number, user: Credential) {
     // --------------------
     // checking .........
@@ -470,13 +444,5 @@ export class CandidatesService {
         { cause: e },
       );
     }
-  }
-
-
-  // check candidates programme
-
-  async checkProgrammeOfCandidate(candidate: Candidate) {
-    // check this candidate's candidateProgrammes
-    // this.candidateRepository.findOne({})
   }
 }

@@ -65,9 +65,7 @@ export class CreateProgrammeInput {
   @IsNotEmpty()
   @Field()
   conceptNote: string;
-
-  @IsNotEmpty()                                             
-  @Field()
+                                             
   @Field()
   skill: string ;
 

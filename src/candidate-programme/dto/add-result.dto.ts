@@ -1,5 +1,7 @@
 import { InputType, Int, Field, Float } from '@nestjs/graphql'
-import { IsNotEmpty } from 'class-validator'
+import { Type } from 'class-transformer'
+import { IsNotEmpty, Max, Min, ValidateNested , } from 'class-validator'
+import { arrayInput } from './array-input.dto'
 
 @InputType()
 export class AddResult {
@@ -7,19 +9,9 @@ export class AddResult {
   @IsNotEmpty()
   chestNo: number
 
-  @Field(() => Float, { nullable: true })
-  totalMark: number
-
-  @Field(() => Int, { nullable: true })
-  Position: number
-
-  @Field(() => Float)
+  @Field(() => Float , {nullable:true})
   @IsNotEmpty()
-  markOne: number
-
-  @Field(() => Float, { nullable: true })
-  markTwo: number
-
-  @Field(() => Float, { nullable: true })
-  markThree: number
+  @Min(0)
+  @Max(10)
+  mark: number
 }

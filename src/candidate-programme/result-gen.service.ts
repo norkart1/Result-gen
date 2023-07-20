@@ -8,6 +8,10 @@ import { Grade } from 'src/grades/entities/grade.entity';
 import { PositionService } from 'src/position/position.service';
 import { Position } from 'src/position/entities/position.entity';
 import { CandidateProgrammeService } from './candidate-programme.service';
+import { ProgrammesService } from 'src/programmes/programmes.service';
+import { Programme, Type } from 'src/programmes/entities/programme.entity';
+import { DetailsService } from 'src/details/details.service';
+import { arrayInput } from './dto/array-input.dto';
 var firebase = require('firebase/app');
 var firebasedb = require('firebase/database');
 
@@ -19,11 +23,120 @@ export class ResultGenService {
     private readonly gradeService: GradesService,
     private readonly positionService: PositionService,
     private readonly candidateProgrammeService: CandidateProgrammeService,
+    private readonly programmeService: ProgrammesService,
+    private readonly DetailService: DetailsService,
   ) {}
 
   // upload Normal Result
 
-  async addResult(programCode: string, input: AddResult[]) {
+  async addResult(programCode: string, input: arrayInput) {
+    // check if programme exist
+
+    const programme: Programme = await this.programmeService.findOneByCode(programCode);
+
+    // all candidates of programme
+
+    let candidatesOfProgramme: CandidateProgramme[] = programme.candidateProgramme;
+
+    if (!programme) {
+      throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
+    }
+
+    // verify the result
+    await this.verifyResult(input.inputs, programCode);
+
+    // // Setting Marks
+    // for (let index = 0; index < input.inputs.length; index++) {
+    //   const element = input.inputs[index];
+    //   const candidate: CandidateProgramme = candidatesOfProgramme.find(
+    //     candidate => candidate.candidate?.chestNO === element.chestNo,
+    //   );
+
+    //   candidate.mark = element.mark;
+    // }
+
+    // // Clear the grade first before generating new one
+
+    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
+    //   const candidate = candidatesOfProgramme[index];
+    //   candidate.grade = null;
+    // }
+
+    // //  Generating Grade for each candidate
+    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
+    //   const candidate = candidatesOfProgramme[index];
+    //   const grade: Grade = await this.generateGrade(candidate.mark, programme);
+    //   candidate.grade = grade;
+    // }
+
+    // // Generating Position for each candidate
+
+    // // Clear the position first before generating new one
+    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
+    //   const candidate = candidatesOfProgramme[index];
+    //   candidate.position = null;
+    // }
+
+    // candidatesOfProgramme = await this.generatePosition(candidatesOfProgramme, programCode);
+
+    // // set the point for each candidate
+    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
+    //   let candidate = candidatesOfProgramme[index];
+    //   candidate = await this.generatePoint(candidate);
+    // }
+
+    // return candidatesOfProgramme;
+
+    // process the result
+    candidatesOfProgramme = await this.processResult(candidatesOfProgramme, programme);
+    try{
+
+      return this.candidateProgrammeRepository.save(candidatesOfProgramme);
+    }catch(error){
+      throw new HttpException("Error on updating result", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // result upload process
+
+  async processResult(candidatesOfProgramme: CandidateProgramme[] , programme: Programme){
+     // Clear the grade first before generating new one
+
+     for (let index = 0; index < candidatesOfProgramme.length; index++) {
+      const candidate = candidatesOfProgramme[index];
+      candidate.grade = null;
+    }
+
+    //  Generating Grade for each candidate
+    for (let index = 0; index < candidatesOfProgramme.length; index++) {
+      const candidate = candidatesOfProgramme[index];
+      const grade: Grade = await this.generateGrade(candidate.mark, programme);
+      candidate.grade = grade;
+    }
+
+    // Generating Position for each candidate
+
+    // Clear the position first before generating new one
+    for (let index = 0; index < candidatesOfProgramme.length; index++) {
+      const candidate = candidatesOfProgramme[index];
+      candidate.position = null;
+    }
+
+    candidatesOfProgramme = await this.generatePosition(candidatesOfProgramme, programme.programCode);
+
+    // set the point for each candidate
+    for (let index = 0; index < candidatesOfProgramme.length; index++) {
+      let candidate = candidatesOfProgramme[index];
+      candidate = await this.generatePoint(candidate);
+    }
+
+    return candidatesOfProgramme;
+  }
+
+  // verify the result
+
+  async verifyResult(input: AddResult[], programCode: string) {
+    // all candidates of programme
     const candidatesOfProgramme: CandidateProgramme[] =
       await this.candidateProgrammeService.getCandidatesOfProgramme(programCode);
 
@@ -45,7 +158,7 @@ export class ResultGenService {
 
     if (!isSameLength) {
       throw new HttpException(
-        `An error form or result upload , please check the result of all candidates of programme ${programCode} is uploaded`,
+        `An error form of result upload , please check the result of all candidates of programme ${programCode} is uploaded`,
         HttpStatus.BAD_REQUEST,
       );
     } else {
@@ -57,88 +170,17 @@ export class ResultGenService {
         // checking is candidate have in this programme
         if (input?.chestNo != cProgramme.candidate?.chestNO) {
           throw new HttpException(
-            `An error form or result upload , please check the candidate ${input.chestNo} is in programme ${programCode}`,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-
-        // Total Mark
-        var totalMark = this.addMark(input);
-
-        sortedInput[index].totalMark = totalMark;
-
-        //  Genarating Grade
-
-        sortedCandidateProgramme[index].grade = await this.generateGrade(totalMark, cProgramme);
-
-        // Setting Marks
-
-        sortedCandidateProgramme[index].markOne = input.markOne;
-        sortedCandidateProgramme[index].markTwo = input.markTwo;
-        sortedCandidateProgramme[index].markThree = input.markThree;
-      }
-
-      sortedCandidateProgramme = await this.generatePosition(sortedCandidateProgramme, sortedInput);
-    }
-
-    // Posting to database
-
-    return this.candidateProgrammeRepository.save(sortedCandidateProgramme);
-  }
-
-  // Upload Result By Judge Panel of Three Members
-
-  async addResultByJudgePanel(programCode: string, input: AddResult[]) {
-    const candidatesOfProgramme: CandidateProgramme[] =
-      await this.candidateProgrammeService.getCandidatesOfProgramme(programCode);
-
-    // checking the two input ore equal
-
-    const isSameLength = candidatesOfProgramme.length === input.length;
-
-    // sorting data
-
-    let sortedCandidateProgramme = candidatesOfProgramme.sort(
-      (a: CandidateProgramme, b: CandidateProgramme) => {
-        return a.candidate?.chestNO - b.candidate?.chestNO;
-      },
-    );
-
-    const sortedInput = input.sort((a: AddResult, b: AddResult) => {
-      return a.chestNo - b.chestNo;
-    });
-
-    if (!isSameLength) {
-      throw new HttpException(
-        `An error form or result upload , please check the result of all candidates of programme ${programCode} is uploaded`,
-        HttpStatus.BAD_REQUEST,
-      );
-    } else {
-      for (let index = 0; index < input.length; index++) {
-        const input: AddResult = sortedInput[index];
-
-        const cProgramme: CandidateProgramme = sortedCandidateProgramme[index];
-
-        // checking is candidate have in this programme
-        if (input?.chestNo != cProgramme.candidate?.chestNO) {
-          throw new HttpException(
-            `An error form or result upload , please check the candidate ${input.chestNo} is in programme ${programCode}`,
+            `An error form of result upload , please check the candidate ${input.chestNo} is in programme ${programCode}`,
             HttpStatus.BAD_REQUEST,
           );
         }
       }
     }
-  }
-
-  // add the mark
-  addMark(addMark: AddResult) {
-    const { markOne, markThree, markTwo } = addMark;
-    return markOne + markThree + markTwo;
   }
 
   // generating grade
 
-  async generateGrade(totalMark: number, candidateProgramme: CandidateProgramme) {
+  async generateGrade(mark: number, programme: Programme) {
     const allGrades: Grade[] = await this.gradeService.findAll();
     // Descending sorting
     const sortedGrade: Grade[] = allGrades.sort((a: Grade, b: Grade) => {
@@ -148,8 +190,7 @@ export class ResultGenService {
     //  checking each grades percentage and the eligibility of the candidate
     for (let index = 0; index < sortedGrade.length; index++) {
       const grade: Grade = sortedGrade[index];
-      if (totalMark >= (grade.percentage / 100) * 30) {
-        // on the place 30 need to be dynamic
+      if (mark >= (grade.percentage / 100) * programme.totalMark) {
         return grade;
       }
     }
@@ -157,82 +198,198 @@ export class ResultGenService {
 
   // generate position
 
-  async generatePosition(CandidateProgramme: CandidateProgramme[], input: AddResult[]) {
-    // sorting the input
-    const sorted = input.sort((a: AddResult, b: AddResult) => {
-      return b.totalMark - a.totalMark;
-    });
-
+  async generatePosition(CandidateProgramme: CandidateProgramme[], programCode: string) {
     const Positions: Position[] = await this.positionService.findAll();
 
     // giving the position
 
-    // CandidateProgramme = this.singlePosition(CandidateProgramme,sorted,Positions)
+    CandidateProgramme = await this.multiplePosition(CandidateProgramme, Positions, programCode);
 
-    CandidateProgramme = this.multiplePosition(sorted, Positions, CandidateProgramme);
-
-    return CandidateProgramme;
-  }
-
-  singlePosition(CandidateProgramme: CandidateProgramme[], input: AddResult[], Positions) {
-    input.forEach((inputData, indexOfInput) => {
-      CandidateProgramme.forEach((cProgrammme, cProgrammeIndex) => {
-        if (cProgrammme.candidate?.chestNO == inputData.chestNo) {
-          Positions.forEach(pos => {
-            if (indexOfInput + 1 == pos.value) {
-              CandidateProgramme[cProgrammeIndex].position = pos;
-            }
-          });
-        }
-      });
-    });
+    //  CandidateProgramme = this.multiplePosition(sorted, Positions, CandidateProgramme);
+    // console.log(CandidateProgramme);
 
     return CandidateProgramme;
   }
 
-  multiplePosition(
-    input: AddResult[],
-    Positions: Position[],
+  async multiplePosition(
     CandidateProgramme: CandidateProgramme[],
+    Positions: Position[],
+    programCode: string,
   ) {
     var totals = [];
-
-    for (var i = 0; i < input.length; i++) {
-      var total = input[i].totalMark;
+    for (var i = 0; i < CandidateProgramme.length; i++) {
+      var total = CandidateProgramme[i].mark;
       totals.push(total);
     }
-
     const sorted = [...new Set(totals)].sort((a, b) => b - a);
     const rank = new Map(sorted.map((x, i) => [x, i + 1]));
     const changed = totals.map(x => rank.get(x));
 
-    input.forEach((e: AddResult, i) => {
-      e.Position = changed[i];
-    });
+    // checking is there have multiple position
+    if (this.containsDuplicates(changed, Positions.length)) {
+      const isMultiplePositionAllowed: boolean = (await this.DetailService.findIt())
+        .isMultipleResultAllowed; // || false;
+
+      if (!isMultiplePositionAllowed) {
+        await this.programmeService.setAnyIssue(programCode, true);
+      }
+    } else {
+      await this.programmeService.setAnyIssue(programCode, false);
+    }
 
     // giving the position
+    for (let index = 0; index < CandidateProgramme.length; index++) {
+      const candidateProgramme: CandidateProgramme = CandidateProgramme[index];
+      const position: Position = Positions[changed[index] - 1];
 
-    input.forEach((inputData, indexOfInput) => {
-      CandidateProgramme.forEach((cProgrammme, cProgrammeIndex) => {
-        if (cProgrammme.candidate?.chestNO == inputData.chestNo) {
-          Positions.forEach(pos => {
-            if (inputData.Position == pos.value) {
-              CandidateProgramme[cProgrammeIndex].position = pos;
-            }
-          });
-        }
-      });
-    });
+      if (position) {
+        candidateProgramme.position = position;
+      }
+    }
 
     return CandidateProgramme;
   }
 
-  // DYNAMIC RESULT ADDING
+  async generatePoint(CandidateProgramme: CandidateProgramme) {
+    // giving the point of grade
+    const grade: Grade = CandidateProgramme.grade;
+    CandidateProgramme.point = 0;
 
-  async addDynamicResult(programCode: string, input: AddResult[]) {
-    const JudgeCount = 3;
+    if (grade) {
+      if (CandidateProgramme.programme.type == Type.SINGLE) {
+        CandidateProgramme.point = grade.pointSingle;
+      } else if (CandidateProgramme.programme.type == Type.GROUP) {
+        CandidateProgramme.point = grade.pointGroup;
+      } else if (CandidateProgramme.programme.type == Type.HOUSE) {
+        CandidateProgramme.point = grade.pointHouse;
+      }
+    }
 
-    
+    // giving the point of position
+    const position: Position = CandidateProgramme.position;
+
+    if (position) {
+      if (CandidateProgramme.programme.type == Type.SINGLE) {
+        CandidateProgramme.point += position.pointSingle;
+      } else if (CandidateProgramme.programme.type == Type.GROUP) {
+        CandidateProgramme.point += position.pointGroup;
+      } else if (CandidateProgramme.programme.type == Type.HOUSE) {
+        CandidateProgramme.point += position.pointHouse;
+      }
+    }
+
+    return CandidateProgramme;
+  }
+
+  // checking as array contains duplicates
+  containsDuplicates(array: number[], positionCount: number) {
+    const allowedNumbers = [];
+    for (let index = 1; index <= positionCount; index++) {
+      allowedNumbers.push(index);
+    }
+    const encounteredNumbers = new Set();
+
+    for (const num of array) {
+      if (allowedNumbers.includes(num)) {
+        if (encounteredNumbers.has(num)) {
+          return true; // Found a duplicate of 1, 2, or 3
+        } else {
+          encounteredNumbers.add(num);
+        }
+      }
+    }
+
+    return false; // No duplicate of 1, 2, or 3 found
+  }
+
+  judgeResultCheck(
+    input: AddResult[],
+    candidateProgrammes: CandidateProgramme[],
+    judgeName: string,
+  ) {
+    const sortedInput = input.sort((a: AddResult, b: AddResult) => {
+      return a.chestNo - b.chestNo;
+    });
+
+    const sortedCandidateProgramme = candidateProgrammes.sort(
+      (a: CandidateProgramme, b: CandidateProgramme) => {
+        return a.candidate.chestNO - b.candidate.chestNO;
+      },
+    );
+
+
+    for (let i = 0; i < sortedInput.length; i++) {
+      const input = sortedInput[i];
+      const candidateProgramme = sortedCandidateProgramme[i];
+
+      if (input.chestNo != candidateProgramme.candidate.chestNO) {
+        throw new HttpException(
+          `Chest No ${input.chestNo} is not match with ${candidateProgramme.candidate.chestNO}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      
+      candidateProgramme[judgeName] = input.mark;
+
+      // save the candidate programme
+       this.candidateProgrammeRepository.save(candidateProgramme);
+    }
+
+    return sortedCandidateProgramme;
+
+  }
+
+  async approveJudgeResult(programCode: string, judgeName: string) {
+    // check if programme exist
+
+    const programme : Programme = await this.programmeService.findOneByCode(programCode);
+
+    if (!programme) {
+      throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
+    }
+
+    // check if judge name is correct format
+    const regex = new RegExp(/^judge[1-7]$/);
+
+    if (!regex.test(judgeName)) {
+      throw new HttpException('Judge name is not in correct format', HttpStatus.BAD_REQUEST);
+    }
+
+    // all candidates of programme
+
+    let candidatesOfProgrammes: CandidateProgramme[] = programme.candidateProgramme;
+
+    // add the mark of judge to mark of candidate programme
+
+    for (let index = 0; index < candidatesOfProgrammes.length; index++) {
+      const candidateProgramme = candidatesOfProgrammes[index];
+
+      if(!candidateProgramme[judgeName]){
+        throw new HttpException(`Judge ${judgeName} result is not uploaded`, HttpStatus.BAD_REQUEST);
+      }
+
+      if (candidateProgramme.mark) {
+        candidateProgramme.mark = ((candidateProgramme.mark + candidateProgramme[judgeName]) / 20) * 10;
+      }else{
+        candidateProgramme.mark = candidateProgramme[judgeName];
+      }
+    }
+
+    // process the result
+    candidatesOfProgrammes = await this.processResult(candidatesOfProgrammes, programme);
+
+    // set null to judge result
+    for (let index = 0; index < candidatesOfProgrammes.length; index++) {
+      const candidateProgramme = candidatesOfProgrammes[index];
+      candidateProgramme[judgeName] = null;
+    }
+
+    try{
+      return this.candidateProgrammeRepository.save(candidatesOfProgrammes);
+    }catch(error){
+      throw new HttpException("Error on updating result", HttpStatus.BAD_REQUEST);
+    }
+
   }
 
   // live result using firebase

@@ -48,7 +48,9 @@ import { SubstituteModule } from './substitute/substitute.module';
 
     // connecting to mysql planetscale server
 
-    TypeOrmModule.forRootAsync({
+    TypeOrmModule.forRootAsync(
+      // dataSourceOptions 
+      {
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
@@ -71,12 +73,14 @@ import { SubstituteModule } from './substitute/substitute.module';
       }),
 
       inject: [ConfigService],
-    }),
+    }
+    ),
 
     // graphql configuration
 
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       context: ({ req , res }) => ({ req, res }),
       playground:{

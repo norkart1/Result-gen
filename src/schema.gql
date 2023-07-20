@@ -33,6 +33,16 @@ type Position {
   updatedAt: DateTime!
 }
 
+type Judge {
+  id: Int!
+  username: String!
+  password: String!
+  judgeName: String!
+  programme: Programme!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Skill {
   """"""
   id: Int!
@@ -40,6 +50,19 @@ type Skill {
   shortName: String!
   description: String
   programmes: [Programme!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Substitute {
+  """"""
+  id: Int!
+  reason: String!
+  isAccepted: Boolean
+  isRejected: Boolean
+  programme: Programme!
+  oldCandidate: Candidate!
+  newCandidate: Candidate!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -56,10 +79,15 @@ type Programme {
   date: DateTime
   venue: Int
   duration: Int!
+  totalMark: Int
   conceptNote: String!
   resultEntered: Boolean!
   resultPublished: Boolean!
+  checkToReadNo: Int
+  anyIssue: Boolean!
   candidateProgramme: [CandidateProgramme!]!
+  judges: [Judge!]!
+  substitutes: [Substitute!]!
   skill: Skill
   category: Category!
   createdAt: DateTime!
@@ -81,17 +109,21 @@ enum Types {
 type CandidateProgramme {
   """"""
   id: Int!
-  checkToReadNo: Int
   point: Int
   link: String
-  groupNumber: Int
-  markOne: Int
-  markTwo: Int
-  markThree: Int
+  mark: Float
+  judge1: Float
+  judge2: Float
+  judge3: Float
+  judge4: Float
+  judge5: Float
+  judge6: Float
+  judge7: Float
   position: Position
   grade: Grade
   programme: Programme!
   candidate: Candidate!
+  candidatesOfGroup: [Candidate!]
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -126,8 +158,11 @@ type Candidate {
   adno: Float
   dob: String
   chestNO: Int
+  imageId: String
   gender: Gender!
   candidateProgrammes: [CandidateProgramme!]
+  substitutesOld: [Substitute!]
+  substitutesNew: [Substitute!]
   team: Team
   category: Category
   createdAt: DateTime!
@@ -144,10 +179,16 @@ type CategorySettings {
   id: Int!
   maxProgram: Int!
   maxSingle: Int!
+  maxGroup: Int!
+  maxStage: Int!
+  maxNonStage: Int!
+  maxOutDoor: Int!
   minProgram: Int!
   minSingle: Int!
-  maxGroup: Int!
   minGroup: Int!
+  minStage: Int!
+  minNonStage: Int!
+  minOutDoor: Int!
   isProgrammeListUpdatable: Boolean!
   category: Category!
 }
@@ -186,24 +227,7 @@ type Detail {
   isMediaHave: Boolean!
   isSkillHave: Boolean!
   isResultReady: Boolean!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type Judge {
-  """"""
-  id: Int!
-  username: String!
-  password: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type Substitute {
-  """"""
-  id: Int!
-  chestNo: String!
-  programmeCode: String!
+  isMultipleResultAllowed: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -220,6 +244,8 @@ type Query {
   category(id: Int!): Category!
   sections: [Section!]!
   section(id: Int!): Section!
+  candidateProgrammes: [CandidateProgramme!]!
+  candidateProgramme(id: Int!): CandidateProgramme!
   programmes: [Programme!]!
   programme(id: Int!): Programme!
   skills: [Skill!]!
@@ -229,17 +255,17 @@ type Query {
   grade(id: Int!): Grade!
   positions: [Position!]!
   position(id: Int!): Position!
-  candidateProgrammes: [CandidateProgramme!]!
-  candidateProgramme(id: Int!): CandidateProgramme!
   categorySettings: [CategorySettings!]!
   categorySetting(id: Int!): CategorySettings!
+  judges: [Judge!]!
   judge(id: Int!): Judge!
+  substitutes: [Substitute!]!
   substitute(id: Int!): Substitute!
 }
 
 type Mutation {
   createCandidate(createCandidateInput: CreateCandidateInput!): Candidate!
-  createManyCandidates(createCandidateInput: [CreateCandidateInput!]!): [Candidate!]!
+  createManyCandidates(createCandidateInput: CreateInput!): [Candidate!]!
   updateCandidate(updateCandidateInput: UpdateCandidateInput!): Candidate!
   removeCandidate(id: Int!): Candidate!
   createTeam(createTeamInput: CreateTeamInput!): Team!
@@ -256,12 +282,18 @@ type Mutation {
   createSection(createSectionInput: CreateSectionInput!): Section!
   updateSection(updateSectionInput: UpdateSectionInput!): Section!
   removeSection(id: Int!): Section!
+  createCandidateProgramme(createCandidateProgrammeInput: CreateCandidateProgrammeInput!): CandidateProgramme!
+  updateCandidateProgramme(updateCandidateProgrammeInput: UpdateCandidateProgrammeInput!): CandidateProgramme!
+  removeCandidateProgramme(id: Int!): CandidateProgramme!
+  addNormalResult(programmeCode: String!, addResult: arrayInput!): [CandidateProgramme!]!
+  approveJudgeResult(programmeCode: String!, judgeName: String!): [CandidateProgramme!]!
+  liveResult: Int!
   createProgramme(createProgrammeInput: CreateProgrammeInput!): Programme!
-  createManyProgrammes(createProgrammeInput: [CreateProgrammeInput!]!): [Programme!]!
+  createManyProgrammes(createProgrammeInput: createInput!): [Programme!]!
   updateProgramme(updateProgrammeInput: UpdateProgrammeInput!): Programme!
   removeProgramme(id: Int!): Programme!
   setSchedule(createScheduleInput: CreateSchedule!): Programme!
-  setManySchedule(createScheduleInput: [CreateSchedule!]!): [Programme!]!
+  setManySchedule(createScheduleInput: [ScheduleCreate!]!): [Programme!]!
   removeSchedule(code: Int!): Programme!
   createSkill(createSkillInput: CreateSkillInput!): Skill!
   updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
@@ -274,20 +306,18 @@ type Mutation {
   createPosition(createPositionInput: CreatePositionInput!): Position!
   updatePosition(updatePositionInput: UpdatePositionInput!): Position!
   removePosition(id: Int!): Position!
-  createCandidateProgramme(createCandidateProgrammeInput: CreateCandidateProgrammeInput!): CandidateProgramme!
-  updateCandidateProgramme(updateCandidateProgrammeInput: UpdateCandidateProgrammeInput!): CandidateProgramme!
-  removeCandidateProgramme(id: Int!): CandidateProgramme!
-  addNormalResult(programmeCode: String!, addResult: [AddResult!]!): [CandidateProgramme!]!
-  liveResult: Int!
   createCategorySetting(createCategorySettingInput: CreateCategorySettingInput!): CategorySettings!
   updateCategorySetting(updateCategorySettingInput: UpdateCategorySettingInput!): CategorySettings!
   removeCategorySetting(id: Int!): CategorySettings!
   createJudge(createJudgeInput: CreateJudgeInput!): Judge!
   updateJudge(updateJudgeInput: UpdateJudgeInput!): Judge!
   removeJudge(id: Int!): Judge!
+  uploadMarkByJudge(programmeCode: String!, jugdeId: Float!, addResult: arrayInput!): Judge!
   createSubstitute(createSubstituteInput: CreateSubstituteInput!): Substitute!
   updateSubstitute(updateSubstituteInput: UpdateSubstituteInput!): Substitute!
   removeSubstitute(id: Int!): Substitute!
+  approveSubstitute(id: Int!): Substitute!
+  rejectSubstitute(id: Int!): Substitute!
 }
 
 input CreateCandidateInput {
@@ -299,6 +329,10 @@ input CreateCandidateInput {
   gender: Gender!
   team: String
   category: String
+}
+
+input CreateInput {
+  inputs: [CreateCandidateInput!]!
 }
 
 input UpdateCandidateInput {
@@ -374,6 +408,28 @@ input UpdateSectionInput {
   id: Int!
 }
 
+input CreateCandidateProgrammeInput {
+  programme_code: String!
+  chestNo: Int!
+  candidatesOfGroup: [Int!]
+}
+
+input UpdateCandidateProgrammeInput {
+  programme_code: String
+  chestNo: Int
+  candidatesOfGroup: [Int!]
+  id: Int!
+}
+
+input arrayInput {
+  inputs: [AddResult!]!
+}
+
+input AddResult {
+  chestNo: Int!
+  mark: Float
+}
+
 input CreateProgrammeInput {
   programCode: String!
   name: String!
@@ -401,6 +457,10 @@ enum Type {
   HOUSE
 }
 
+input createInput {
+  inputs: [CreateProgrammeInput!]!
+}
+
 input UpdateProgrammeInput {
   programCode: String
   name: String
@@ -421,6 +481,10 @@ input CreateSchedule {
   code: String!
   date: DateTime!
   venue: Int
+}
+
+input ScheduleCreate {
+  inputs: [CreateSchedule!]!
 }
 
 input CreateSkillInput {
@@ -493,28 +557,6 @@ input UpdatePositionInput {
   id: Int!
 }
 
-input CreateCandidateProgrammeInput {
-  programme_code: String!
-  chestNo: Int!
-  groupNumber: Int
-}
-
-input UpdateCandidateProgrammeInput {
-  programme_code: String
-  chestNo: Int
-  groupNumber: Int
-  id: Int!
-}
-
-input AddResult {
-  chestNo: Int!
-  totalMark: Float
-  Position: Int
-  markOne: Float!
-  markTwo: Float
-  markThree: Float
-}
-
 input CreateCategorySettingInput {
   category: String!
   maxProgram: Int!
@@ -537,23 +579,31 @@ input UpdateCategorySettingInput {
 }
 
 input CreateJudgeInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  username: String!
+  password: String!
+  judgeName: String!
+  programmeCode: String!
 }
 
 input UpdateJudgeInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  username: String
+  password: String
+  judgeName: String
+  programmeCode: String
   id: Int!
 }
 
 input CreateSubstituteInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  reason: String!
+  programme: String!
+  oldCandidate: Int!
+  newCandidate: Int!
 }
 
 input UpdateSubstituteInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  reason: String
+  programme: String
+  oldCandidate: Int
+  newCandidate: Int
   id: Int!
 }

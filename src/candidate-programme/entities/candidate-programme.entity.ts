@@ -1,15 +1,23 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
 import { Expose } from 'class-transformer';
 import { Candidate } from 'src/candidates/entities/candidate.entity';
 import { Grade } from 'src/grades/entities/grade.entity';
 import { Position } from 'src/position/entities/position.entity';
 import { Programme } from 'src/programmes/entities/programme.entity';
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
 export class CandidateProgramme {
-
   // Primary generated ID
 
   @Field(() => Int, { description: '' })
@@ -21,70 +29,92 @@ export class CandidateProgramme {
 
   // Normal columns
 
-  @Field(()=>Int , { nullable: true })
-  @Column({ nullable: true }) 
-  checkToReadNo: number;
-  
-  @Field(()=>Int ,{ nullable: true })
+
+  @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   point: number;
 
   @Field({ nullable: true })
-  @Column({ nullable: true }) 
-  link : string ;
+  @Column({ nullable: true })
+  link: string;
 
-  @Field(()=>Int , {nullable:true})
-  @Column({nullable:true})
-  groupNumber : number ;
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float'})
+  mark: number;
 
-  @Field(()=>Int , {nullable:true})
-  @Column({nullable:true})
-  markOne : number ;
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float'})
+  judge1: number;
 
-  @Field(()=>Int , {nullable:true})
-  @Column({nullable:true})
-  markTwo : number ;
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float' })
+  judge2: number;
 
-  @Field(()=>Int , {nullable:true})
-  @Column({nullable:true})
-  markThree : number ;
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float'})
+  judge3: number;
 
-  // @Field(()=>Int , {nullable:true})
-  // @Column({nullable:true})
-  // judge1 : number ;
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float'})
+  judge4: number;
 
-  // @Field(()=>Int , {nullable:true})
-  // @Column({nullable:true})
-  // judge2 : number ;
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float'})
+  judge5: number;
 
-  
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float'})
+  judge6: number;
+
+  @Field(() => Float, { nullable: true })
+  @Column({ nullable: true , type:'float'})
+  judge7: number;
+
   // ManyToOne relations
-  
-  @Field(()=>Position , {nullable:true})
-  @ManyToOne(()=>Position , (position)=> position.candidateProgramme, { eager: true , onDelete : 'SET NULL'} )
+
+  @Field(() => Position, { nullable: true })
+  @ManyToOne(() => Position, position => position.candidateProgramme, {
+    eager: true,
+    onDelete: 'SET NULL',
+  })
   position: Position;
 
-  @Field(()=>Grade , {nullable:true})
-  @ManyToOne(()=>Grade , (grade)=> grade.candidateProgramme , { eager: true , onDelete : 'SET NULL'} )
+  @Field(() => Grade, { nullable: true })
+  @ManyToOne(() => Grade, grade => grade.candidateProgramme, { eager: true, onDelete: 'SET NULL' })
   grade: Grade;
 
-  @Field(()=> Programme)
-  @ManyToOne(() => Programme, (programme) => programme.candidateProgramme, { eager: true , onDelete : 'SET NULL'})
+  @Field(() => Programme)
+  @ManyToOne(() => Programme, programme => programme.candidateProgramme, {
+    eager: true,
+    onDelete: 'SET NULL',
+  })
   @JoinTable()
   programme: Programme;
 
-  @Field(()=> Candidate)
-  @ManyToOne(() => Candidate, (candidate) => candidate.candidateProgrammes, { eager: true , onDelete : 'SET NULL'})
+  @Field(() => Candidate)
+  @ManyToOne(() => Candidate, candidate => candidate.candidateProgrammes, {
+    eager: true,
+    onDelete: 'SET NULL',
+  })
   @JoinTable()
   candidate: Candidate;
 
-   // Dates
+  @Field(() => [Candidate] , { nullable: true } )  
+  @ManyToMany(() => Candidate ,{
+    cascade: true,
+    // eager: true,
+    // onDelete: 'SET NULL',
+  })
+  @JoinTable()
+  candidatesOfGroup : Candidate[];
 
-   @CreateDateColumn()
-   @Field(() => Date)
-   createdAt: Date;
- 
-   @UpdateDateColumn()
-   @Field(() => Date)
-   updatedAt: Date;
+  // Dates
+
+  @CreateDateColumn()
+  @Field(() => Date)
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @Field(() => Date)
+  updatedAt: Date;
 }

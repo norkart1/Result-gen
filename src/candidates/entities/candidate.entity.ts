@@ -3,8 +3,9 @@ import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-p
 import { Category } from 'src/category/entities/category.entity';
 import { Section } from 'src/sections/entities/section.entity';
 import { Team } from 'src/teams/entities/team.entity';
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Photo } from '../../utils/photo.interface';
+import { Substitute } from 'src/substitute/entities/substitute.entity';
 
 export enum Gender {
   MALE = 'M',
@@ -49,9 +50,9 @@ export class Candidate {
   chestNO: number;
 
 
-  // @Column({ nullable: true, type: 'json' })
-  // @Field(() => Photo ,{nullable:true})
-  // photo: Photo;
+  @Column({ nullable: true})
+  @Field({nullable:true})
+  imageId: string ;
 
   @Column({ type: 'varchar', default: Gender.MALE })
   @Field(()=> Gender)
@@ -63,6 +64,16 @@ export class Candidate {
   @Field(() => [CandidateProgramme], { nullable: true })
   candidateProgrammes: CandidateProgramme[];
 
+  @OneToMany(() => Substitute , (substitute) => substitute.oldCandidate)
+  @JoinTable()
+  @Field(() => [Substitute], { nullable: true })
+  substitutesOld: Substitute[];
+
+  @OneToMany(() => Substitute , (substitute) => substitute.newCandidate)
+  @JoinTable()
+  @Field(() => [Substitute], { nullable: true })
+  substitutesNew: Substitute[];
+
   // ManyToOne relations
 
   @ManyToOne(()=> Team , (team) => team.candidates , { eager: true , onDelete : 'SET NULL'})
@@ -73,6 +84,12 @@ export class Candidate {
   @ManyToOne(()=> Category , (category) => category.candidates , { eager: true , onDelete : 'SET NULL'})
   @Field(()=> Category , {nullable:true})
   category:Category;
+
+  // ManyToMany relations
+
+  // @ManyToMany(() => CandidateProgramme , (candidateProgramme) => candidateProgramme.candidatesOfGroup)
+  // @Field(() => [CandidateProgramme], { nullable: true })
+  // candidateProgrammesOfGroup: CandidateProgramme[];
 
   // Dates
 

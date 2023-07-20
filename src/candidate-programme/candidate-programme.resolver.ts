@@ -18,8 +18,8 @@ export class CandidateProgrammeResolver {
   ) {}
 
   // @UsePipes(CandidateProgrammePipe)
-  @HasRoles(Roles.Controller, Roles.TeamManager)
-  @UseGuards(RolesGuard)
+  // @HasRoles(Roles.Controller, Roles.TeamManager)
+  // @UseGuards(RolesGuard)
   @Mutation(() => CandidateProgramme)
   createCandidateProgramme(
     @Args('createCandidateProgrammeInput')
@@ -41,8 +41,8 @@ export class CandidateProgrammeResolver {
 
   // @UsePipes(CandidateProgrammePipe)
   @Mutation(() => CandidateProgramme)
-  @HasRoles(Roles.Controller, Roles.TeamManager)
-  @UseGuards(RolesGuard)
+  // @HasRoles(Roles.Controller, Roles.TeamManager)
+  // @UseGuards(RolesGuard)
   updateCandidateProgramme(
     @Args('updateCandidateProgrammeInput')
     updateCandidateProgrammeInput: UpdateCandidateProgrammeInput,
@@ -54,19 +54,19 @@ export class CandidateProgrammeResolver {
   }
 
   @Mutation(() => CandidateProgramme)
-  @HasRoles(Roles.Controller, Roles.TeamManager)
-  @UseGuards(RolesGuard)
+  // @HasRoles(Roles.Controller, Roles.TeamManager)
+  // @UseGuards(RolesGuard)
   removeCandidateProgramme(@Args('id', { type: () => Int }) id: number) {
     return this.candidateProgrammeService.remove(id);
   }
 
-  @Mutation(() => [CandidateProgramme])
-  @HasRoles(Roles.Controller)
-  addNormalResult(
-    @Args('programmeCode') programmeCode: string,
-    @Args({ name: 'addResult', type: () => [AddResult] })
-    addResult: AddResult[],
-  ) {
-    return this.resultGenService.addResult(programmeCode, addResult);
-  }
+  // @Mutation(() => [CandidateProgramme])
+  // @HasRoles(Roles.Controller)
+  // addNormalResult(
+  //   @Args('programmeCode') programmeCode: string,
+  //   @Args({ name: 'addResult', type: () => [AddResult] })
+  //   addResult: AddResult[],
+  // ) {
+  //   return this.resultGenService.addResult(programmeCode, addResult);
+  // }
 }

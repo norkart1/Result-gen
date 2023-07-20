@@ -3,5 +3,8 @@
     "prettier.prettierPath": "./node_modules/prettier",
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    },
+    "cSpell.words": [
+        "findedcandidates"
+    ]
 }

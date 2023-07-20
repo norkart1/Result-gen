@@ -10,6 +10,8 @@ export class CategorySettings {
   @PrimaryGeneratedColumn()
   id: number
 
+  // MAX 
+
   @Field(() => Int)
   @Column()
   maxProgram: number;
@@ -17,7 +19,24 @@ export class CategorySettings {
   @Field(() => Int)
   @Column()
   maxSingle: number;
+  
+  @Field(() => Int)
+  @Column()
+  maxGroup : number;
 
+  @Field(() => Int)
+  @Column()
+  maxStage: number;
+
+  @Field(() => Int)
+  @Column()
+  maxNonStage: number;
+
+  @Field(() => Int)
+  @Column()
+  maxOutDoor: number;
+
+  // MIN
   @Field(() => Int)
   @Column()
   minProgram: number;
@@ -28,11 +47,20 @@ export class CategorySettings {
 
   @Field(() => Int)
   @Column()
-  maxGroup : number;
+  minGroup : number;
   
   @Field(() => Int)
   @Column()
-  minGroup : number;
+  minStage: number;
+
+  @Field(() => Int)
+  @Column()
+  minNonStage: number;
+
+  @Field(() => Int)
+  @Column()
+  minOutDoor: number;
+  
 
   @Field(() => Boolean)
   @Column()

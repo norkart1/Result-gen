@@ -14,16 +14,14 @@ import { CreateCandidateInput } from './dto/create-candidate.input';
 import { UpdateCandidateInput } from './dto/update-candidate.input';
 import { UseGuards } from '@nestjs/common';
 import { CandidatePipe } from './pipe/candidates.pipe';
-import { Section } from 'src/sections/entities/section.entity';
-import { SectionsService } from 'src/sections/sections.service';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { CreateInput } from './dto/create-input.dto';
 
 @Resolver(() => Candidate)
 export class CandidatesResolver {
   constructor(
-    private readonly candidatesService: CandidatesService,
-    private readonly sectionService: SectionsService,
+    private readonly candidatesService: CandidatesService
   ) {}
 
   // @UsePipes(CandidatePipe)
@@ -38,11 +36,11 @@ export class CandidatesResolver {
   }
 
   @Mutation(() => [Candidate])
-  @HasRoles(Roles.Controller)
-  @UseGuards(RolesGuard)
+  // @HasRoles(Roles.Controller)
+  // @UseGuards(RolesGuard)
   createManyCandidates(
-    @Args('createCandidateInput', { type: () => [CreateCandidateInput] })
-    createCandidateInput: CreateCandidateInput[],
+    @Args('createCandidateInput', { type: () => CreateInput })
+    createCandidateInput: CreateInput,
     @Context('req') req: any,
   ) {
     return this.candidatesService.createMany(createCandidateInput, req.user);

@@ -12,8 +12,8 @@ export class DetailsResolver {
   constructor(private readonly detailsService: DetailsService) {}
 
   @Mutation(() => Detail)
-  @HasRoles(Roles.Admin , Roles.Controller)
-  @UseGuards(RolesGuard)
+  // @HasRoles(Roles.Admin , Roles.Controller)
+  // @UseGuards(RolesGuard)
   createDetail(@Args('createDetailInput') createDetailInput: CreateDetailInput) {
     return this.detailsService.create(createDetailInput);
   }

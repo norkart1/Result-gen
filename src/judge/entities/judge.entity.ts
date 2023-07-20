@@ -1,13 +1,14 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Programme } from 'src/programmes/entities/programme.entity';
-import { Column, CreateDateColumn, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @ObjectType()
+@Entity()
 export class Judge {
   
     // Primary Generated columns
   
-    @Field(() => Int, { description: '' })
+    @Field(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
   
@@ -20,16 +21,19 @@ export class Judge {
     @Column()
     @Field()
     password : string;
-  
-  
+
+    @Column()
+    @Field()
+    judgeName : string;
+
     // OneTOMany relations
   
-    // @ManyToOne(()=> Programme , (programme)=> programme.judges , {nullable:true})
-    // @Field(()=>Programme)
-    // programme : Programme ;
+    @ManyToOne(()=> Programme , (programme)=> programme.judges , {nullable:true})
+    @Field(()=>Programme)
+    programme : Programme ;
     
     // Dates
-    
+       
     @CreateDateColumn()
     @Field(() => Date)
     createdAt: Date;

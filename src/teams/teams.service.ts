@@ -34,7 +34,6 @@ export class TeamsService {
           'candidates.team',
           'candidates.candidateProgrammes',
           'candidates.category',
-          'candidates.section',
         ],
       });
     } catch (e) {
@@ -62,7 +61,6 @@ export class TeamsService {
           'candidates.team',
           'candidates.candidateProgrammes',
           'candidates.category',
-          'candidates.section',
         ],
       });
 
@@ -95,7 +93,6 @@ export class TeamsService {
           'candidates.team',
           'candidates.candidateProgrammes',
           'candidates.category',
-          'candidates.section',
         ],
       });
 

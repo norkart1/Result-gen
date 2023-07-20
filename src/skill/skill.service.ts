@@ -33,7 +33,7 @@ export class SkillService {
     try {
       const skill = this.skillRepository.findOne({
         where: { name },
-        relations: ['programmes', 'programmes.category', 'programmes.section'],
+        relations: ['programmes', 'programmes.category'],
       });
 
       if (!skill) {
@@ -57,7 +57,7 @@ export class SkillService {
     try {
       const skill = this.skillRepository.findOne({
         where: { id },
-        relations: ['programmes', 'programmes.category', 'programmes.section'],
+        relations: ['programmes', 'programmes.category'],
       });
 
       if (!skill) {

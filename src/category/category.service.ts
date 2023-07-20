@@ -88,7 +88,7 @@ export class CategoryService {
         where: {
           name,
         },
-        relations: ['section', 'candidates', 'programmes', 'settings', 'candidates.team'],
+        relations: ['section' , 'programmes', 'settings'],
       });
       if (!category) {
         throw new HttpException(`can't find category with id ${name}`, HttpStatus.BAD_REQUEST);

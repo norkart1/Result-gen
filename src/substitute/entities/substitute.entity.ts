@@ -1,7 +1,10 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Candidate } from 'src/candidates/entities/candidate.entity';
+import { Programme } from 'src/programmes/entities/programme.entity';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @ObjectType()
+@Entity()
 export class Substitute {
   
     // Primary Generated columns
@@ -12,20 +15,31 @@ export class Substitute {
   
     // Normal Columns
   
-    @Column({unique:true})
-    @Field()
-    chestNo : string;
-  
     @Column()
     @Field()
-    programmeCode : string;
-  
+    reason : string;
+
+    @Column({default:false})
+    @Field(()=>Boolean, {nullable:true})
+    isAccepted : boolean;
+
+    @Column({default:false})
+    @Field(()=>Boolean, {nullable:true})
+    isRejected : boolean;
   
     // OneTOMany relations
   
-    // @ManyToOne(()=> Programme , (programme)=> programme.judges , {nullable:true})
-    // @Field(()=>Programme)
-    // programme : Programme ;
+    @ManyToOne(()=> Programme , (programme)=> programme.substitutes , {nullable:true})
+    @Field(()=>Programme)
+    programme : Programme ;
+
+    @ManyToOne(()=> Candidate , (candidate)=> candidate.substitutesOld , {nullable:true})
+    @Field(()=>Candidate)
+    oldCandidate : Candidate;
+
+    @ManyToOne(()=> Candidate , (candidate)=> candidate.substitutesNew , {nullable:true})
+    @Field(()=>Candidate )
+    newCandidate : Candidate;
     
     // Dates
     

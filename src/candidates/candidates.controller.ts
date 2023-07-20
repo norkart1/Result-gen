@@ -32,4 +32,22 @@ export class CandidatesController {
   //   return this.candidatesService.createMany(values)
 
   // }
+
+  // upload image
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+   
+    console.log(file);
+    
+  }
+
+  // upload multiple images
+  @Post('uploadMultiple')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadMultipleFiles(@UploadedFile() files: Express.Multer.File[]) {
+    console.log(files);
+    
+  }
+
 }

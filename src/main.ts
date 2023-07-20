@@ -14,7 +14,7 @@ async function bootstrap() {
   const configService : ConfigService = app.get(ConfigService)
 
   // setting cookie parser
-  // app.use(cookieParser());
+  app.use(cookieParser());
 
   // setting firebase admin
   // admin.initializeApp({

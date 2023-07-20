@@ -168,7 +168,7 @@ export class CredentialsService {
 
     let { categories, roles, team } = credential;
 
-    const allCategories = await this.categoryService.findAll();
+    const allCategories : Category[] = await this.categoryService.findAll();
     const allCategoriesNames = allCategories.map(category => category.name);
 
     // the the users role and check if he is allowed to create a new user
@@ -205,13 +205,13 @@ export class CredentialsService {
     return FindedCategories;
   }
 
-  checkCategoriesEquality(cOne, cTwo) {
-    if (cOne.length !== cTwo.length) {
+  checkCategoriesEquality(categoryOne : any , categoryTwo : any) {
+    if (categoryOne.length !== categoryTwo.length) {
       return false; // Arrays have different lengths, not equal
     }
 
-    const names1 = cOne.map(obj => obj.name).sort();
-    const names2 = cTwo.map(obj => obj.name).sort();
+    const names1 = categoryOne.map(obj => obj.name).sort();
+    const names2 = categoryTwo.map(obj => obj.name).sort();
 
     for (let i = 0; i < names1.length; i++) {
       if (names1[i] !== names2[i]) {
@@ -220,5 +220,42 @@ export class CredentialsService {
     }
 
     return true; // All objects have equal names
+  }
+
+  async checkPermissionOnCategories(user: Credential, categoryName: string) {
+    // authenticating the user have permission to update the category
+
+    const category = await this.categoryService.findOneByName(categoryName);
+
+    if (!category) {
+      throw new HttpException(`Cant find a category named ${categoryName}`, HttpStatus.BAD_REQUEST);
+    }
+
+    const categoryExists = user.categories?.some(category => category.name === category.name);
+
+    if (!categoryExists) {
+      throw new HttpException(
+        `You don't have permission to access the category ${category.name} `,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
+
+
+  async checkPermissionOnTeam(user: Credential, teamName: string) {
+    const team = await this.teamService.findOneByName(teamName);
+
+    if (!team) {
+      throw new HttpException(`Cant find a team named ${teamName}`, HttpStatus.BAD_REQUEST);
+    }
+
+    const teamExists = user.team?.name === team.name;
+
+    if (!teamExists) {
+      throw new HttpException(
+        `You don't have permission to access the team ${team.name} `,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
   }
 }

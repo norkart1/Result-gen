@@ -7,6 +7,8 @@ import { UseGuards } from '@nestjs/common';
 import { CreateSchedule } from './dto/create-schedule.dto';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { ScheduleCreate } from './dto/scheduleCreate.dto';
+import { createInput } from './dto/create-inputs.inputs';
 
 @Resolver(() => Programme)
 export class ProgrammesResolver {
@@ -27,8 +29,8 @@ export class ProgrammesResolver {
   @HasRoles(Roles.Controller)
   @UseGuards(RolesGuard)
   createManyProgrammes(
-    @Args('createProgrammeInput', { type: () => [CreateProgrammeInput] })
-    createProgrammeInput: CreateProgrammeInput[],
+    @Args('createProgrammeInput', { type: () => createInput })
+    createProgrammeInput: createInput,
     @Context('req') req: any,
   ) {
     return this.programmesService.createMany(createProgrammeInput, req.user);
@@ -75,7 +77,7 @@ export class ProgrammesResolver {
   @HasRoles(Roles.Controller)
   @UseGuards(RolesGuard)
   setManySchedule(
-    @Args('createScheduleInput', { type: () => [CreateSchedule] }) createSchedule: CreateSchedule[],
+    @Args('createScheduleInput', { type: () => [ScheduleCreate] }) createSchedule: ScheduleCreate,
     @Context('req') req: any,
   ) {
     return this.programmesService.setManySchedule(createSchedule, req.user);

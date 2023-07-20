@@ -14,7 +14,6 @@ import { DetailsModule } from 'src/details/details.module';
   imports: [
     TypeOrmModule.forFeature([Programme]),
     SkillModule,
-    SectionsModule,
     CategoryModule,
     CredentialsModule,
     DetailsModule

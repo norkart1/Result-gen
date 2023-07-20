@@ -1,5 +1,5 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty} from 'class-validator';
 
 @InputType()
 export class CreateCandidateProgrammeInput {
@@ -11,6 +11,6 @@ export class CreateCandidateProgrammeInput {
   @Field(()=>Int)
   chestNo: number;
 
-  @Field(()=>Int , {nullable:true})
-  groupNumber : number ;
+  @Field(()=>[Int] , {nullable:true})
+  candidatesOfGroup : number[] ;
 }

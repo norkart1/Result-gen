@@ -13,7 +13,7 @@ export class Detail {
   // Primary generated ID
 
   @Field(() => Int, { description: '' })
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn()  // NEED TO CHANGE
   id: number;
 
   // Normal Columns
@@ -60,6 +60,10 @@ export class Detail {
   @Column({default:false})
   @Field(()=> Boolean , {defaultValue:false})
   isResultReady: boolean;
+
+  @Column({default:false})
+  @Field(()=> Boolean , {defaultValue:false})
+  isMultipleResultAllowed: boolean;
 
   // Dates
 

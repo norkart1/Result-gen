@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CandidateProgrammeService } from './candidate-programme.service';
 import { CandidateProgrammeResolver } from './candidate-programme.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,7 +17,7 @@ import { CategorySettingsModule } from 'src/category-settings/category-settings.
 @Module({
   imports: [
     TypeOrmModule.forFeature([CandidateProgramme]),
-    CandidatesModule,
+    forwardRef(() => CandidatesModule),
     ProgrammesModule,
     CategoryModule,
     GradesModule,

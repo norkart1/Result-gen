@@ -3,8 +3,8 @@ import { Expose } from 'class-transformer';
 import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-programme.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { Judge } from 'src/judge/entities/judge.entity';
-import { Section } from 'src/sections/entities/section.entity';
 import { Skill } from 'src/skill/entities/skill.entity';
+import { Substitute } from 'src/substitute/entities/substitute.entity';
 import {
   Column,
   CreateDateColumn,
@@ -83,6 +83,10 @@ export class Programme {
   @Field(() => Int)
   duration: number;
 
+  @Field(() => Int, { nullable: true})
+  @Column({ default: 10 })
+  totalMark: number;
+
   @Column()
   @Field()
   conceptNote: string;
@@ -95,6 +99,15 @@ export class Programme {
   @Field(() => Boolean)
   resultPublished: Boolean;
 
+
+  @Field(() => Int, { nullable: true })
+  @Column({ nullable: true })
+  checkToReadNo: number;
+  
+  @Column({default:false})
+  @Field(()=> Boolean , {defaultValue:false})
+  anyIssue: boolean;
+
   // OneToMany relations
 
   @OneToMany(() => CandidateProgramme, CandidateProgramme => CandidateProgramme.programme)
@@ -102,13 +115,17 @@ export class Programme {
   @Field(() => [CandidateProgramme])
   candidateProgramme: CandidateProgramme[];
 
-  // @OneToMany(()=> Judge , (judge)=> judge.programme , {nullable:true})
-  // @Field(()=>[Judge])
-  // @JoinTable()
-  // judges : Judge[] ;
+  @OneToMany(() => Judge, judge => judge.programme, { nullable: true })
+  @Field(() => [Judge])
+  @JoinTable()
+  judges: Judge[];
+
+  @OneToMany(() => Substitute, Substitute => Substitute.programme)
+  @JoinTable()
+  @Field(() => [Substitute])
+  substitutes: Substitute[];
 
   // ManyTOOne relations
-  
 
   @ManyToOne(() => Skill, skill => skill.programmes, { eager: true, onDelete: 'SET NULL' })
   @Field(() => Skill, { nullable: true })
