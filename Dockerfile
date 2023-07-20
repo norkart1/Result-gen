@@ -16,5 +16,5 @@ COPY ./package.json ./
 RUN npm install
 COPY ./ ./ 
 # RUN npm install
-# RUN npm run build
-# RUn npm run start:dev
+RUN npm run build
+RUn npm run start:dev
