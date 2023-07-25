@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context, Info } from '@nestjs/graphql';
 import { SubstituteService } from './substitute.service';
 import { Substitute } from './entities/substitute.entity';
 import { CreateSubstituteInput } from './dto/create-substitute.input';
@@ -6,6 +6,7 @@ import { UpdateSubstituteInput } from './dto/update-substitute.input';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { UseGuards } from '@nestjs/common';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Substitute)
 export class SubstituteResolver {
@@ -22,13 +23,17 @@ export class SubstituteResolver {
   }
 
   @Query(() => [Substitute], { name: 'substitutes' })
-  findAll() {
-    return this.substituteService.findAll();
+  findAll(@Info() info: any) {
+    const fields  = Object.keys(fieldsProjection(info));
+    return this.substituteService.findAll(fields);
   }
 
   @Query(() => Substitute, { name: 'substitute' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.substituteService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number ,
+  @Info() info: any,
+  ) {
+    const fields  = Object.keys(fieldsProjection(info));
+    return this.substituteService.findOne(id , fields);
   }
 
   @Mutation(() => Substitute)

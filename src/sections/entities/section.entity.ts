@@ -16,13 +16,13 @@ import {
 @Entity()
 export class Section {
   // Primary generated ID
-  @Field(() => Int, { description: '' })
+  @Field(() => Int, { description: '', nullable: true })
   @PrimaryGeneratedColumn()
   id: number;
 
   // Normal columns
   @Column({ unique: true })
-  @Field()
+  @Field({ nullable: true })
   name: string;
 
   // OneToMany relations
@@ -35,10 +35,10 @@ export class Section {
   // Dates
 
   @CreateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   updatedAt: Date;
 }

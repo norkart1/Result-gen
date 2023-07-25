@@ -1,55 +1,59 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Candidate } from 'src/candidates/entities/candidate.entity';
 import { Programme } from 'src/programmes/entities/programme.entity';
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
 export class Substitute {
-  
-    // Primary Generated columns
-  
-    @Field(() => Int, { description: '' })
-    @PrimaryGeneratedColumn()
-    id: number;
-  
-    // Normal Columns
-  
-    @Column()
-    @Field()
-    reason : string;
+  // Primary Generated columns
 
-    @Column({default:false})
-    @Field(()=>Boolean, {nullable:true})
-    isAccepted : boolean;
+  @Field(() => Int, { description: '', nullable: true })
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({default:false})
-    @Field(()=>Boolean, {nullable:true})
-    isRejected : boolean;
-  
-    // OneTOMany relations
-  
-    @ManyToOne(()=> Programme , (programme)=> programme.substitutes , {nullable:true})
-    @Field(()=>Programme)
-    programme : Programme ;
+  // Normal Columns
 
-    @ManyToOne(()=> Candidate , (candidate)=> candidate.substitutesOld , {nullable:true})
-    @Field(()=>Candidate)
-    oldCandidate : Candidate;
+  @Column()
+  @Field({ nullable: true })
+  reason: string;
 
-    @ManyToOne(()=> Candidate , (candidate)=> candidate.substitutesNew , {nullable:true})
-    @Field(()=>Candidate )
-    newCandidate : Candidate;
-    
-    // Dates
-    
-    @CreateDateColumn()
-    @Field(() => Date)
-    createdAt: Date;
-  
-    @UpdateDateColumn()
-    @Field(() => Date)
-    updatedAt: Date;
-  
+  @Column({ default: false })
+  @Field(() => Boolean, { nullable: true })
+  isAccepted: boolean;
 
+  @Column({ default: false })
+  @Field(() => Boolean, { nullable: true })
+  isRejected: boolean;
+
+  // OneTOMany relations
+
+  @ManyToOne(() => Programme, programme => programme.substitutes, { nullable: true })
+  @Field(() => Programme, { nullable: true })
+  programme: Programme;
+
+  @ManyToOne(() => Candidate, candidate => candidate.substitutesOld, { nullable: true })
+  @Field(() => Candidate, { nullable: true })
+  oldCandidate: Candidate;
+
+  @ManyToOne(() => Candidate, candidate => candidate.substitutesNew, { nullable: true })
+  @Field(() => Candidate, { nullable: true })
+  newCandidate: Candidate;
+
+  // Dates
+
+  @CreateDateColumn()
+  @Field(() => Date, { nullable: true })
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @Field(() => Date, { nullable: true })
+  updatedAt: Date;
 }

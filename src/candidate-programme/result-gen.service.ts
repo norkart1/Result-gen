@@ -12,8 +12,11 @@ import { ProgrammesService } from 'src/programmes/programmes.service';
 import { Programme, Type } from 'src/programmes/entities/programme.entity';
 import { DetailsService } from 'src/details/details.service';
 import { arrayInput } from './dto/array-input.dto';
-var firebase = require('firebase/app');
-var firebasedb = require('firebase/database');
+import { TeamsService } from 'src/teams/teams.service';
+import { CandidatesService } from 'src/candidates/candidates.service';
+import * as firebase from 'firebase/app';
+import * as firebasedb from 'firebase/database';
+
 
 @Injectable()
 export class ResultGenService {
@@ -25,7 +28,27 @@ export class ResultGenService {
     private readonly candidateProgrammeService: CandidateProgrammeService,
     private readonly programmeService: ProgrammesService,
     private readonly DetailService: DetailsService,
+    private readonly teamService: TeamsService,
+    private readonly candidateService: CandidatesService,
   ) {}
+
+
+  private firebaseConfig = {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+  }; //by adding your credentials, you get authorized to read and write from the database
+
+  private app = firebase.initializeApp(this.firebaseConfig);
+  /**
+   * Loading Firebase Database and refering
+   * to user_data Object from the Database
+   */
+  private db = firebasedb.getDatabase(this.app);
 
   // upload Normal Result
 
@@ -42,67 +65,32 @@ export class ResultGenService {
       throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
     }
 
+    // checking the programme is already published
+
+    if (programme.resultPublished) {
+      throw new HttpException('Programme is already published', HttpStatus.BAD_REQUEST);
+    }
+
     // verify the result
     await this.verifyResult(input.inputs, programCode);
 
-    // // Setting Marks
-    // for (let index = 0; index < input.inputs.length; index++) {
-    //   const element = input.inputs[index];
-    //   const candidate: CandidateProgramme = candidatesOfProgramme.find(
-    //     candidate => candidate.candidate?.chestNO === element.chestNo,
-    //   );
-
-    //   candidate.mark = element.mark;
-    // }
-
-    // // Clear the grade first before generating new one
-
-    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
-    //   const candidate = candidatesOfProgramme[index];
-    //   candidate.grade = null;
-    // }
-
-    // //  Generating Grade for each candidate
-    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
-    //   const candidate = candidatesOfProgramme[index];
-    //   const grade: Grade = await this.generateGrade(candidate.mark, programme);
-    //   candidate.grade = grade;
-    // }
-
-    // // Generating Position for each candidate
-
-    // // Clear the position first before generating new one
-    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
-    //   const candidate = candidatesOfProgramme[index];
-    //   candidate.position = null;
-    // }
-
-    // candidatesOfProgramme = await this.generatePosition(candidatesOfProgramme, programCode);
-
-    // // set the point for each candidate
-    // for (let index = 0; index < candidatesOfProgramme.length; index++) {
-    //   let candidate = candidatesOfProgramme[index];
-    //   candidate = await this.generatePoint(candidate);
-    // }
-
-    // return candidatesOfProgramme;
-
     // process the result
-    candidatesOfProgramme = await this.processResult(candidatesOfProgramme, programme);
-    try{
-
+    candidatesOfProgramme = await this.processResult(programme);
+    try {
+      await this.programmeService.enterResult(programCode);
       return this.candidateProgrammeRepository.save(candidatesOfProgramme);
-    }catch(error){
-      throw new HttpException("Error on updating result", HttpStatus.BAD_REQUEST);
+    } catch (error) {
+      throw new HttpException('Error on updating result', HttpStatus.BAD_REQUEST);
     }
   }
 
   // result upload process
 
-  async processResult(candidatesOfProgramme: CandidateProgramme[] , programme: Programme){
-     // Clear the grade first before generating new one
+  async processResult( programme: Programme) {
+    // Clear the grade first before generating new one
+    let candidatesOfProgramme: CandidateProgramme[] = programme.candidateProgramme;
 
-     for (let index = 0; index < candidatesOfProgramme.length; index++) {
+    for (let index = 0; index < candidatesOfProgramme.length; index++) {
       const candidate = candidatesOfProgramme[index];
       candidate.grade = null;
     }
@@ -122,7 +110,10 @@ export class ResultGenService {
       candidate.position = null;
     }
 
-    candidatesOfProgramme = await this.generatePosition(candidatesOfProgramme, programme.programCode);
+    candidatesOfProgramme = await this.generatePosition(
+      candidatesOfProgramme,
+      programme.programCode,
+    );
 
     // set the point for each candidate
     for (let index = 0; index < candidatesOfProgramme.length; index++) {
@@ -181,7 +172,7 @@ export class ResultGenService {
   // generating grade
 
   async generateGrade(mark: number, programme: Programme) {
-    const allGrades: Grade[] = await this.gradeService.findAll();
+    const allGrades: Grade[] = await this.gradeService.findAll(['id', 'percentage']);
     // Descending sorting
     const sortedGrade: Grade[] = allGrades.sort((a: Grade, b: Grade) => {
       return b.percentage - a.percentage;
@@ -199,14 +190,22 @@ export class ResultGenService {
   // generate position
 
   async generatePosition(CandidateProgramme: CandidateProgramme[], programCode: string) {
-    const Positions: Position[] = await this.positionService.findAll();
+    const Positions: Position[] = await this.positionService.findAll( 
+      [
+        'id',
+        'name',
+        'pointSingle',
+        'pointGroup',
+        'pointHouse',
+        'programme.id',
+        'programme.type',
+      ],
+     );
 
     // giving the position
 
     CandidateProgramme = await this.multiplePosition(CandidateProgramme, Positions, programCode);
 
-    //  CandidateProgramme = this.multiplePosition(sorted, Positions, CandidateProgramme);
-    // console.log(CandidateProgramme);
 
     return CandidateProgramme;
   }
@@ -317,7 +316,6 @@ export class ResultGenService {
       },
     );
 
-
     for (let i = 0; i < sortedInput.length; i++) {
       const input = sortedInput[i];
       const candidateProgramme = sortedCandidateProgramme[i];
@@ -328,24 +326,29 @@ export class ResultGenService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      
+
       candidateProgramme[judgeName] = input.mark;
 
       // save the candidate programme
-       this.candidateProgrammeRepository.save(candidateProgramme);
+      this.candidateProgrammeRepository.save(candidateProgramme);
     }
 
     return sortedCandidateProgramme;
-
   }
 
   async approveJudgeResult(programCode: string, judgeName: string) {
     // check if programme exist
 
-    const programme : Programme = await this.programmeService.findOneByCode(programCode);
+    const programme: Programme = await this.programmeService.findOneByCode(programCode );
 
     if (!programme) {
       throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
+    }
+
+    // checking the programme is already published
+
+    if (programme.resultPublished) {
+      throw new HttpException('Programme is already published', HttpStatus.BAD_REQUEST);
     }
 
     // check if judge name is correct format
@@ -364,19 +367,23 @@ export class ResultGenService {
     for (let index = 0; index < candidatesOfProgrammes.length; index++) {
       const candidateProgramme = candidatesOfProgrammes[index];
 
-      if(!candidateProgramme[judgeName]){
-        throw new HttpException(`Judge ${judgeName} result is not uploaded`, HttpStatus.BAD_REQUEST);
+      if (!candidateProgramme[judgeName]) {
+        throw new HttpException(
+          `Judge ${judgeName} result is not uploaded`,
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       if (candidateProgramme.mark) {
-        candidateProgramme.mark = ((candidateProgramme.mark + candidateProgramme[judgeName]) / 20) * 10;
-      }else{
+        candidateProgramme.mark =
+          ((candidateProgramme.mark + candidateProgramme[judgeName]) / 20) * 10;
+      } else {
         candidateProgramme.mark = candidateProgramme[judgeName];
       }
     }
 
     // process the result
-    candidatesOfProgrammes = await this.processResult(candidatesOfProgrammes, programme);
+    candidatesOfProgrammes = await this.processResult(programme);
 
     // set null to judge result
     for (let index = 0; index < candidatesOfProgrammes.length; index++) {
@@ -384,95 +391,200 @@ export class ResultGenService {
       candidateProgramme[judgeName] = null;
     }
 
-    try{
+    try {
+      await this.programmeService.enterResult(programCode);
       return this.candidateProgrammeRepository.save(candidatesOfProgrammes);
-    }catch(error){
-      throw new HttpException("Error on updating result", HttpStatus.BAD_REQUEST);
+    } catch (error) {
+      throw new HttpException('Error on updating result', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async publishResult(programCode: string) {
+    // checking the programme exist
+
+    const programme: Programme = await this.programmeService.findOneByCode(programCode);
+
+    if (!programme) {
+      throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
     }
 
+    // checking the programme is already published
+
+    if (programme.resultPublished) {
+      throw new HttpException('Programme is already published', HttpStatus.BAD_REQUEST);
+    }
+
+    // checking the programme have any issue
+
+    if (programme.anyIssue) {
+      throw new HttpException(
+        `Programme ${programCode} is having an issue`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // checking the the result is added to the programme
+
+    if (!programme.resultEntered) {
+      throw new HttpException(
+        `Programme ${programCode} is not having any result`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // add the point to total point of candidate's team
+
+    const candidatesOfProgramme: CandidateProgramme[] = programme.candidateProgramme;
+
+    for (let index = 0; index < candidatesOfProgramme.length; index++) {
+      const candidateProgramme = candidatesOfProgramme[index];
+
+      let Hpoint = 0;
+      let Gpoint = 0;
+      let Ipoint = 0;
+
+      let ICpoint = 0;
+      let GCpoint = 0;
+
+      if (candidateProgramme.programme.type == Type.HOUSE) {
+        Hpoint = candidateProgramme.point;
+      } else if (candidateProgramme.programme.type == Type.GROUP) {
+        Gpoint = candidateProgramme.point;
+        GCpoint = candidateProgramme.point;
+      } else if (candidateProgramme.programme.type == Type.SINGLE) {
+        Ipoint = candidateProgramme.point;
+        ICpoint = candidateProgramme.point;
+      }
+
+      if (candidateProgramme.candidate.team) {
+        this.teamService.setTeamPoint(
+          candidateProgramme.candidate.team.id,
+          candidateProgramme.point,
+          Gpoint,
+          Ipoint,
+          Hpoint,
+        );
+      }
+
+      // set the point to candidate
+
+      this.candidateService.addPoint(candidateProgramme.candidate.id, ICpoint, GCpoint);
+    }
+
+    // set the result published to true
+
+    this.programmeService.publishResult(programCode);
+
+    return programme;
+  }
+
+  async publishResults(programCode: [string]) {
+    for (let index = 0; index < programCode.length; index++) {
+      const program = programCode[index];
+      await this.publishResult(program);
+    }
+
+    return 'success';
   }
 
   // live result using firebase
-  async liveResult() {
-    const firebaseConfig = {
-      apiKey: 'AIzaSyDhaKh0v1SY2zMr-jfT-TRkjsyQb0I5-ws',
-      authDomain: 'live-result-235df.firebaseapp.com',
-      databaseURL: 'https://live-result-235df-default-rtdb.firebaseio.com',
-      projectId: 'live-result-235df',
-      storageBucket: 'live-result-235df.appspot.com',
-      messagingSenderId: '265886718567',
-      appId: '1:265886718567:web:b54125e6b172104ce112c2',
-      measurementId: 'G-E19GCCCFYE',
-    };
+  async liveResult(programCode: [string], timeInSec: number) {
+    // Array of programmes
 
-    var app = firebase.initializeApp(firebaseConfig);
-    var db = firebasedb.getDatabase(app);
-    console.log(db);
+    const programmes: Programme[] = [];
 
-    var timeInSec = 5;
+    // checking the programme exist
 
-    var datas = await this.candidateProgrammeRepository.find();
+    for (let index = 0; index < programCode.length; index++) {
+      const program = programCode[index];
+      const programme: Programme = await this.programmeService.findOneByCode(program);
 
-    // [
-    //   { 'age': 1, name: 'ramu' },
-    //   { 'age': 12, name: 'jalu' },
-    //   { 'age': 1234, name: 'hamu' },
-    //   { 'age': 15, name: 'ramuh' },
-    //   { 'age': 126, name: 'jaluh' },
-    //   { 'age': 1237, name: 'hamuh' }
-    // ]
+      if (!programme) {
+        throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
+      }
+
+      // checking the programme is already published
+
+      if (programme.resultPublished) {
+        throw new HttpException(
+          `Programme ${program} is already published`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // checking the programme have any issue
+
+      if (programme.anyIssue) {
+        throw new HttpException(`Programme ${program} is having an issue`, HttpStatus.BAD_REQUEST);
+      }
+
+      // checking the the result is added to the programme
+
+      if (!programme.resultEntered) {
+        throw new HttpException(
+          `Programme ${program} is not having any result`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      programmes.push(programme);
+    }
+
+
+
+    var datas = programmes ;
+
     let count = 0;
 
     var dat = {
       '/main': datas,
     };
-    firebasedb.update(firebasedb.ref(db), dat);
+    firebasedb.update(firebasedb.ref(this.db), dat);
     var datList;
     firebasedb
-      .get(firebasedb.child(firebasedb.ref(db), 'main'))
+      .get(firebasedb.child(firebasedb.ref(this.db), 'main'))
       .then(snapshot => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
           datList = snapshot.val();
         } else {
           console.log('No data available');
         }
       })
       .catch(error => {
-        console.error(error);
+        throw new HttpException('Error on Live Result', HttpStatus.BAD_REQUEST);
       });
 
-    var ref = firebasedb.ref(db, 'current');
+    var ref = firebasedb.ref(this.db, 'current');
 
     const intervalId = setInterval(() => {
       firebasedb
         .get(ref)
         .then(snapshot => {
           if (snapshot.exists()) {
-            console.log(snapshot.val());
           } else {
             console.log('No data available');
           }
         })
         .catch(error => {
-          console.error(error);
+          throw new HttpException('Error on Live Result', HttpStatus.BAD_REQUEST);
         });
       datList[count]['startTime'] = new Date().getTime();
       datList[count]['time'] = timeInSec;
-      console.log(datList);
       var upo = {
         '/current': datList[count],
       };
-      firebasedb.update(firebasedb.ref(db), upo);
+      firebasedb.update(firebasedb.ref(this.db), upo);
 
       count++;
 
       if (count === datList.length) {
         console.log('stopped');
-        // firebasedb.remove(firebasedb.child(firebasedb.ref(db), 'current'))
-        firebasedb.update(firebasedb.ref(db), { '/current': 'no data' });
+        firebasedb.update(firebasedb.ref(this.db), { '/current': 'no data' });
         clearInterval(intervalId);
       }
-    }, timeInSec * 1000);
+    }, timeInSec * 3000);
   }
+
+
+
 }

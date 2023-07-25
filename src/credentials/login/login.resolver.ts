@@ -28,6 +28,7 @@ export class LoginResolver {
       if (!val) {
         throw new Error('Invalid Username or Password');
       }
+      
       if (val.token) {
         context.res.cookie('__user', `${val.token}`, { httpOnly: true }, { maxAge: 1000 });
         return val.user;

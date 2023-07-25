@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context, Info } from '@nestjs/graphql';
 import { TeamsService } from './teams.service';
 import { Team } from './entities/team.entity';
 import { CreateTeamInput } from './dto/create-team.input';
@@ -7,6 +7,7 @@ import { AuthPipe } from './pipe/auth.pipe';
 import { UseGuards, UsePipes } from '@nestjs/common';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Team)
 export class TeamsResolver {
@@ -21,13 +22,15 @@ export class TeamsResolver {
   }
 
   @Query(() => [Team], { name: 'teams' })
-  findAll() {
-    return this.teamsService.findAll();
+  findAll(@Info() info: any) {
+    const fields  = Object.keys(fieldsProjection(info));
+    return this.teamsService.findAll(fields);
   }
 
   @Query(() => Team, { name: 'team' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.teamsService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number, @Info() info: any) {
+    const fields  = Object.keys(fieldsProjection(info));
+    return this.teamsService.findOne(id, fields );
   }
 
   @Mutation(() => Team)

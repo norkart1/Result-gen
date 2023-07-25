@@ -46,14 +46,12 @@ export class LoginService {
         throw new HttpException('Invalid Password ', HttpStatus.BAD_REQUEST);
       }
 
-      // Convert a Json Array to a Nomal Array
-      const roles = eval(user.roles);
 
       if (isPasswordValid) {
         const payload: JwtPayload = {
           username: user.username,
           sub: user.id,
-          roles,
+          roles: user.roles,
           team: user.team?.name,
           categories: user.categories?.map(category => category.name),
         };

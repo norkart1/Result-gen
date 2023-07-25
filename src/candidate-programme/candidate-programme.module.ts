@@ -13,6 +13,7 @@ import { ResultGenResolver } from './result-gen.resolver';
 import { CredentialsModule } from 'src/credentials/credentials.module';
 import { DetailsModule } from 'src/details/details.module';
 import { CategorySettingsModule } from 'src/category-settings/category-settings.module';
+import { TeamsModule } from 'src/teams/teams.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CategorySettingsModule } from 'src/category-settings/category-settings.
     CredentialsModule,
     DetailsModule,
     CategorySettingsModule,
+    TeamsModule
   ],
   providers: [
     CandidateProgrammeResolver,

@@ -1,5 +1,5 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
@@ -24,6 +24,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { CustomContextProvider } from './utils/custom';
 import { JudgeModule } from './judge/judge.module';
 import { SubstituteModule } from './substitute/substitute.module';
+import { FeedsModule } from './feeds/feeds.module';
+import { FieldSelectionMiddleware } from './field-selection.middleware';
+import { CustomSettingsModule } from './custom-settings/custom-settings.module';
+import { GalleryModule } from './gallery/gallery.module';
 
 @Module({
   imports: [
@@ -109,8 +113,17 @@ import { SubstituteModule } from './substitute/substitute.module';
     CredentialsModule,
     JudgeModule,
     SubstituteModule,
+    FeedsModule,
+    CustomSettingsModule,
+    GalleryModule,
   ],
   controllers: [AppController],
   providers: [AppService , CustomContextProvider],
 })
-export class AppModule { }
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(FieldSelectionMiddleware)
+      .forRoutes({ path: '/graphql', method: RequestMethod.POST });
+  }
+ }

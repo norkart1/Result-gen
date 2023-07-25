@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context, Info } from '@nestjs/graphql';
 import { ProgrammesService } from './programmes.service';
 import { Programme } from './entities/programme.entity';
 import { CreateProgrammeInput } from './dto/create-programme.input';
@@ -9,6 +9,7 @@ import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
 import { ScheduleCreate } from './dto/scheduleCreate.dto';
 import { createInput } from './dto/create-inputs.inputs';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Programme)
 export class ProgrammesResolver {
@@ -37,13 +38,17 @@ export class ProgrammesResolver {
   }
 
   @Query(() => [Programme], { name: 'programmes' })
-  findAll() {
-    return this.programmesService.findAll();
+  findAll(
+    @Info() info: any,
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.programmesService.findAll(  fields);
   }
 
   @Query(() => Programme, { name: 'programme' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.programmesService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.programmesService.findOne(id , fields);
   }
 
   @Mutation(() => Programme)
@@ -88,5 +93,10 @@ export class ProgrammesResolver {
   @UseGuards(RolesGuard)
   removeSchedule(@Args('code', { type: () => Int }) code: string, @Context('req') req: any) {
     return this.programmesService.removeSchedule(code, req.user);
+  }
+
+  @Mutation(() => Programme)
+  setAnyIssue(@Args('code') code: string, @Args('issue') issue: boolean) {
+    return this.programmesService.setAnyIssue(code , issue);
   }
 }

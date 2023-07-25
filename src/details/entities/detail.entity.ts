@@ -13,13 +13,13 @@ export class Detail {
   // Primary generated ID
 
   @Field(() => Int, { description: '' })
-  @PrimaryGeneratedColumn()  // NEED TO CHANGE
+  @PrimaryGeneratedColumn() 
   id: number;
 
   // Normal Columns
 
   @Column()
-  @Field()
+  @Field({nullable:true})
   name: string;
 
   @Column({
@@ -27,26 +27,26 @@ export class Detail {
       'Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print,',
   })
 
-  @Field()
+  @Field({nullable:true})
   motto: string;
 
   @Column()
-  @Field()
+  @Field({nullable:true})
   institution: string;
 
   @Column()
-  @Field()
+  @Field({nullable:true})
   logoId: string;
 
   @Column()
-  @Field()
+  @Field({nullable:true})
   coverId: string;
 
   @Column({
     default:
       'Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print,',
   })
-  @Field()
+  @Field({nullable:true})
   description: string;
 
   @Column({default:true })

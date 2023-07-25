@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
 import { SkillService } from './skill.service';
 import { Skill } from './entities/skill.entity';
 import { CreateSkillInput } from './dto/create-skill.input';
@@ -7,6 +7,7 @@ import { AuthPipe } from './pipe/auth.pipe';
 import { UseGuards, UsePipes } from '@nestjs/common';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Skill)
 export class SkillResolver {
@@ -21,13 +22,19 @@ export class SkillResolver {
   }
 
   @Query(() => [Skill], { name: 'skills' })
-  findAll() {
-    return this.skillService.findAll();
+  findAll(
+    @Info() info,
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.skillService.findAll(fields);
   }
 
   @Query(() => Skill, { name: 'skill' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.skillService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number, @Info() info
+  
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.skillService.findOne(id , fields);
   }
 
   @Mutation(() => Skill)

@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
 import { GradesService } from './grades.service';
 import { Grade } from './entities/grade.entity';
 import { CreateGradeInput } from './dto/create-grade.input';
@@ -7,6 +7,7 @@ import { AuthPipe } from './pipe/auth.pipe';
 import { UseGuards, UsePipes } from '@nestjs/common';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Grade)
 export class GradesResolver {
@@ -21,13 +22,17 @@ export class GradesResolver {
   }
 
   @Query(() => [Grade], { name: 'grades' })
-  findAll() {
-    return this.gradesService.findAll();
+  findAll(
+    @Info() info: any,
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.gradesService.findAll( fields);
   }
 
   @Query(() => Grade, { name: 'grade' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.gradesService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.gradesService.findOne(id , fields);
   }
 
   

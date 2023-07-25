@@ -15,6 +15,9 @@ import { ResultGenService } from 'src/candidate-programme/result-gen.service';
 import { AddResult } from 'src/candidate-programme/dto/add-result.dto';
 import { Programme } from 'src/programmes/entities/programme.entity';
 import { arrayInput } from 'src/candidate-programme/dto/array-input.dto';
+import { CredentialsService } from 'src/credentials/credentials.service';
+import { Credential } from 'src/credentials/entities/credential.entity';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class JudgeService {
@@ -22,13 +25,12 @@ export class JudgeService {
     @InjectRepository(Judge)
     private judgeRepository: Repository<Judge>,
     private readonly programmesService: ProgrammesService,
-    private readonly candidatesService: CandidatesService,
     private readonly LoginService: LoginService,
-    private readonly candidateProgrammeService: CandidateProgrammeService,
     private readonly resultGenService: ResultGenService,
+    private readonly credentialsService: CredentialsService,
   ) {}
 
-  async create(createJudgeInput: CreateJudgeInput) {
+  async create(createJudgeInput: CreateJudgeInput, user: Credential) {
     // create a new judge
     const { username, password, judgeName, programmeCode } = createJudgeInput;
 
@@ -53,6 +55,10 @@ export class JudgeService {
       throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
     }
 
+    // checking is user have permission on this category
+
+    await this.credentialsService.checkPermissionOnCategories(user, programmeId.category.name);
+
     // hash password
     const hashedPassword = await this.LoginService.hashPassword(password);
 
@@ -71,28 +77,80 @@ export class JudgeService {
     }
   }
 
-  findAll() {
-    try {
-      const judges = this.judgeRepository.find({ relations: ['programme'], order: { id: 'DESC' } });
-      return judges;
-    } catch (err) {
-      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
+  async findAll(fields: string[]) {
+    const allowedRelations = ['programme'];
 
-  findOne(id: number) {
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      const judge = this.judgeRepository.findOne({
-        where: { id },
-        relations: ['programme'],
-      });
+      const queryBuilder = this.judgeRepository
+        .createQueryBuilder('judge')
+        .leftJoinAndSelect('judge.programme', 'programme')
+        .orderBy('judge.id', 'ASC');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `judge.${column}`;
+          }
+        }),
+      );
+      const judge = await queryBuilder.getMany();
       return judge;
-    } catch (err) {
-      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding judge ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
-  async update(id: number, updateJudgeInput: UpdateJudgeInput) {
+async  findOne(id: number , fields: string[]) {
+    const allowedRelations = ['programme'];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
+    try {
+      const queryBuilder = this.judgeRepository
+        .createQueryBuilder('judge')
+        .where('judge.id = :id', { id })
+        .leftJoinAndSelect('judge.programme', 'programme')
+        .orderBy('judge.id', 'ASC');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `judge.${column}`;
+          }
+        }),
+      );
+      const judge = await queryBuilder.getOne();
+      return judge;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding judge ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+  async update(id: number, updateJudgeInput: UpdateJudgeInput, user: Credential) {
     const { username, password, judgeName, programmeCode } = updateJudgeInput;
 
     // check if username already exists
@@ -109,6 +167,10 @@ export class JudgeService {
     if (!programmeId) {
       throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
     }
+
+    // checking is user have permission on this category
+
+    await this.credentialsService.checkPermissionOnCategories(user, programmeId.category.name);
 
     // hash password
 
@@ -129,10 +191,10 @@ export class JudgeService {
     }
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     // check the judge exist
 
-    const judge = this.judgeRepository.findOneBy({ id });
+    const judge = await this.judgeRepository.findOneBy({ id });
 
     if (!judge) {
       throw new HttpException('Judge does not exist', HttpStatus.BAD_REQUEST);
@@ -146,41 +208,54 @@ export class JudgeService {
     }
   }
 
-  async uploadMarkByJudge(  // DO FIRST THE DTO SETTING OF CANDIDATE AND PROGRAMME EXCEL UPLOAD
+  async uploadMarkByJudge(
+    // DO FIRST THE DTO SETTING OF CANDIDATE AND PROGRAMME EXCEL UPLOAD
     judgeId: number,
     programCode: string,
     uploadMarkByJudgeInput: arrayInput,
   ) {
     // check if judge exist
 
-    const judge =await this.judgeRepository.findOneBy({ id: judgeId });
+    const judge: Judge = await this.findOne(judgeId , ['programme.name' , 'judgeName' , 'programme.id']);
 
     if (!judge) {
       throw new HttpException('Judge does not exist', HttpStatus.BAD_REQUEST);
     }
 
-    
     // check if programme exist
 
-    const programme : Programme = await this.programmesService.findOneByCode(programCode);
+    const programme: Programme = await this.programmesService.findOneByCode(programCode);
 
     if (!programme) {
       throw new HttpException('Programme does not exist', HttpStatus.BAD_REQUEST);
     }
 
+    // check the judge is assigned to the programme
+
+    const isAssigned = judge.programme.id === programme.id;
+
+    if (!isAssigned) {
+      throw new HttpException('You no have access to this programme', HttpStatus.BAD_REQUEST);
+    }
 
     // Verify the result
-    await this.resultGenService.verifyResult(uploadMarkByJudgeInput.inputs  , programCode);
+    await this.resultGenService.verifyResult(uploadMarkByJudgeInput.inputs, programCode);
 
-    try{
-      const UpdatedCandidateProgramme = await this.resultGenService.judgeResultCheck(uploadMarkByJudgeInput.inputs , programme.candidateProgramme , judge.judgeName );
-      if(!UpdatedCandidateProgramme){
-        throw new HttpException('can\'t add mark to candidates', HttpStatus.BAD_REQUEST);
+    try {
+      const UpdatedCandidateProgramme = await this.resultGenService.judgeResultCheck(
+        uploadMarkByJudgeInput.inputs,
+        programme.candidateProgramme,
+        judge.judgeName,
+      );
+      if (!UpdatedCandidateProgramme) {
+        throw new HttpException("can't add mark to candidates", HttpStatus.BAD_REQUEST);
       }
-      // return this.remove(judgeId);
-    }catch
-    (err){
-      throw new HttpException(err.message , HttpStatus.INTERNAL_SERVER_ERROR)
+
+      this.remove(judgeId);
+
+      return 'Mark added successfully';
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

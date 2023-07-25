@@ -5,6 +5,7 @@ import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { Category } from './entities/category.entity';
 import { SectionsService } from 'src/sections/sections.service';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class CategoryService {
@@ -16,7 +17,7 @@ export class CategoryService {
   async create(createCategoryInput: CreateCategoryInput) {
     //  checking is section exist
 
-    const section = await this.sectionService.findOneByName(createCategoryInput.section);
+    const section = await this.sectionService.findOneByName(createCategoryInput.section , ['id']);
 
     if (!section) {
       throw new HttpException(
@@ -40,39 +41,92 @@ export class CategoryService {
     }
   }
 
-  findAll() {
+ async findAll( fields: string[]) {
+    const allowedRelations = [
+      'section',
+      'candidates',
+      'programmes',
+      'settings',
+      'candidates.team',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.categoryRepository.find({
-        relations: ['section', 'candidates', 'candidates.team', 'programmes', 'settings'],
-      });
+      const queryBuilder = this.categoryRepository.createQueryBuilder('category')
+        .leftJoinAndSelect('category.section', 'section')
+        .leftJoinAndSelect('category.candidates', 'candidates')
+        .leftJoinAndSelect('category.programmes', 'programmes')
+        .leftJoinAndSelect('category.settings', 'settings')
+        .leftJoinAndSelect('candidates.team', 'team');
+
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `category.${column}`;
+          }
+        }),
+      );
+      const category = await queryBuilder.getMany();
+      return category;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding category ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
   }
 
-  findOne(id: number) {
-    if (!id) {
-      throw new HttpException(`category cannot be undefined`, HttpStatus.BAD_REQUEST);
-    }
-    try {
-      const category = this.categoryRepository.findOne({
-        where: {
-          id,
-        },
-        relations: ['section', 'candidates', 'programmes', 'settings', 'candidates.team'],
-      });
-      if (!category) {
-        throw new HttpException(`can't find category with id ${id}`, HttpStatus.BAD_REQUEST);
-      }
+ async findOne(id: number , fields: string[]) {
+  const allowedRelations = [
+    'section',
+    'candidates',
+    'programmes',
+    'settings',
+    'candidates.team',
+  ];
 
+  // validating fields
+  fields = fieldsValidator(fields, allowedRelations);
+  // checking if fields contains id
+  fields = fieldsIdChecker(fields);
+  
+    const queryBuilder = this.categoryRepository.createQueryBuilder('category')
+      .where('category.id = :id', { id })
+        .leftJoinAndSelect('category.section', 'section')
+        .leftJoinAndSelect('category.candidates', 'candidates')
+        .leftJoinAndSelect('category.programmes', 'programmes')
+        .leftJoinAndSelect('category.settings', 'settings')
+        .leftJoinAndSelect('candidates.team', 'team');
+
+        try {
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `category.${column}`;
+          }
+        }),
+      );
+      const category = await queryBuilder.getOne();
+      
       return category;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding category ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
@@ -107,7 +161,7 @@ export class CategoryService {
   async update(id: number, updateCategoryInput: UpdateCategoryInput) {
     //  checking is section exist
 
-    const section = await this.sectionService.findOneByName(updateCategoryInput.section);
+    const section = await this.sectionService.findOneByName(updateCategoryInput.section , ['id']);
 
     if (!section) {
       throw new HttpException(

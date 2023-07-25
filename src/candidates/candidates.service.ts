@@ -9,12 +9,12 @@ import { UpdateCandidateInput } from './dto/update-candidate.input';
 import { Candidate } from './entities/candidate.entity';
 import { Gender } from './entities/candidate.entity';
 import { Category } from 'src/category/entities/category.entity';
-import { Section } from 'src/sections/entities/section.entity';
 import { Credential } from 'src/credentials/entities/credential.entity';
-import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-programme.entity';
 import { CandidateProgrammeService } from 'src/candidate-programme/candidate-programme.service';
 import { Team } from 'src/teams/entities/team.entity';
 import { CreateInput } from './dto/create-input.dto';
+import { CredentialsService } from 'src/credentials/credentials.service';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class CandidatesService {
@@ -24,6 +24,7 @@ export class CandidatesService {
     private categoryService: CategoryService,
     private sectionService: SectionsService,
     private candidateProgrammeService: CandidateProgrammeService,
+    private credentialService: CredentialsService,
   ) {}
 
   //  To create many candidates at a time , Normally using on Excel file upload
@@ -58,9 +59,13 @@ export class CandidatesService {
         );
       }
 
+      // authenticating the user have permission to create the candidates
+
+      this.credentialService.checkPermissionOnCategories(user, category_id.name);
+
       //  checking is team exist
 
-      const team_id = await this.teamService.findOneByName(createCandidateInput.team);
+      const team_id = await this.teamService.findOneByName(createCandidateInput.team, ['id']);
 
       if (!team_id) {
         throw new HttpException(
@@ -101,29 +106,27 @@ export class CandidatesService {
         class: createCandidateInput.class,
         dob: createCandidateInput.dob,
         name: createCandidateInput.name,
-        gender : createCandidateInput.gender,
-        team : team_id
-      } );
+        gender: createCandidateInput.gender,
+        team: team_id,
+      });
     }
 
     // looping the values
 
     try {
-
       // checking all candidates are checked
 
-      if(allData.length !== createCandidateInputArray.inputs.length){
+      if (allData.length !== createCandidateInputArray.inputs.length) {
         throw new HttpException(
           `Some candidates are not eligible to create ,ie: check on candidates`,
           HttpStatus.BAD_REQUEST,
         );
       }
 
-
       for (let index = 0; index < allData.length; index++) {
         const data = allData[index];
 
-        // creating a instance of Candidate
+        // creating a instance of Candidate 
         const input = new Candidate();
 
         // updating Value to candidate
@@ -165,22 +168,12 @@ export class CandidatesService {
     }
 
     // authenticating the user have permission to update the category
-    const categoryExists = user.categories?.some(category => category.name === category_id.name);
 
-    if (!categoryExists) {
-      throw new HttpException(
-        `You dont have permission to access the category ${category_id.name} `,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-
-    // --------------------
-    // checking .........
-    // --------------------
+    this.credentialService.checkPermissionOnCategories(user, category_id.name);
 
     //  checking is team exist
 
-    const team_id = await this.teamService.findOneByName(createCandidateInput.team);
+    const team_id = await this.teamService.findOneByName(createCandidateInput.team, ['id']);
 
     if (!team_id) {
       throw new HttpException(
@@ -227,14 +220,43 @@ export class CandidatesService {
     }
   }
 
-  findAll() {
+  async findAll(fields: string[]) {
+    const allowedRelations = [
+      'category',
+      'team',
+      'candidateProgrammes',
+      'candidateProgrammes.programme',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.candidateRepository.find({
-        relations: ['category', 'team', 'candidateProgrammes', 'candidateProgrammesOfGroup'],
-      });
+      const queryBuilder = this.candidateRepository
+        .createQueryBuilder('candidate')
+        .leftJoinAndSelect('candidate.category', 'category')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('candidate.candidateProgrammes', 'candidateProgrammes')
+        .leftJoinAndSelect('candidateProgrammes.programme', 'programme');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `candidate.${column}`;
+          }
+        }),
+      );
+      const candidate = await queryBuilder.getMany();
+      return candidate;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding candidates ',
+        'An Error have when finding candidate ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
@@ -263,22 +285,46 @@ export class CandidatesService {
     }
   }
 
-  async findOne(id: number) {
-    try {
-      const candidate = await this.candidateRepository.findOne({
-        where: {
-          id,
-        },
-        relations: ['category', 'team', 'candidateProgrammes'],
-      });
+  async findOne(id: number, fields: string[]) {
+    const allowedRelations = [
+      'category',
+      'team',
+      'candidateProgrammes',
+      'candidateProgrammes.programme',
+    ];
 
-      if (!candidate) {
-        throw new HttpException(`Cant find candidate with id ${id} `, HttpStatus.BAD_REQUEST);
-      }
-      await this.candidateProgrammeService.getCandidatesOfGroupOfCandidate(candidate.chestNO);
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+    try {
+      const queryBuilder = this.candidateRepository
+        .createQueryBuilder('candidate')
+        .where('candidate.id = :id', { id })
+        .leftJoinAndSelect('candidate.category', 'category')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('candidate.candidateProgrammes', 'candidateProgrammes')
+        .leftJoinAndSelect('candidateProgrammes.programme', 'programme');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `candidate.${column}`;
+          }
+        }),
+      );
+      const candidate = await queryBuilder.getOne();
       return candidate;
     } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR, { cause: e });
+      throw new HttpException(
+        'An Error have when finding candidate ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
@@ -347,14 +393,8 @@ export class CandidatesService {
     }
 
     // authenticating the user have permission to update the category
-    const categoryExists = user.categories?.some(category => category.name === category_id.name);
 
-    if (!categoryExists) {
-      throw new HttpException(
-        `You dont have permission to access the category ${category_id.name} `,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    this.credentialService.checkPermissionOnCategories(user, category_id.name);
 
     // checking is candidate exist
 
@@ -369,7 +409,7 @@ export class CandidatesService {
 
     //  checking is team exist
 
-    const team_id = await this.teamService.findOneByName(updateCandidateInput.team);
+    const team_id = await this.teamService.findOneByName(updateCandidateInput.team, ['id']);
 
     if (!team_id) {
       throw new HttpException(
@@ -410,7 +450,7 @@ export class CandidatesService {
 
     // checking is candidate exist
 
-    const candidate = await this.findOne(id);
+    const candidate = await this.findOne(id, ['category.name']);
 
     const category_id = await this.categoryService.findOneByName(candidate?.category?.name);
 
@@ -422,14 +462,8 @@ export class CandidatesService {
     }
 
     // authenticating the user have permission to update the category
-    const categoryExists = user.categories?.some(category => category.name === category_id.name);
 
-    if (!categoryExists) {
-      throw new HttpException(
-        `You dont have permission to access the category ${category_id.name} `,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    this.credentialService.checkPermissionOnCategories(user, category_id.name);
 
     if (!candidate) {
       throw new HttpException(`Cant find a candidate to delete`, HttpStatus.BAD_REQUEST);
@@ -444,5 +478,52 @@ export class CandidatesService {
         { cause: e },
       );
     }
+  }
+
+  // add individual or group point to candidate
+
+  async addPoint(id: number, indPoint: number = 0, groupPoint: number = 0) {
+    const candidate = await this.candidateRepository.findOneBy({ id });
+
+    if (!candidate) {
+      throw new HttpException(`Cant find a candidate to add point`, HttpStatus.BAD_REQUEST);
+    }
+
+    const individualPoint = candidate.individualPoint + indPoint;
+    const groupPointTotal = candidate.groupPoint + groupPoint;
+
+    try {
+      return this.candidateRepository.save({
+        ...candidate,
+        individualPoint,
+        groupPoint: groupPointTotal,
+      });
+    } catch (err) {
+      throw new HttpException(
+        'An Error have when updating candidate point ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: err },
+      );
+    }
+  }
+
+  // image upload to google drive and save id to candidate
+
+  async uploadImage(id: number, image:Express.Multer.File) {
+    // check the candidate exist
+    const candidate = await this.findOne(id, ['id']);
+
+    if (!candidate) {
+      throw new HttpException(`Cant find a candidate to add point`, HttpStatus.BAD_REQUEST);
+    }
+
+    // check the file is image 
+    if(!image.mimetype.includes('image')){
+      throw new HttpException(`File is not a image`, HttpStatus.BAD_REQUEST);
+    }
+
+    // upload image to google drive
+
+    
   }
 }

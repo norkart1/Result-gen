@@ -11,6 +11,9 @@ import { Credential } from 'src/credentials/entities/credential.entity';
 import { Type } from 'src/programmes/entities/programme.entity';
 import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-programme.entity';
 import { CredentialsService } from 'src/credentials/credentials.service';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
+var firebase = require('firebase/app');
+var firebasedb = require('firebase/database');
 
 @Injectable()
 export class SubstituteService {
@@ -52,11 +55,11 @@ export class SubstituteService {
 
     // CHECKING THE USER HAVE PERMISSION TO ACCESS THE PROGRAMME BY CATEGORY
 
-    this.credentialService.checkPermissionOnCategories(user, programmeId.category?.name);
+    await this.credentialService.checkPermissionOnCategories(user, programmeId.category?.name);
 
     // CHECKING THE USER HAVE PERMISSION TO ACCESS THE CANDIDATE BY TEAM
 
-    this.credentialService.checkPermissionOnTeam(user, oldCandidateId.team?.name);
+    await this.credentialService.checkPermissionOnTeam(user, oldCandidateId.team?.name);
 
     // check if old candidate is in programme
 
@@ -93,31 +96,93 @@ export class SubstituteService {
         newCandidate: newCandidateId,
       });
 
-      return this.substituteRepository.save(substitute);
+      const data = await this.substituteRepository.save(substitute);
+
+      // send notification to admin by firebase
+
+      this.addData(data, 'substitute');
+
+      return data;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  findAll() {
-    const substitutes = this.substituteRepository.find({
-      relations: ['programme', 'oldCandidate', 'newCandidate'],
-    });
-    if (!substitutes) {
-      throw new HttpException('No substitute found', HttpStatus.NOT_FOUND);
+  async findAll(fields: string[]) {
+    const allowedRelations = ['programme', 'oldCandidate', 'newCandidate'];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
+    try {
+      const queryBuilder = this.substituteRepository
+        .createQueryBuilder('substitute')
+        .leftJoinAndSelect('substitute.programme', 'programme')
+        .leftJoinAndSelect('substitute.oldCandidate', 'oldCandidate')
+        .leftJoinAndSelect('substitute.newCandidate', 'newCandidate')
+        .orderBy('substitute.id', 'ASC');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `substitute.${column}`;
+          }
+        }),
+      );
+      const substitute = await queryBuilder.getMany();
+      return substitute;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding substitute ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
-    return substitutes;
   }
 
-  findOne(id: number) {
-    const substitute = this.substituteRepository.findOne({
-      where: { id },
-      relations: ['programme', 'oldCandidate', 'newCandidate'],
-    });
-    if (!substitute) {
-      throw new HttpException('No substitute found', HttpStatus.NOT_FOUND);
+  async findOne(id: number, fields: string[]) {
+    const allowedRelations = ['programme', 'oldCandidate', 'newCandidate'];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
+    try {
+      const queryBuilder = this.substituteRepository
+        .createQueryBuilder('substitute')
+        .where('substitute.id = :id', { id })
+        .leftJoinAndSelect('substitute.programme', 'programme')
+        .leftJoinAndSelect('substitute.oldCandidate', 'oldCandidate')
+        .leftJoinAndSelect('substitute.newCandidate', 'newCandidate')
+        .orderBy('substitute.id', 'ASC');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `substitute.${column}`;
+          }
+        }),
+      );
+      const substitute = await queryBuilder.getOne();
+      return substitute;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding substitute ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
-    return substitute;
   }
 
   async update(id: number, updateSubstituteInput: UpdateSubstituteInput, user: Credential) {
@@ -149,11 +214,13 @@ export class SubstituteService {
 
     // CHECKING THE USER HAVE PERMISSION TO ACCESS THE PROGRAMME BY CATEGORY
 
-    this.credentialService.checkPermissionOnCategories(user, programmeId.category?.name);
+    await this.credentialService.checkPermissionOnCategories(user, programmeId.category.name);
 
     // CHECKING THE USER HAVE PERMISSION TO ACCESS THE CANDIDATE BY TEAM
 
-    this.credentialService.checkPermissionOnTeam(user, oldCandidateId.team?.name);
+    
+
+    await this.credentialService.checkPermissionOnTeam(user, oldCandidateId.team.name);
 
     // check if old candidate is in programme
 
@@ -164,7 +231,7 @@ export class SubstituteService {
 
     if (!isOldCandidateInProgramme) {
       throw new HttpException(
-        `The candidate ${oldCandidate} is not in programme ${programmeId}`,
+        `The candidate ${oldCandidate} is not in programme ${programme}`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -188,7 +255,7 @@ export class SubstituteService {
     await this.candidateProgrammeService.checkEligibility(newCandidateId, programmeId);
 
     try {
-      const substitute = await this.findOne(id);
+      const substitute = await this.findOne(id, ['id']);
       substitute.reason = reason;
       substitute.programme = programmeId;
       substitute.oldCandidate = oldCandidateId;
@@ -210,11 +277,14 @@ export class SubstituteService {
     }
 
     // CHECKING THE USER HAVE PERMISSION TO ACCESS THE PROGRAMME BY CATEGORY
-    this.credentialService.checkPermissionOnCategories(user, substitute.programme.category?.name);
+    await this.credentialService.checkPermissionOnCategories(
+      user,
+      substitute.programme.category?.name,
+    );
 
     // CHECKING THE USER HAVE PERMISSION TO ACCESS THE CANDIDATE BY TEAM
 
-    this.credentialService.checkPermissionOnTeam(user, substitute.oldCandidate?.team?.name);
+    await this.credentialService.checkPermissionOnTeam(user, substitute.oldCandidate?.team?.name);
 
     try {
       return this.substituteRepository.delete(id);
@@ -332,5 +402,57 @@ export class SubstituteService {
     } catch (error) {
       throw new HttpException('Substitute not rejected', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private firebaseConfig = {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+  }; //by adding your credentials, you get authorized to read and write from the database
+
+  private app = firebase.initializeApp(this.firebaseConfig);
+  /**
+   * Loading Firebase Database and refering
+   * to user_data Object from the Database
+   */
+  private db = firebasedb.getDatabase(this.app);
+
+  addData(data: Substitute, folderName: string) {
+    var dataList;
+    firebasedb
+      .get(firebasedb.child(firebasedb.ref(this.db), 'messages'))
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          console.log(snapshot.val());
+          dataList = snapshot.val();
+          dataList.push(data);
+          var newData = {
+            '/messages': dataList,
+          };
+          firebasedb
+            .update(firebasedb.ref(this.db), newData)
+            .then()
+            .catch(e => {
+              throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            });
+        } else {
+          var new_data = {
+            '/messages': data,
+          };
+          firebasedb
+            .update(firebasedb.ref(this.db), new_data)
+            .then()
+            .catch(e => {
+              console.log(e);
+            });
+        }
+      })
+      .catch(error => {
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      });
   }
 }

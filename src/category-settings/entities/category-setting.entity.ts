@@ -6,68 +6,68 @@ import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 @Entity()
 export class CategorySettings {
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @PrimaryGeneratedColumn()
   id: number
 
   // MAX 
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   maxProgram: number;
  
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   maxSingle: number;
   
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   maxGroup : number;
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   maxStage: number;
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   maxNonStage: number;
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   maxOutDoor: number;
 
   // MIN
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   minProgram: number;
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   minSingle: number;
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   minGroup : number;
   
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   minStage: number;
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   minNonStage: number;
 
-  @Field(() => Int)
+  @Field(() => Int , {nullable : true})
   @Column()
   minOutDoor: number;
   
 
-  @Field(() => Boolean)
-  @Column()
+  @Field(() => Boolean , {defaultValue : false})
+  @Column({default : false})
   isProgrammeListUpdatable: boolean;
 
   @OneToOne(()=> Category , (category)=> category.settings)
-  @Field(()=>Category)
+  @Field(()=>Category , {nullable : true})
   category:Category;
 
 }

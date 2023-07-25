@@ -61,7 +61,7 @@ export class RolesGuard implements CanActivate {
     req.user = user;
 
     // Check if the user has access to the requested role
-    return requiredRoles.some(role => req.user?.roles?.includes(role));
+    return requiredRoles.some(role => req.user?.roles === role);
   }
 
   // This method is used by the AuthGuard to check if the user has access to Judge role

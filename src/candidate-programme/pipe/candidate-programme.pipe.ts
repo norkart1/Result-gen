@@ -30,7 +30,7 @@ export class CandidateProgrammePipe implements PipeTransform {
 
     // checking is programme exist
 
-    let programme = await this.programmeService.findOneByCode(programme_code)
+    let programme = await this.programmeService.findOneByCode(programme_code )
 
     if(!programme){
       throw new HttpException(`Can't find programme with programme id ${programme_code}` , HttpStatus.BAD_REQUEST)

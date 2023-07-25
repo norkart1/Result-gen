@@ -4,6 +4,10 @@ import { CandidateProgramme } from './entities/candidate-programme.entity';
 import { AddResult } from './dto/add-result.dto';
 import { ResultGenService } from './result-gen.service';
 import { arrayInput } from './dto/array-input.dto';
+import { Programme } from 'src/programmes/entities/programme.entity';
+import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
+import { Roles } from 'src/credentials/roles/roles.enum';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => CandidateProgramme)
 export class ResultGenResolver {
@@ -13,6 +17,8 @@ export class ResultGenResolver {
   ) {}
 
   @Mutation(() => [CandidateProgramme])
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
   addNormalResult(
     @Args('programmeCode') programmeCode: string,
     @Args({ name: 'addResult', type: () => arrayInput })
@@ -22,6 +28,8 @@ export class ResultGenResolver {
   }
 
   @Mutation(() => [CandidateProgramme])
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
   approveJudgeResult(
     @Args('programmeCode') programmeCode: string,  
       @Args('judgeName') judgeName: string
@@ -30,7 +38,32 @@ export class ResultGenResolver {
   }
 
   @Mutation(() => Int)
-  async liveResult() {
-    return this.resultGenService.liveResult();
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  async liveResult(
+    @Args('programmeCode' , { type: () => [String] }) programmeCode: [string],
+    @Args('timeInSec') timeInSec: number,
+  ) {
+    return this.resultGenService.liveResult(programmeCode, timeInSec);
   }
+
+  @Mutation(()=> String)
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  async publishResults(
+    @Args('programmeCode' , { type: () => [String] }) programmeCode: [string],
+  ) {
+    return this.resultGenService.publishResults(programmeCode);
+  }
+
+  @Mutation(() => Programme )
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  async publishResult(
+    @Args('programmeCode') programmeCode: string,
+  ) {
+    return this.resultGenService.publishResult(programmeCode);
+  }
+
+
 }

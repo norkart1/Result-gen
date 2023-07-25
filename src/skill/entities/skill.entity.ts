@@ -1,24 +1,30 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Programme } from 'src/programmes/entities/programme.entity';
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
 export class Skill {
-
   // Primary generated ID
-  @Field(() => Int, { description: '' })
+  @Field(() => Int, { description: '', nullable: true })
   @PrimaryGeneratedColumn()
   id: number;
 
   // Normal columns
 
-  @Column({unique:true})
-  @Field()
+  @Column({ unique: true })
+  @Field({ nullable: true })
   name: string;
 
-  @Column({unique:true})
-  @Field()
+  @Column({ unique: true })
+  @Field({ nullable: true })
   shortName: string;
 
   @Column({ nullable: true })
@@ -27,18 +33,17 @@ export class Skill {
 
   // OneToMany relations
 
-  @OneToMany(() => Programme, (programme) => programme.skill)
+  @OneToMany(() => Programme, programme => programme.skill)
   @Field(() => [Programme], { nullable: true })
   programmes: Programme[];
 
   // Dates
-  
+
   @CreateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   updatedAt: Date;
-
 }

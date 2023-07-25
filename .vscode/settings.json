@@ -5,6 +5,7 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "cSpell.words": [
-        "findedcandidates"
+        "findedcandidates",
+        "firebasedb"
     ]
 }

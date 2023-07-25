@@ -4,15 +4,15 @@
 
 type Grade {
   """"""
-  id: Int!
-  name: String!
-  pointGroup: Int!
-  pointSingle: Int!
-  pointHouse: Int!
-  percentage: Int!
-  candidateProgramme: CandidateProgramme!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  id: Int
+  name: String
+  pointGroup: Int
+  pointSingle: Int
+  pointHouse: Int
+  percentage: Int
+  candidateProgramme: [CandidateProgramme!]
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 """
@@ -22,76 +22,87 @@ scalar DateTime
 
 type Position {
   """"""
+  id: Int
+  name: String
+  value: Int
+  pointGroup: Int
+  pointSingle: Int
+  pointHouse: Int
+  candidateProgramme: [CandidateProgramme!]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type CustomSetting {
+  """Example field (placeholder)"""
   id: Int!
-  name: String!
-  value: Int!
-  pointGroup: Int!
-  pointSingle: Int!
-  pointHouse: Int!
-  candidateProgramme: CandidateProgramme!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  name: String
+  programmes: Programme
+  max: Float
+  min: Float
 }
 
 type Judge {
-  id: Int!
-  username: String!
-  password: String!
-  judgeName: String!
-  programme: Programme!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  """"""
+  id: Int
+  username: String
+  password: String
+  judgeName: String
+  programme: Programme
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Skill {
   """"""
-  id: Int!
-  name: String!
-  shortName: String!
+  id: Int
+  name: String
+  shortName: String
   description: String
   programmes: [Programme!]
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Substitute {
   """"""
-  id: Int!
-  reason: String!
+  id: Int
+  reason: String
   isAccepted: Boolean
   isRejected: Boolean
-  programme: Programme!
-  oldCandidate: Candidate!
-  newCandidate: Candidate!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  programme: Programme
+  oldCandidate: Candidate
+  newCandidate: Candidate
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Programme {
   """Example field (placeholder)"""
-  id: Int!
-  programCode: String!
-  name: String!
-  mode: Models!
-  type: Types!
+  id: Int
+  programCode: String
+  name: String
+  mode: Models
+  type: Types
   groupCount: Int
-  candidateCount: Int!
+  candidateCount: Int
   date: DateTime
   venue: Int
   duration: Int!
   totalMark: Int
-  conceptNote: String!
+  conceptNote: String
   resultEntered: Boolean!
   resultPublished: Boolean!
   checkToReadNo: Int
   anyIssue: Boolean!
-  candidateProgramme: [CandidateProgramme!]!
-  judges: [Judge!]!
-  substitutes: [Substitute!]!
+  candidateProgramme: [CandidateProgramme!]
+  judges: [Judge!]
+  substitutes: [Substitute!]
   skill: Skill
-  category: Category!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  category: Category
+  customSetting: CustomSetting
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 enum Models {
@@ -108,7 +119,7 @@ enum Types {
 
 type CandidateProgramme {
   """"""
-  id: Int!
+  id: Int
   point: Int
   link: String
   mark: Float
@@ -121,52 +132,67 @@ type CandidateProgramme {
   judge7: Float
   position: Position
   grade: Grade
-  programme: Programme!
-  candidate: Candidate!
+  programme: Programme
+  candidate: Candidate
   candidatesOfGroup: [Candidate!]
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Credential {
-  id: Int!
-  username: String!
-  roles: [String!]!
-  categories: [Category!]!
+  id: Int
+  username: String
+  roles: Roles
+  categories: [Category!]
   team: Team
 }
 
+enum Roles {
+  NormalUser
+  Admin
+  Controller
+  Media
+  TeamManager
+  Judge
+}
+
 type Team {
-  """"""
-  id: Int!
-  name: String!
-  shortName: String!
+  id: Int
+  name: String
+  shortName: String
   description: String
   color: String
+  totalPoint: Float
+  lastResultPoint: Float
+  HousePoint: Float
+  GroupPoint: Float
+  IndividualPoint: Float
   chestNoSeries: Int
-  creadentials: [Credential!]
+  credentials: [Credential!]
   candidates: [Candidate!]
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Candidate {
   """Example field (placeholder)"""
-  id: Int!
-  name: String!
+  id: Int
+  name: String
   class: Int
   adno: Float
   dob: String
   chestNO: Int
   imageId: String
-  gender: Gender!
+  gender: Gender
+  individualPoint: Float
+  groupPoint: Float
   candidateProgrammes: [CandidateProgramme!]
   substitutesOld: [Substitute!]
   substitutesNew: [Substitute!]
   team: Team
   category: Category
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 enum Gender {
@@ -176,60 +202,67 @@ enum Gender {
 }
 
 type CategorySettings {
-  id: Int!
-  maxProgram: Int!
-  maxSingle: Int!
-  maxGroup: Int!
-  maxStage: Int!
-  maxNonStage: Int!
-  maxOutDoor: Int!
-  minProgram: Int!
-  minSingle: Int!
-  minGroup: Int!
-  minStage: Int!
-  minNonStage: Int!
-  minOutDoor: Int!
+  id: Int
+  maxProgram: Int
+  maxSingle: Int
+  maxGroup: Int
+  maxStage: Int
+  maxNonStage: Int
+  maxOutDoor: Int
+  minProgram: Int
+  minSingle: Int
+  minGroup: Int
+  minStage: Int
+  minNonStage: Int
+  minOutDoor: Int
   isProgrammeListUpdatable: Boolean!
-  category: Category!
+  category: Category
 }
 
 type Section {
   """"""
-  id: Int!
-  name: String!
+  id: Int
+  name: String
   categories: [Category!]
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Category {
   """"""
-  id: Int!
-  name: String!
-  settings: CategorySettings!
+  id: Int
+  name: String
+  settings: CategorySettings
   candidates: [Candidate!]
   programmes: [Programme!]
-  section: Section!
+  customSettings: [CustomSetting!]
+  section: Section
   credentials: [Credential!]
-  createdAt: DateTime!
-  updatedAt: DateTime!
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Detail {
   """"""
   id: Int!
-  name: String!
-  motto: String!
-  institution: String!
-  logoId: String!
-  coverId: String!
-  description: String!
+  name: String
+  motto: String
+  institution: String
+  logoId: String
+  coverId: String
+  description: String
   isMediaHave: Boolean!
   isSkillHave: Boolean!
   isResultReady: Boolean!
   isMultipleResultAllowed: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+type Feed {
+  """Example field (placeholder)"""
+  id: Int!
+  name: String!
 }
 
 type Query {
@@ -250,7 +283,7 @@ type Query {
   programme(id: Int!): Programme!
   skills: [Skill!]!
   skill(id: Int!): Skill!
-  details: [Detail!]!
+  details: Detail!
   grades: [Grade!]!
   grade(id: Int!): Grade!
   positions: [Position!]!
@@ -261,6 +294,10 @@ type Query {
   judge(id: Int!): Judge!
   substitutes: [Substitute!]!
   substitute(id: Int!): Substitute!
+  feeds: [Feed!]!
+  feed(id: Int!): Feed!
+  customSettings: [CustomSetting!]!
+  customSetting(id: Int!): CustomSetting!
 }
 
 type Mutation {
@@ -287,7 +324,9 @@ type Mutation {
   removeCandidateProgramme(id: Int!): CandidateProgramme!
   addNormalResult(programmeCode: String!, addResult: arrayInput!): [CandidateProgramme!]!
   approveJudgeResult(programmeCode: String!, judgeName: String!): [CandidateProgramme!]!
-  liveResult: Int!
+  liveResult(programmeCode: [String!]!, timeInSec: Float!): Int!
+  publishResults(programmeCode: [String!]!): String!
+  publishResult(programmeCode: String!): Programme!
   createProgramme(createProgrammeInput: CreateProgrammeInput!): Programme!
   createManyProgrammes(createProgrammeInput: createInput!): [Programme!]!
   updateProgramme(updateProgrammeInput: UpdateProgrammeInput!): Programme!
@@ -295,6 +334,7 @@ type Mutation {
   setSchedule(createScheduleInput: CreateSchedule!): Programme!
   setManySchedule(createScheduleInput: [ScheduleCreate!]!): [Programme!]!
   removeSchedule(code: Int!): Programme!
+  setAnyIssue(code: String!, issue: Boolean!): Programme!
   createSkill(createSkillInput: CreateSkillInput!): Skill!
   updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
   removeSkill(id: Int!): Skill!
@@ -312,12 +352,18 @@ type Mutation {
   createJudge(createJudgeInput: CreateJudgeInput!): Judge!
   updateJudge(updateJudgeInput: UpdateJudgeInput!): Judge!
   removeJudge(id: Int!): Judge!
-  uploadMarkByJudge(programmeCode: String!, jugdeId: Float!, addResult: arrayInput!): Judge!
+  uploadMarkByJudge(programmeCode: String!, jugdeId: Float!, addResult: arrayInput!): String!
   createSubstitute(createSubstituteInput: CreateSubstituteInput!): Substitute!
   updateSubstitute(updateSubstituteInput: UpdateSubstituteInput!): Substitute!
   removeSubstitute(id: Int!): Substitute!
   approveSubstitute(id: Int!): Substitute!
   rejectSubstitute(id: Int!): Substitute!
+  createFeed(createFeedInput: CreateFeedInput!): Feed!
+  updateFeed(updateFeedInput: UpdateFeedInput!): Feed!
+  removeFeed(id: Int!): Feed!
+  createCustomSetting(createCustomSettingInput: CreateCustomSettingInput!): CustomSetting!
+  updateCustomSetting(updateCustomSettingInput: UpdateCustomSettingInput!): CustomSetting!
+  removeCustomSetting(id: Int!): CustomSetting!
 }
 
 input CreateCandidateInput {
@@ -365,24 +411,15 @@ input UpdateTeamInput {
 input CreateCredentialInput {
   username: String!
   password: String!
-  roles: [Roles!]!
+  roles: Roles!
   categories: [String!]
   team: String
-}
-
-enum Roles {
-  NormalUser
-  Admin
-  Controller
-  Media
-  TeamManager
-  Judge
 }
 
 input UpdateCredentialInput {
   username: String
   password: String
-  roles: [Roles!]
+  roles: Roles
   categories: [String!]
   team: String
   id: Int!
@@ -605,5 +642,33 @@ input UpdateSubstituteInput {
   programme: String
   oldCandidate: Int
   newCandidate: Int
+  id: Int!
+}
+
+input CreateFeedInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateFeedInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateCustomSettingInput {
+  name: String!
+  programs: [String!]!
+  category: String!
+  max: Int!
+  min: Int!
+}
+
+input UpdateCustomSettingInput {
+  name: String
+  programs: [String!]
+  category: String
+  max: Int
+  min: Int
   id: Int!
 }

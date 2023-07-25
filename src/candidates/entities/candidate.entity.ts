@@ -3,14 +3,23 @@ import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-p
 import { Category } from 'src/category/entities/category.entity';
 import { Section } from 'src/sections/entities/section.entity';
 import { Team } from 'src/teams/entities/team.entity';
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Photo } from '../../utils/photo.interface';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Substitute } from 'src/substitute/entities/substitute.entity';
 
 export enum Gender {
   MALE = 'M',
   FEMALE = 'F',
-  OTHER = 'O'
+  OTHER = 'O',
 }
 
 registerEnumType(Gender, {
@@ -20,85 +29,83 @@ registerEnumType(Gender, {
 @Entity()
 @ObjectType()
 export class Candidate {
-
   // Primary generated ID
 
   @PrimaryGeneratedColumn()
-  @Field(() => Int, { description: 'Example field (placeholder)' })
+  @Field(() => Int, { description: 'Example field (placeholder)' , nullable: true})
   id: number;
 
   // Normal columns
 
   @Column()
-  @Field()
+  @Field( { nullable: true })
   name: string;
 
-  @Column({nullable:true})
-  @Field(()=> Int,{nullable:true})
+  @Column({ nullable: true })
+  @Field(() => Int, { nullable: true })
   class: number;
 
-  @Column({nullable:true})
-  @Field({nullable:true})
+  @Column({ nullable: true })
+  @Field({ nullable: true })
   adno: number;
 
-  @Column({nullable:true})
-  @Field({nullable:true})
+  @Column({ nullable: true })
+  @Field({ nullable: true })
   dob: string;
 
-  @Column({nullable:true , unique: true})
-  @Field(()=> Int ,{nullable:true})
+  @Column({ nullable: true, unique: true })
+  @Field(() => Int, { nullable: true })
   chestNO: number;
 
-
-  @Column({ nullable: true})
-  @Field({nullable:true})
-  imageId: string ;
+  @Column({ nullable: true })
+  @Field({ nullable: true })
+  imageId: string;
 
   @Column({ type: 'varchar', default: Gender.MALE })
-  @Field(()=> Gender)
+  @Field(() => Gender , { nullable: true })
   gender: Gender;
+
+  @Column({ nullable: true })
+  @Field({ nullable: true })
+  individualPoint: number;
+
+  @Column({ nullable: true })
+  @Field({ nullable: true })
+  groupPoint: number;
 
   // OneTOMany relations
 
-  @OneToMany(() => CandidateProgramme, (candidateProgramme) => candidateProgramme.candidate)
+  @OneToMany(() => CandidateProgramme, candidateProgramme => candidateProgramme.candidate)
   @Field(() => [CandidateProgramme], { nullable: true })
   candidateProgrammes: CandidateProgramme[];
 
-  @OneToMany(() => Substitute , (substitute) => substitute.oldCandidate)
+  @OneToMany(() => Substitute, substitute => substitute.oldCandidate)
   @JoinTable()
   @Field(() => [Substitute], { nullable: true })
   substitutesOld: Substitute[];
 
-  @OneToMany(() => Substitute , (substitute) => substitute.newCandidate)
+  @OneToMany(() => Substitute, substitute => substitute.newCandidate)
   @JoinTable()
   @Field(() => [Substitute], { nullable: true })
   substitutesNew: Substitute[];
 
   // ManyToOne relations
 
-  @ManyToOne(()=> Team , (team) => team.candidates , { eager: true , onDelete : 'SET NULL'})
-  @Field(()=> Team , {nullable:true})
-  team:Team;
+  @ManyToOne(() => Team, team => team.candidates, { eager: true, onDelete: 'SET NULL' })
+  @Field(() => Team, { nullable: true })
+  team: Team;
 
-
-  @ManyToOne(()=> Category , (category) => category.candidates , { eager: true , onDelete : 'SET NULL'})
-  @Field(()=> Category , {nullable:true})
-  category:Category;
-
-  // ManyToMany relations
-
-  // @ManyToMany(() => CandidateProgramme , (candidateProgramme) => candidateProgramme.candidatesOfGroup)
-  // @Field(() => [CandidateProgramme], { nullable: true })
-  // candidateProgrammesOfGroup: CandidateProgramme[];
+  @ManyToOne(() => Category, category => category.candidates, { eager: true, onDelete: 'SET NULL' })
+  @Field(() => Category, { nullable: true })
+  category: Category;
 
   // Dates
 
   @CreateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date , { nullable: true })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date , { nullable: true })
   updatedAt: Date;
-
 }

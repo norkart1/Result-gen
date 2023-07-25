@@ -16,6 +16,9 @@ async function bootstrap() {
   // setting cookie parser
   app.use(cookieParser());
 
+  // cors origin
+  app.enableCors();
+
   // setting firebase admin
   // admin.initializeApp({
   //   credential: admin.credential.cert({

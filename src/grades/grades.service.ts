@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateGradeInput } from './dto/create-grade.input';
 import { UpdateGradeInput } from './dto/update-grade.input';
 import { Grade } from './entities/grade.entity';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class GradesService {
@@ -22,45 +23,83 @@ export class GradesService {
     }
   }
 
-  findAll() {
+ async findAll( fields: string[]) {
+    const allowedRelations = [
+      'candidateProgramme',
+      'candidateProgramme.candidate',
+      'candidateProgramme.programme',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.gradeRepository.find({
-        relations: [
-          'candidateProgramme',
-          'candidateProgramme.candidate',
-          'candidateProgramme.programme',
-        ],
-      });
+      const queryBuilder = this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.candidateProgramme', 'candidateProgramme')
+        .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+        .leftJoinAndSelect('candidateProgramme.programme', 'programme');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `grade.${column}`;
+          }
+        }),
+      );
+      const grade = await queryBuilder.getMany();
+      return grade;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding grade ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number , fields: string[]) {
+    const allowedRelations = [
+      'candidateProgramme',
+      'candidateProgramme.candidate',
+      'candidateProgramme.programme',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      // checking is grade exist
-      const grade = await this.gradeRepository.findOne({
-        where: { id },
-        relations: [
-          'candidateProgramme',
-          'candidateProgramme.candidate',
-          'candidateProgramme.programme',
-        ],
-      });
+      const queryBuilder = this.gradeRepository
+        .createQueryBuilder('grade')
+        .where('grade.id = :id', { id })
+        .leftJoinAndSelect('grade.candidateProgramme', 'candidateProgramme')
+        .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+        .leftJoinAndSelect('candidateProgramme.programme', 'programme');
 
-      if (!grade) {
-        throw new HttpException(`Cant find a grade `, HttpStatus.BAD_REQUEST);
-      }
-      // trying to return data
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
 
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `grade.${column}`;
+          }
+        }),
+      );
+      const grade = await queryBuilder.getOne();
       return grade;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding grade ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );

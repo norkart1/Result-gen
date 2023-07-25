@@ -17,19 +17,27 @@ import { ResultGenService } from './result-gen.service';
 import { Credential } from 'src/credentials/entities/credential.entity';
 import { DetailsService } from 'src/details/details.service';
 import { CategorySettingsService } from 'src/category-settings/category-settings.service';
+import { Roles } from 'src/credentials/roles/roles.enum';
+import { CredentialsService } from 'src/credentials/credentials.service';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class CandidateProgrammeService {
+  getCandidatesOfProgramme(
+    programCode: string,
+  ): CandidateProgramme[] | PromiseLike<CandidateProgramme[]> {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(CandidateProgramme)
     private candidateProgrammeRepository: Repository<CandidateProgramme>,
     @Inject(forwardRef(() => CandidatesService))
     private readonly candidateService: CandidatesService,
-
     private readonly programmeService: ProgrammesService,
     private readonly categoryService: CategoryService,
     private readonly detailService: DetailsService,
     private readonly categorySettingsService: CategorySettingsService,
+    private readonly credentialService: CredentialsService,
   ) {}
 
   // same team candidates
@@ -56,11 +64,40 @@ export class CandidateProgrammeService {
     //  programme
     const programme: Programme = await this.programmeService.findOneByCode(programme_code);
 
+    // programme.category.name ...settings.id
+    // progamme.type  ..candidateCount ...groupCount
+    // candidateProgramme.candiate.team.name
+
     if (!programme) {
       throw new HttpException(
         `Can't find programme with programme id ${programme_code}`,
         HttpStatus.BAD_REQUEST,
       );
+    }
+
+    const category = programme.category;
+
+    // check permission on category
+    this.credentialService.checkPermissionOnCategories(user, category.name);
+
+    // checking the teamManager can add candidate to this programme
+    if (user.roles === Roles.TeamManager) {
+      // check permission on team
+      this.credentialService.checkPermissionOnTeam(user, candidate.team.name);
+
+      const HaveAccess = (
+        await this.categorySettingsService.findOne(category.settings.id, [
+          'id',
+          'isProgrammeListUpdatable',
+        ])
+      ).isProgrammeListUpdatable;
+
+      if (!HaveAccess) {
+        throw new HttpException(
+          'Your access is denied , please contact controller',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     if (programme.type !== Type.SINGLE) {
@@ -134,21 +171,56 @@ export class CandidateProgrammeService {
     }
   }
 
-  findAll() {
-    return this.candidateProgrammeRepository.find({
-      relations: [
-        'programme',
-        'candidate',
-        'grade',
-        'position',
-        'candidate.team',
-        'candidate.category',
-        'programme.category',
-        'candidatesOfGroup',
-        'candidatesOfGroup.team',
-        'candidatesOfGroup.category',
-      ],
-    });
+  async findAll(fields: string[]) {
+    const allowedRelations = [
+      'programme',
+      'candidate',
+      'grade',
+      'position',
+      'candidate.team',
+      'candidate.category',
+      'programme.category',
+      'candidatesOfGroup',
+      'programme.skill',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+    try {
+      const queryBuilder = this.candidateProgrammeRepository
+        .createQueryBuilder('candidateProgramme')
+        .leftJoinAndSelect('candidateProgramme.programme', 'programme')
+        .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+        .leftJoinAndSelect('candidateProgramme.candidatesOfGroup', 'candidatesOfGroup')
+        .leftJoinAndSelect('candidateProgramme.grade', 'grade')
+        .leftJoinAndSelect('candidateProgramme.position', 'position')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('candidate.category', 'category')
+        .leftJoinAndSelect('programme.category', 'programmeCategory')
+        .leftJoinAndSelect('programme.skill', 'skill');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `candidateProgramme.${column}`;
+          }
+        }),
+      );
+      const candidateProgramme = await queryBuilder.getMany();
+      return candidateProgramme;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding candidateProgramme ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
   }
 
   findOne(id: number) {
@@ -188,7 +260,11 @@ export class CandidateProgrammeService {
     return data;
   }
 
-  async update(id: number, updateCandidateProgrammeInput: UpdateCandidateProgrammeInput) {
+  async update(
+    id: number,
+    updateCandidateProgrammeInput: UpdateCandidateProgrammeInput,
+    user: Credential,
+  ) {
     const checkedCandidatesOfGroup: Candidate[] = [];
     const checkedForEligibility: Candidate[] = [];
     // checking is The candidateProgramme exist
@@ -205,6 +281,37 @@ export class CandidateProgrammeService {
     const programme: Programme = await this.programmeService.findOneByCode(
       updateCandidateProgrammeInput.programme_code,
     );
+
+    if (!candidate || !programme) {
+      throw new HttpException(`Can't find candidate or programme`, HttpStatus.BAD_REQUEST);
+    }
+
+    const category = programme.category;
+
+    // check permission on category
+
+    this.credentialService.checkPermissionOnCategories(user, category.name);
+
+    // checking the teamManager can add candidate to this programme
+    if (user.roles === Roles.TeamManager) {
+      // check permission on team
+
+      this.credentialService.checkPermissionOnTeam(user, candidate.team.name);
+
+      const HaveAcces = (
+        await this.categorySettingsService.findOne(category.settings.id, [
+          'id',
+          'isProgrammeListUpdatable',
+        ])
+      ).isProgrammeListUpdatable;
+
+      if (!HaveAcces) {
+        throw new HttpException(
+          'Your access is denied , please contact controller',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
 
     // checking the candidate is eligible to this programme
 
@@ -315,10 +422,40 @@ export class CandidateProgrammeService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, user: Credential) {
     // checking is The candidateProgramme exist
-    const candidateProgramme: CandidateProgramme =
-      await this.candidateProgrammeRepository.findOneBy({ id });
+    const candidateProgramme: CandidateProgramme = await this.candidateProgrammeRepository.findOne({
+      where: { id },
+      relations: ['programme', 'programme.category', 'candidate', 'candidate.team'],
+    });
+
+    const category = candidateProgramme.programme.category;
+    const team = candidateProgramme.candidate.team;
+
+    // check permission on category
+    this.credentialService.checkPermissionOnCategories(user, category.name);
+
+    // checking the teamManager can add candidate to this programme
+    if (user.roles === Roles.TeamManager) {
+      // check permission on team
+
+      this.credentialService.checkPermissionOnTeam(user, team.name);
+
+      const HaveAcces = (
+        await this.categorySettingsService.findOne(category.settings.id, [
+          'id',
+          'isProgrammeListUpdatable',
+        ])
+      ).isProgrammeListUpdatable;
+
+      if (!HaveAcces) {
+        throw new HttpException(
+          'Your access is denied , please contact controller',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
     if (!candidateProgramme) {
       throw new HttpException('The candidate programme is not exist', HttpStatus.BAD_REQUEST);
     }
@@ -331,12 +468,6 @@ export class CandidateProgrammeService {
         e,
       );
     }
-  }
-
-  async getCandidatesOfProgramme(programCode: string) {
-    const programme: Programme = await this.programmeService.findOneByCode(programCode);
-
-    return programme.candidateProgramme;
   }
 
   async checkEligibility(candidate: Candidate, programme: Programme) {
@@ -390,7 +521,7 @@ export class CandidateProgrammeService {
 
       if (!isSameCategory) {
         throw new HttpException(
-          `The candidate ${candidate.name} can't participate in programme ${programme.programCode}  ${programme.name} , check the category of candidate`,
+          `The candidate ${candidate.name} can't participate in programme  ${programme.name} , check the category of candidate`,
           HttpStatus.BAD_REQUEST,
         );
       }

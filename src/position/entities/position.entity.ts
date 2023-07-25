@@ -14,43 +14,44 @@ import {
 export class Position {
   // Primary generated ID
 
-  @Field(() => Int, { description: '' })
+  @Field(() => Int, { description: '', nullable: true })
   @PrimaryGeneratedColumn()
   id: number;
 
   // Normal columns
   @Column({ unique: true })
-  @Field()
+  @Field({ nullable: true })
   name: string;
 
   @Column({ unique: true })
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   value: number;
 
   @Column()
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   pointGroup: number;
 
   @Column()
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   pointSingle: number;
 
   @Column()
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   pointHouse: number;
 
   // OneToMany relations
 
-  @Field(() => CandidateProgramme)
+  @Field(() => [CandidateProgramme], { nullable: true })
   @OneToMany(() => CandidateProgramme, candidateProgramme => candidateProgramme.position)
-  candidateProgramme: CandidateProgramme;
+  candidateProgramme: CandidateProgramme[];
+  
   // Dates
 
   @CreateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   updatedAt: Date;
 }

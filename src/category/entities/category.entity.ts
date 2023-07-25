@@ -2,6 +2,7 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Candidate } from 'src/candidates/entities/candidate.entity';
 import { CategorySettings } from 'src/category-settings/entities/category-setting.entity';
 import { Credential } from 'src/credentials/entities/credential.entity';
+import { CustomSetting } from 'src/custom-settings/entities/custom-setting.entity';
 import { Programme } from 'src/programmes/entities/programme.entity';
 import { Section } from 'src/sections/entities/section.entity';
 import {
@@ -22,19 +23,19 @@ import {
 export class Category {
   // Primary generated ID
 
-  @Field(() => Int, { description: '' })
+  @Field(() => Int, { description: '' , nullable: true })
   @PrimaryGeneratedColumn()
   id: number;
 
   // Normal columns
 
   @Column({ unique: true })
-  @Field()
+  @Field( { nullable: true })
   name: string;
 
   // OneToOne relations
 
-  @Field(() => CategorySettings)
+  @Field(() => CategorySettings , { nullable: true })
   @OneToOne(() => CategorySettings, settings => settings)
   @JoinColumn()
   settings: CategorySettings;
@@ -51,10 +52,15 @@ export class Category {
   @Field(() => [Programme], { nullable: true })
   programmes: Programme[];
 
+  @OneToMany(() => CustomSetting , customSetting  => customSetting.category)
+  @JoinColumn()
+  @Field(() => [CustomSetting], { nullable: true })
+  customSettings: CustomSetting[];
+
   // ManyTOOne relations
 
   @ManyToOne(() => Section, section => section.categories, { eager: true, onDelete: 'SET NULL' })
-  @Field(() => Section)
+  @Field(() => Section , { nullable: true })
   section: Section;
 
   // ManyToMany relations
@@ -66,10 +72,10 @@ export class Category {
   // Dates
 
   @CreateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date , { nullable: true })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date , { nullable: true })
   updatedAt: Date;
 }

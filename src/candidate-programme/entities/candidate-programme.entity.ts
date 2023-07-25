@@ -20,7 +20,7 @@ import {
 export class CandidateProgramme {
   // Primary generated ID
 
-  @Field(() => Int, { description: '' })
+  @Field(() => Int, { description: '' , nullable: true })
   @PrimaryGeneratedColumn({
     type: 'bigint',
     name: 'id',
@@ -83,7 +83,7 @@ export class CandidateProgramme {
   @ManyToOne(() => Grade, grade => grade.candidateProgramme, { eager: true, onDelete: 'SET NULL' })
   grade: Grade;
 
-  @Field(() => Programme)
+  @Field(() => Programme , { nullable: true })
   @ManyToOne(() => Programme, programme => programme.candidateProgramme, {
     eager: true,
     onDelete: 'SET NULL',
@@ -91,7 +91,7 @@ export class CandidateProgramme {
   @JoinTable()
   programme: Programme;
 
-  @Field(() => Candidate)
+  @Field(() => Candidate , { nullable: true })
   @ManyToOne(() => Candidate, candidate => candidate.candidateProgrammes, {
     eager: true,
     onDelete: 'SET NULL',
@@ -111,10 +111,10 @@ export class CandidateProgramme {
   // Dates
 
   @CreateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date , { nullable: true })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Field(() => Date)
+  @Field(() => Date , { nullable: true })
   updatedAt: Date;
 }

@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
 import { PositionService } from './position.service';
 import { Position } from './entities/position.entity';
 import { CreatePositionInput } from './dto/create-position.input';
@@ -7,6 +7,7 @@ import { AuthPipe } from './pipe/auth.pipe';
 import { UseGuards, UsePipes } from '@nestjs/common';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Position)
 export class PositionResolver {
@@ -21,13 +22,17 @@ export class PositionResolver {
   }
 
   @Query(() => [Position], { name: 'positions' })
-  findAll() {
-    return this.positionService.findAll();
+  findAll(
+    @Info() info: any,
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.positionService.findAll( fields);
   }
 
   @Query(() => Position, { name: 'position' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.positionService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.positionService.findOne(id , fields);
   }
 
   @HasRoles(Roles.Admin)

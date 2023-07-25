@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateDetailInput } from './dto/create-detail.input';
 import { UpdateDetailInput } from './dto/update-detail.input';
 import { Detail } from './entities/detail.entity';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class DetailsService {
@@ -32,12 +33,33 @@ export class DetailsService {
     }
   }
 
-  findAll() {
+  async find(fields: string[]) {
+    const allowedRelations = [];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.detailRepository.find();
+      const queryBuilder = this.detailRepository.createQueryBuilder('detail');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `detail.${column}`;
+          }
+        }),
+      );
+      const detail = await queryBuilder.getOne();
+      return detail;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding detail ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
@@ -46,7 +68,7 @@ export class DetailsService {
 
   findIt() {
     try {
-      return this.detailRepository.findOneBy({ id: 1 });
+      return this.detailRepository.find()[0];
     } catch (e) {
       throw new HttpException(
         'An Error have when finding data ',

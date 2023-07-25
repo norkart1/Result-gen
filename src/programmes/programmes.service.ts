@@ -7,7 +7,6 @@ import { Mode, Programme, Type } from './entities/programme.entity';
 import { CategoryService } from 'src/category/category.service';
 import { SkillService } from 'src/skill/skill.service';
 import { CreateSchedule } from './dto/create-schedule.dto';
-import { updateSchedule } from './dto/update-schedule.dto';
 import { Credential } from 'src/credentials/entities/credential.entity';
 import { DetailsService } from 'src/details/details.service';
 import { Category } from 'src/category/entities/category.entity';
@@ -15,6 +14,7 @@ import { Skill } from 'src/skill/entities/skill.entity';
 import { CredentialsService } from '../credentials/credentials.service';
 import { ScheduleCreate } from './dto/scheduleCreate.dto';
 import { createInput } from './dto/create-inputs.inputs';
+import { fieldsIdChecker, fieldsValidator, isDateValid } from 'src/utils/util';
 
 @Injectable()
 export class ProgrammesService {
@@ -23,7 +23,7 @@ export class ProgrammesService {
     private skillService: SkillService,
     private categoryService: CategoryService,
     private detailsService: DetailsService,
-    private readonly CredentialService: CredentialsService
+    private readonly CredentialService: CredentialsService,
   ) {}
 
   //  To create many Programmes at a time , usually using on Excel file upload
@@ -68,7 +68,7 @@ export class ProgrammesService {
 
       //  checking is skill exist
 
-      let skill_id = await this.skillService.findOneByName(createProgrammeInput.skill);
+      let skill_id = await this.skillService.findOneByName(createProgrammeInput.skill, ['id']);
 
       if (IS_SKILL_REQUIRED) {
         if (!createProgrammeInput.skill) {
@@ -161,15 +161,13 @@ export class ProgrammesService {
         input.groupCount = data.groupCount;
         input.conceptNote = data.conceptNote;
 
-        let saveData = input;
-        // await this.programmeRepository.save(input);
+        let saveData = await this.programmeRepository.save(input);
 
         FinalData.push(saveData);
       }
 
       return FinalData;
     } catch (e) {
-
       throw new HttpException(
         'An Error have when inserting data , please check the all required fields are filled ',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -206,7 +204,7 @@ export class ProgrammesService {
 
     // authenticating the user have permission to update the category
 
-      this.CredentialService.checkPermissionOnCategories(user, category_id.name);
+    this.CredentialService.checkPermissionOnCategories(user, category_id.name);
 
     //  checking is skill exist
 
@@ -214,7 +212,7 @@ export class ProgrammesService {
 
     //  checking is skill exist
 
-    let skill_id = await this.skillService.findOneByName(createProgrammeInput.skill);
+    let skill_id = await this.skillService.findOneByName(createProgrammeInput.skill, ['id']);
 
     if (IS_SKILL_REQUIRED) {
       if (!createProgrammeInput.skill) {
@@ -253,7 +251,6 @@ export class ProgrammesService {
 
       return this.programmeRepository.save(input);
     } catch (e) {
-
       throw new HttpException(
         'An Error have when inserting data , please check the all required fields are filled ',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -261,41 +258,154 @@ export class ProgrammesService {
     }
   }
 
-  findAll() {
+  async findAll(fields: string[]) {
+    const allowedRelations = [
+      'category',
+      'skill',
+      'candidateProgramme',
+      'candidateProgramme.candidate',
+      'candidateProgramme.candidate.team',
+      'category.settings',
+      'candidateProgramme.candidatesOfGroup',
+      'candidateProgramme.grade',
+      'candidateProgramme.position',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.programmeRepository.find({
-        relations: ['category', 'skill', 'candidateProgramme'],
-      });
-    } catch {
-      throw new HttpException('An Error have when finding data ', HttpStatus.INTERNAL_SERVER_ERROR);
+      const queryBuilder = this.programmeRepository
+        .createQueryBuilder('programme')
+        .leftJoinAndSelect('programme.category', 'category')
+        .leftJoinAndSelect('programme.skill', 'skill')
+        .leftJoinAndSelect('programme.candidateProgramme', 'candidateProgramme')
+        .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('category.settings', 'settings')
+        .leftJoinAndSelect('candidateProgramme.candidatesOfGroup', 'candidatesOfGroup')
+        .leftJoinAndSelect('candidateProgramme.grade', 'grade')
+        .leftJoinAndSelect('candidateProgramme.position', 'position')
+        .orderBy('programme.id', 'ASC');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `programme.${column}`;
+          }
+        }),
+      );
+      const programme = await queryBuilder.getMany();
+      return programme;
+    } catch (e) {
+      console.log(e);
+
+      throw new HttpException(
+        'An Error have when finding programme ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
-  findOne(id: number) {
+  async findOne(id: number, fields: string[]) {
+    const allowedRelations = [
+      'category',
+      'skill',
+      'candidateProgramme',
+      'candidateProgramme.candidate',
+      'candidateProgramme.candidate.team',
+      'category.settings',
+      'candidateProgramme.candidatesOfGroup',
+      'candidateProgramme.grade',
+      'candidateProgramme.position',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.programmeRepository.findOne({
-        where: { id },
-        relations: ['category', 'skill', 'candidateProgramme'],
-      });
-    } catch {
-      throw new HttpException('An Error have when finding data ', HttpStatus.INTERNAL_SERVER_ERROR);
+      const queryBuilder = this.programmeRepository
+        .createQueryBuilder('programme')
+        .where('programme.id = :id', { id })
+        .leftJoinAndSelect('programme.category', 'category')
+        .leftJoinAndSelect('programme.skill', 'skill')
+        .leftJoinAndSelect('programme.candidateProgramme', 'candidateProgramme')
+        .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('category.settings', 'settings')
+        .leftJoinAndSelect('candidateProgramme.candidatesOfGroup', 'candidatesOfGroup')
+        .leftJoinAndSelect('candidateProgramme.grade', 'grade')
+        .leftJoinAndSelect('candidateProgramme.position', 'position');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `programme.${column}`;
+          }
+        }),
+      );
+      const programme = await queryBuilder.getOne();
+      return programme;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding programme ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
     }
   }
 
   async findOneByCode(programCode: string) {
     try {
-      return this.programmeRepository.findOne({
-        where: { programCode },
+      const programme = await this.programmeRepository.findOne({
+        where: {
+          programCode,
+        },
         relations: [
           'category',
           'skill',
           'candidateProgramme',
+          'category.settings',
           'candidateProgramme.candidate',
           'candidateProgramme.candidate.team',
+          'candidateProgramme.candidatesOfGroup',
+          'candidateProgramme.grade',
+          'candidateProgramme.position',
         ],
       });
+
+      return programme;
     } catch (e) {
-      throw new HttpException('An Error have when finding data ', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'An Error have when finding programme ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+  // find the programme by programme code know is the programme is there
+
+  async findOneByCodeForCheck(programCode: string) {
+    try {
+    return  this.programmeRepository.query(
+        `SELECT id FROM programme WHERE programCode = "${programCode}"`,
+      );
+    } catch (e) {
+      throw new HttpException('An Error have when finding programme ', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -309,7 +419,7 @@ export class ProgrammesService {
       });
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding programme ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
@@ -329,7 +439,7 @@ export class ProgrammesService {
     }
 
     // authenticating the user have permission to update the category
-   
+
     this.CredentialService.checkPermissionOnCategories(user, category_id.name);
 
     // checking is candidate exist
@@ -346,7 +456,7 @@ export class ProgrammesService {
 
     //  checking is skill exist
 
-    let skill_id = await this.skillService.findOneByName(updateProgrammeInput.skill);
+    let skill_id = await this.skillService.findOneByName(updateProgrammeInput.skill, ['id']);
 
     if (IS_SKILL_REQUIRED) {
       if (!updateProgrammeInput.skill) {
@@ -386,40 +496,36 @@ export class ProgrammesService {
       return this.programmeRepository.update(id, input);
     } catch {
       throw new HttpException(
-        'An Error have when updating data , please check the all required fields are filled ',
+        'An Error have when updating programme , please check the all required fields are filled ',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   async remove(id: number, user: Credential) {
+    const programme = await this.findOne(id, ['id']);
 
-    const programme = await this.findOne(id);
-
-   
     if (!programme) {
       throw new HttpException(`Cant find a programme to delete`, HttpStatus.BAD_REQUEST);
     }
 
-     // authenticating the user have permission to remove the category
+    // authenticating the user have permission to remove the category
 
-     this.CredentialService.checkPermissionOnCategories(user, programme.category.name);
-
+    this.CredentialService.checkPermissionOnCategories(user, programme.category.name);
 
     try {
       return this.programmeRepository.delete(id);
     } catch (e) {
       throw new HttpException(
-        'An Error have when deleting data ',
+        'An Error have when deleting programme ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
   }
 
-  async setManySchedule(scheduleData: ScheduleCreate , user: Credential) {
-   
-    const allData : {
+  async setManySchedule(scheduleData: ScheduleCreate, user: Credential) {
+    const allData: {
       code: string;
       date: Date;
       venue: number;
@@ -444,7 +550,7 @@ export class ProgrammesService {
       }
 
       // authenticating the user have permission to update the category
-     
+
       this.CredentialService.checkPermissionOnCategories(user, category_id.name);
 
       if (!programme) {
@@ -453,7 +559,7 @@ export class ProgrammesService {
 
       // validating the date
 
-      const isDate = this.isInputDataValid(date);
+      const isDate = isDateValid(date);
 
       if (!isDate) {
         throw new HttpException(`Date is not valid`, HttpStatus.BAD_REQUEST);
@@ -466,40 +572,35 @@ export class ProgrammesService {
           throw new HttpException(`Venue must be a number`, HttpStatus.BAD_REQUEST);
         }
       }
-
     }
 
-
-    try{
-
-      if(allData.length !== scheduleData.inputs.length){
-        throw new HttpException(`Some programmes are not eligible to set schedule`, HttpStatus.BAD_REQUEST);
+    try {
+      if (allData.length !== scheduleData.inputs.length) {
+        throw new HttpException(
+          `Some programmes are not eligible to set schedule`,
+          HttpStatus.BAD_REQUEST,
+        );
       }
-      
+
       for (let index = 0; index < allData.length; index++) {
         const data = allData[index];
-        
-        const { date, venue , programme } = data;
-        
+
+        const { date, venue, programme } = data;
+
         // updating the programme by adding date and venue
-        
+
         programme.date = date;
         programme.venue = venue;
-        
+
         return this.programmeRepository.save(programme);
       }
-    }catch(e){
+    } catch (e) {
       throw new HttpException(
-        'An Error have when updating data ',
+        'An Error have when updating programme ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
-  }
-
-  isInputDataValid(input: any): boolean {
-    const timestamp = input.getTime();
-    return !isNaN(timestamp);
   }
 
   async setSchedule(scheduleData: CreateSchedule, user: Credential) {
@@ -533,7 +634,7 @@ export class ProgrammesService {
 
     // validating the date
 
-    const isDate = this.isInputDataValid(date);
+    const isDate = isDateValid(date);
 
     if (!isDate) {
       throw new HttpException(`Date is not valid`, HttpStatus.BAD_REQUEST);
@@ -547,7 +648,6 @@ export class ProgrammesService {
       }
     }
 
-
     // updating the programme by adding date and venue
 
     programme.date = date;
@@ -558,7 +658,7 @@ export class ProgrammesService {
 
   async removeSchedule(programCode: string, user: Credential) {
     // checking the code is correct
-    const programme: Programme = await this.findOneByCode(programCode);
+    const programme: Programme = await this.findOneByCodeForCheck(programCode);
 
     if (!programme) {
       throw new HttpException(
@@ -567,9 +667,9 @@ export class ProgrammesService {
       );
     }
 
-  //  authenticating the user have permission to update the category
+    //  authenticating the user have permission to update the category
 
-  this.CredentialService.checkPermissionOnCategories(user, programme.category.name);
+    this.CredentialService.checkPermissionOnCategories(user, programme.category.name);
 
     try {
       return this.programmeRepository.query(
@@ -586,7 +686,7 @@ export class ProgrammesService {
 
   async enterResult(programCode: string) {
     // checking the code is correct
-    const programme: Programme = await this.findOneByCode(programCode);
+    const programme: Programme = await this.findOneByCodeForCheck(programCode);
 
     if (!programme) {
       throw new HttpException(
@@ -601,7 +701,7 @@ export class ProgrammesService {
       );
     } catch (e) {
       throw new HttpException(
-        'An Error have when updating data ',
+        'An Error have when updating programme ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
@@ -610,7 +710,7 @@ export class ProgrammesService {
 
   async removeResult(programCode: string) {
     // checking the code is correct
-    const programme: Programme = await this.findOneByCode(programCode);
+    const programme: Programme = await this.findOneByCodeForCheck(programCode);
 
     if (!programme) {
       throw new HttpException(
@@ -634,7 +734,7 @@ export class ProgrammesService {
 
   async publishResult(programCode: string) {
     // checking the code is correct
-    const programme: Programme = await this.findOneByCode(programCode);
+    const programme: Programme = await this.findOneByCodeForCheck(programCode);
 
     if (!programme) {
       throw new HttpException(
@@ -649,7 +749,7 @@ export class ProgrammesService {
       );
     } catch (e) {
       throw new HttpException(
-        'An Error have when updating data ',
+        'An Error have when updating programme ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
@@ -658,7 +758,7 @@ export class ProgrammesService {
 
   async removePublishedResult(programCode: string) {
     // checking the code is correct
-    const programme: Programme = await this.findOneByCode(programCode);
+    const programme: Programme = await this.findOneByCodeForCheck(programCode, );
 
     if (!programme) {
       throw new HttpException(
@@ -682,7 +782,7 @@ export class ProgrammesService {
 
   async setTotalMarks(programCode: string, totalMark: number, isFromJudge: boolean = false) {
     // checking the code is correct
-    const programme: Programme = await this.findOneByCode(programCode);
+    const programme: Programme = await this.findOneByCodeForCheck(programCode);
 
     if (!programme) {
       throw new HttpException(
@@ -715,7 +815,7 @@ export class ProgrammesService {
   // change the value of anyIssue to true or false
   async setAnyIssue(programCode: string, anyIssue: boolean) {
     // checking the code is correct
-    const programme: Programme = await this.findOneByCode(programCode);
+    const programme: Programme = await this.findOneByCodeForCheck(programCode);
 
     if (!programme) {
       throw new HttpException(

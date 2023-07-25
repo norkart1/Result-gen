@@ -11,27 +11,27 @@ registerEnumType(Roles, {
 @ObjectType()
 @Entity()
 export class Credential {
-  @Field(() => Int)
+  @Field(() => Int , { nullable: true })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field()
+  @Field( { nullable: true })
   @Column({ unique: true, nullable: false })
   username: string;
 
   @Column({ nullable: false })
   password: string;
 
-  @Field(()=> [String])
-  @Column('json')
-  roles: string;
+  @Field(()=> Roles , { nullable: true })
+  @Column({ nullable: false, type: 'enum', enum: Roles })
+  roles: Roles;
 
-  @ManyToMany(() => Category)
+  @ManyToMany(() => Category )
   @JoinTable()
-  @Field(() => [Category])
+  @Field(() => [Category] , { nullable: true })
   categories: Category[];
 
-  @ManyToOne(() => Team, team => team.creadentials, { eager: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Team, team => team.credentials, { eager: true, onDelete: 'SET NULL' })
   @Field(() => Team, { nullable: true })
   team?: Team;
 }

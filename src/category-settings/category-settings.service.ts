@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryService } from 'src/category/category.service';
 import { Credential } from 'src/credentials/entities/credential.entity';
+import { CredentialsService } from 'src/credentials/credentials.service';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class CategorySettingsService {
@@ -13,6 +15,7 @@ export class CategorySettingsService {
     @InjectRepository(CategorySettings)
     private categorySettingsRepository: Repository<CategorySettings>,
     private categoryService: CategoryService,
+    private credentialService: CredentialsService,
   ) {}
 
   async create(createCategorySettingInput: CreateCategorySettingInput, user: Credential) {
@@ -23,14 +26,8 @@ export class CategorySettingsService {
     }
 
     // authenticating the user have permission to update the category
-    const categoryExists = user.categories?.some(ctrg => ctrg.name === category?.name);
 
-    if (!categoryExists) {
-      throw new HttpException(
-        `You dont have permission to access the category ${category?.name} `,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    this.credentialService.checkPermissionOnCategories(user, category.name);
 
     const newData = this.categorySettingsRepository.create({
       maxGroup: createCategorySettingInput.maxGroup,
@@ -49,33 +46,73 @@ export class CategorySettingsService {
     return savedSettings;
   }
 
-  findAll() {
+ async findAll( fields: string[]) {
+    const allowedRelations = [
+      'category',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.categorySettingsRepository.find({ relations: ['category'] });
+      const queryBuilder = this.categorySettingsRepository.createQueryBuilder('category_settings')
+        .leftJoinAndSelect('category_settings.category', 'category');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `category_settings.${column}`;
+          }
+        }),
+      );
+      const category_settings = await queryBuilder.getMany();
+      return category_settings;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding category_settings ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
   }
 
-  async findOne(id: number) {
-    try {
-      // checking is category_settings exist
-      const category_settings = await this.categorySettingsRepository.findOne({
-        where: { id },
-        relations: ['category'],
-      });
-      if (!category_settings) {
-        throw new HttpException(`Invalid category settings id`, HttpStatus.BAD_REQUEST);
-      }
+  async findOne(id: number , fields: string[]) {
+    const allowedRelations = [
+      'category',
+    ];
 
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
+    try {
+      const queryBuilder = this.categorySettingsRepository.createQueryBuilder('category_settings')
+        .where('category_settings.id = :id', { id })
+        .leftJoinAndSelect('category_settings.category', 'category');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `category_settings.${column}`;
+          }
+        }),
+      );
+      const category_settings = await queryBuilder.getOne();
       return category_settings;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding category_settings ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
@@ -102,14 +139,8 @@ export class CategorySettingsService {
     }
 
     // authenticating the user have permission to update the category
-    const categoryExists = user.categories?.some(ctrg => ctrg.name === category?.name);
 
-    if (!categoryExists) {
-      throw new HttpException(
-        `You dont have permission to access the category ${category?.name} `,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    this.credentialService.checkPermissionOnCategories(user, category.name);
 
     const newData = this.categorySettingsRepository.create({
       maxGroup: updateCategorySettingInput.maxGroup,
@@ -136,7 +167,7 @@ export class CategorySettingsService {
 
   async remove(id: number, user: Credential) {
     // checking is category_settings exist
-    const category_settings = await this.findOne(id);
+    const category_settings = await this.findOne(id , ['category.name']);
 
     // checking is category exist
     const category = await this.categoryService.findOneByName(category_settings.category.name);
@@ -146,14 +177,8 @@ export class CategorySettingsService {
     }
 
     // authenticating the user have permission to update the category
-    const categoryExists = user.categories?.some(ctrg => ctrg.name === category?.name);
 
-    if (!categoryExists) {
-      throw new HttpException(
-        `You dont have permission to access the category ${category?.name} `,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    this.credentialService.checkPermissionOnCategories(user, category.name);
 
     if (!category_settings) {
       throw new HttpException(`Invalid category settings id`, HttpStatus.BAD_REQUEST);

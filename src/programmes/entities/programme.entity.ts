@@ -2,6 +2,7 @@ import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { Expose } from 'class-transformer';
 import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-programme.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { CustomSetting } from 'src/custom-settings/entities/custom-setting.entity';
 import { Judge } from 'src/judge/entities/judge.entity';
 import { Skill } from 'src/skill/entities/skill.entity';
 import { Substitute } from 'src/substitute/entities/substitute.entity';
@@ -41,26 +42,26 @@ registerEnumType(Type, {
 export class Programme {
   // Primary generated ID
 
-  @Field(() => Int, { description: 'Example field (placeholder)' })
+  @Field(() => Int, { description: 'Example field (placeholder)', nullable: true })
   @PrimaryGeneratedColumn()
   id: number;
 
   // Normal columns
 
   @Column({ unique: true })
-  @Field()
+  @Field({ nullable: true })
   programCode: string;
 
   @Column()
-  @Field()
+  @Field({ nullable: true })
   name: string;
 
   @Column()
-  @Field(() => Mode)
+  @Field(() => Mode, { nullable: true })
   mode: Mode;
 
   @Column()
-  @Field(() => Type)
+  @Field(() => Type, { nullable: true })
   type: Type;
 
   @Column({ nullable: true })
@@ -68,7 +69,7 @@ export class Programme {
   groupCount: number;
 
   @Column()
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   candidateCount: number;
 
   @Column({ nullable: true })
@@ -83,46 +84,45 @@ export class Programme {
   @Field(() => Int)
   duration: number;
 
-  @Field(() => Int, { nullable: true})
+  @Field(() => Int, { nullable: true })
   @Column({ default: 10 })
   totalMark: number;
 
   @Column()
-  @Field()
+  @Field({ nullable: true })
   conceptNote: string;
 
   @Column({ default: false })
-  @Field(() => Boolean)
+  @Field(() => Boolean, { defaultValue: false })
   resultEntered: Boolean;
 
   @Column({ default: false })
-  @Field(() => Boolean)
+  @Field(() => Boolean, { defaultValue: false })
   resultPublished: Boolean;
-
 
   @Field(() => Int, { nullable: true })
   @Column({ nullable: true })
   checkToReadNo: number;
-  
-  @Column({default:false})
-  @Field(()=> Boolean , {defaultValue:false})
+
+  @Column({ default: false })
+  @Field(() => Boolean, { defaultValue: false })
   anyIssue: boolean;
 
   // OneToMany relations
 
   @OneToMany(() => CandidateProgramme, CandidateProgramme => CandidateProgramme.programme)
   @JoinTable()
-  @Field(() => [CandidateProgramme])
+  @Field(() => [CandidateProgramme], { nullable: true })
   candidateProgramme: CandidateProgramme[];
 
   @OneToMany(() => Judge, judge => judge.programme, { nullable: true })
-  @Field(() => [Judge])
+  @Field(() => [Judge], { nullable: true })
   @JoinTable()
   judges: Judge[];
 
   @OneToMany(() => Substitute, Substitute => Substitute.programme)
   @JoinTable()
-  @Field(() => [Substitute])
+  @Field(() => [Substitute], { nullable: true })
   substitutes: Substitute[];
 
   // ManyTOOne relations
@@ -132,18 +132,22 @@ export class Programme {
   skill: Skill;
 
   @ManyToOne(() => Category, category => category.programmes, { eager: true, onDelete: 'SET NULL' })
-  @Field(() => Category)
+  @Field(() => Category, { nullable: true })
   category: Category;
+
+  @ManyToOne(() => CustomSetting , customSetting => customSetting.programmes, { eager: true, onDelete: 'SET NULL' })
+  @Field(() => CustomSetting, { nullable: true })
+  customSetting: CustomSetting;
 
   // Dates
 
   @Expose()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   @CreateDateColumn()
   createdAt: Date;
 
   @Expose()
-  @Field(() => Date)
+  @Field(() => Date, { nullable: true })
   @UpdateDateColumn()
   updatedAt: Date;
 }

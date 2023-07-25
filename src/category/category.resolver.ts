@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
 import { CategoryService } from './category.service';
 import { Category } from './entities/category.entity';
 import { CreateCategoryInput } from './dto/create-category.input';
@@ -7,6 +7,7 @@ import { UseGuards, UsePipes } from '@nestjs/common';
 import { CategoryPipe } from './pipe/category.pipe';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Category)
 export class CategoryResolver {
@@ -21,13 +22,17 @@ export class CategoryResolver {
   }
 
   @Query(() => [Category], { name: 'categories' })
-  findAll() {
-    return this.categoryService.findAll();
+  findAll(
+    @Info() info: any,
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.categoryService.findAll(  fields);
   }
 
   @Query(() => Category, { name: 'category' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.categoryService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.categoryService.findOne(id , fields);
   }
 
   @UsePipes(CategoryPipe)

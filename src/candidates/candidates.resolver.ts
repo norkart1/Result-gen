@@ -1,28 +1,17 @@
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Args,
-  Int,
-  ResolveField,
-  Parent,
-  Context,
-} from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context, Info } from '@nestjs/graphql';
 import { CandidatesService } from './candidates.service';
 import { Candidate } from './entities/candidate.entity';
 import { CreateCandidateInput } from './dto/create-candidate.input';
 import { UpdateCandidateInput } from './dto/update-candidate.input';
 import { UseGuards } from '@nestjs/common';
-import { CandidatePipe } from './pipe/candidates.pipe';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
 import { CreateInput } from './dto/create-input.dto';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Candidate)
 export class CandidatesResolver {
-  constructor(
-    private readonly candidatesService: CandidatesService
-  ) {}
+  constructor(private readonly candidatesService: CandidatesService) {}
 
   // @UsePipes(CandidatePipe)
   @Mutation(() => Candidate)
@@ -36,8 +25,8 @@ export class CandidatesResolver {
   }
 
   @Mutation(() => [Candidate])
-  // @HasRoles(Roles.Controller)
-  // @UseGuards(RolesGuard)
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
   createManyCandidates(
     @Args('createCandidateInput', { type: () => CreateInput })
     createCandidateInput: CreateInput,
@@ -47,16 +36,19 @@ export class CandidatesResolver {
   }
 
   @Query(() => [Candidate], { name: 'candidates' })
-  findAll() {
-    return this.candidatesService.findAll();
+  findAll(
+    @Info() info: any,
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.candidatesService.findAll( fields);
   }
 
   @Query(() => Candidate, { name: 'candidate' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.candidatesService.findOne(id);
+  findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.candidatesService.findOne(id , fields);
   }
 
-  
   @Mutation(() => Candidate)
   @HasRoles(Roles.Controller)
   @UseGuards(RolesGuard)

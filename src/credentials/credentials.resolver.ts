@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context, Info } from '@nestjs/graphql';
 import { CredentialsService } from './credentials.service';
 import { Credential } from './entities/credential.entity';
 import { CreateCredentialInput } from './dto/create-credential.input';
@@ -7,6 +7,7 @@ import { HasRoles, RolesGuard } from './roles/roles.guard';
 import { Roles } from './roles/roles.enum';
 import { UseGuards, UsePipes } from '@nestjs/common';
 import { LoginService } from './login/login.service';
+import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Credential)
 export class CredentialsResolver {
@@ -26,11 +27,14 @@ export class CredentialsResolver {
     return this.credentialsService.create(createCredentialInput, req.user);
   }
 
-  // @HasRoles(Roles.Controller, Roles.Admin, Roles.TeamManager)
-  // @UseGuards(RolesGuard)
+  @HasRoles(Roles.Controller, Roles.Admin, Roles.TeamManager)
+  @UseGuards(RolesGuard)
   @Query(() => [Credential], { name: 'credentials' })
-  findAll() {
-    return this.credentialsService.findAll();
+  findAll( 
+    @Info() info : any,
+  ) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.credentialsService.findAll( fields);
   }
 
   @HasRoles(Roles.Controller, Roles.Admin, Roles.TeamManager)

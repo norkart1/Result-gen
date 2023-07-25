@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateSkillInput } from './dto/create-skill.input';
 import { UpdateSkillInput } from './dto/update-skill.input';
 import { Skill } from './entities/skill.entity';
+import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class SkillService {
@@ -14,60 +15,113 @@ export class SkillService {
     return this.skillRepository.save(newSkillInput);
   }
 
-  findAll() {
+async  findAll( fields: string[]) {
+    const allowedRelations = ['programmes', 'programmes.category' ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.skillRepository.find({ relations: ['programmes'] });
+      const queryBuilder = this.skillRepository
+        .createQueryBuilder('skill')
+        .leftJoinAndSelect('skill.programmes', 'programmes')
+        .leftJoinAndSelect('programmes.category', 'category')
+        .orderBy('skill.id', 'ASC');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `skill.${column}`;
+          }
+        }),
+      );
+      const skill = await queryBuilder.getMany();
+      return skill;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding skill ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
   }
 
-  findOneByName(name: string) {
-    if (!name) {
-      throw new HttpException(`skill cannot be undefined`, HttpStatus.BAD_REQUEST);
-    }
+ async findOneByName(name: string , fields: string[]) {
+    const allowedRelations = ['programmes', 'programmes.category' ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      const skill = this.skillRepository.findOne({
-        where: { name },
-        relations: ['programmes', 'programmes.category'],
-      });
+      const queryBuilder = this.skillRepository
+        .createQueryBuilder('skill')
+        .where('skill.name = :name', { name })
+        .leftJoinAndSelect('skill.programmes', 'programmes')
+        .leftJoinAndSelect('programmes.category', 'category')
+        .orderBy('skill.id', 'ASC');
 
-      if (!skill) {
-        throw new HttpException(`Cant find skill with skill id ${name} `, HttpStatus.BAD_REQUEST);
-      }
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
 
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `skill.${column}`;
+          }
+        }),
+      );
+      const skill = await queryBuilder.getOne();
       return skill;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding skill ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );
     }
   }
 
-  findOne(id: number) {
-    if (!id) {
-      throw new HttpException(`skill cannot be undefined`, HttpStatus.BAD_REQUEST);
-    }
+async  findOne(id: number , fields: string[]) {
+    const allowedRelations = ['programmes', 'programmes.category' ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      const skill = this.skillRepository.findOne({
-        where: { id },
-        relations: ['programmes', 'programmes.category'],
-      });
+      const queryBuilder = this.skillRepository
+        .createQueryBuilder('skill')
+        .where('skill.id = :id', { id })
+        .leftJoinAndSelect('skill.programmes', 'programmes')
+        .leftJoinAndSelect('programmes.category', 'category')
+        .orderBy('skill.id', 'ASC');
 
-      if (!skill) {
-        throw new HttpException(`Cant find skill with skill id ${id} `, HttpStatus.BAD_REQUEST);
-      }
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
 
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `skill.${column}`;
+          }
+        }),
+      );
+      const skill = await queryBuilder.getOne();
       return skill;
     } catch (e) {
       throw new HttpException(
-        'An Error have when finding data ',
+        'An Error have when finding skill ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );

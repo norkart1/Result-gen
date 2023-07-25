@@ -12,8 +12,8 @@ export class CreateCredentialInput {
   @Field()
   password: string;
 
-  @Field(()=> [Roles])
-  roles: Roles[];
+  @Field(()=> Roles)
+  roles: Roles;
 
   @Field(() => [String] , { nullable: true })
   categories?: string[];
