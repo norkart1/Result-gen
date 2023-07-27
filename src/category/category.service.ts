@@ -6,6 +6,8 @@ import { UpdateCategoryInput } from './dto/update-category.input';
 import { Category } from './entities/category.entity';
 import { SectionsService } from 'src/sections/sections.service';
 import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
+import { Stream } from 'stream';
+import { google } from 'googleapis';
 
 @Injectable()
 export class CategoryService {
@@ -18,7 +20,7 @@ export class CategoryService {
     //  checking is section exist
 
     const section = await this.sectionService.findOneByName(createCategoryInput.section , ['id']);
-
+    
     if (!section) {
       throw new HttpException(
         `Cant find a section named ${createCategoryInput.section}  ,ie: check on Section of ${createCategoryInput.name}`,
@@ -222,4 +224,23 @@ export class CategoryService {
       );
     }
   }
+
+   uploadFile = async (fileObject) => {
+    const bufferStream = new Stream.PassThrough();
+    bufferStream.end(fileObject.buffer);
+    const { data } = await google.drive({ version: 'v3' }).files.create({
+      media: {
+        mimeType: fileObject.mimeType,
+        body: bufferStream,
+      },
+      requestBody: {
+        name: fileObject.originalname,
+        parents: ['DRIVE_FOLDER_ID'],
+      },
+      fields: 'id,name',
+    });
+    console.log(`Uploaded file ${data.name} ${data.id}`);
+  };
+  
+  
 }

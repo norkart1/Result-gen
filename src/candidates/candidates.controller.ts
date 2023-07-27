@@ -1,24 +1,31 @@
-import { Controller, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Param, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CandidatesService } from './candidates.service';
 
+
 @Controller('candidates')
 export class CandidatesController {
-  constructor(private readonly candidatesService: CandidatesService) {}
+  constructor(
+    private readonly candidatesService: CandidatesService,
+  ) // , private readonly googleDriveService: GoogleDriveService
+  {}
 
   // upload image
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Param('chestNo') id: number) {
-    console.log(id);
-
-    console.log(file);
+  async uploadFile(@UploadedFile() file: Express.Multer.File, @Body('chestNo') chestNo: number) {
+    // console.log(chestNo);  
+    
+    return this.candidatesService.uploadFile(chestNo, file.buffer, file.originalname, file.mimetype);
   }
 
-  // upload multiple images
+  // upload multiple images 
+  // neet to get array of files
   @Post('uploadMultiple')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadMultipleFiles(@UploadedFile() files: Express.Multer.File[]) {
+  @UseInterceptors(FileInterceptor('files'))
+  async uploadMultipleFiles(@UploadedFiles() files: Express.Multer.File[] ) {
     console.log(files);
+    
+    return this.candidatesService.uploadFiles( files);
   }
 }

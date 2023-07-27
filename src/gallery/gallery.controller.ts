@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { GalleryService } from './gallery.service';
 import { CreateGalleryDto } from './dto/create-gallery.dto';
 import { UpdateGalleryDto } from './dto/update-gallery.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('gallery')
 export class GalleryController {
   constructor(private readonly galleryService: GalleryService) {}
 
   @Post()
-  create(@Body() createGalleryDto: CreateGalleryDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  create(@Body() createGalleryDto: CreateGalleryDto , @UploadedFile('file') file: Express.Multer.File) {
     return this.galleryService.create(createGalleryDto);
   }
 

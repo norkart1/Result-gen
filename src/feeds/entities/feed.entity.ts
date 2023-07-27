@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import {
   Column,
   CreateDateColumn,
@@ -6,6 +6,24 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+export enum Language {
+  MALAYALAM = 'MALAYALAM',
+  ENGLISH = 'ENGLISH',
+  ARABIC = 'ARABIC',
+  HINDI = 'HINDI',
+  URDU = 'URDU',
+  TAMIL = 'TAMIL',
+  KANNADA = 'KANNADA',
+  TELUGU = 'TELUGU',
+  BENGALI = 'BENGALI',
+  SPANISH = 'SPANISH',
+  FRENCH = 'FRENCH',
+}
+
+registerEnumType(Language, {
+  name: 'Language',
+});
 
 @ObjectType()
 @Entity()
@@ -17,4 +35,32 @@ export class Feed {
   @Field(() => String )
   @Column()
   name : string
+
+  @Field(() => String )
+  @Column()
+  url : string
+
+  @Field(() => String )
+  @Column()
+  category : string
+
+  @Field(() => Language )
+  @Column({
+    type: 'enum',
+    enum: Language,
+    default: Language.MALAYALAM,
+  })
+  language : Language
+
+  @Field(() => String )
+  @Column()
+  contentType : string
+
+  @CreateDateColumn()
+  @Field(() => Date)
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @Field(() => Date)
+  updatedAt: Date;
 }

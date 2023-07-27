@@ -6,6 +6,8 @@
 /src/utils/credentials
 gql.txt
 
+/examples
+
 # Logs
 logs
 *.log
