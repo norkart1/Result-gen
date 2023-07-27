@@ -44,11 +44,14 @@ export const fieldsIdChecker = (fields: string[]) => {
         if (!fields.includes(`${SecLastRelation}.id`)) {
           fields.push(`${SecLastRelation}.id`);
         }
-      } else {
-        if (!fields.includes('id')) {
-          fields.push(`id`);
-        }
       }
+     
+      
+    }
+
+     
+    if (!fields.includes('id')) {
+      fields.push(`id`);
     }
   }
   

@@ -9,6 +9,7 @@ import { SectionsModule } from 'src/sections/sections.module';
 import { CandidatesController } from './candidates.controller';
 import { CredentialsModule } from 'src/credentials/credentials.module';
 import { CandidateProgrammeModule } from 'src/candidate-programme/candidate-programme.module';
+// import { GoogleDriveService } from './upload.service';
 
 @Module({
   imports: [

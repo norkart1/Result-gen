@@ -263,6 +263,26 @@ type Feed {
   """Example field (placeholder)"""
   id: Int!
   name: String!
+  url: String!
+  category: String!
+  language: Language!
+  contentType: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum Language {
+  MALAYALAM
+  ENGLISH
+  ARABIC
+  HINDI
+  URDU
+  TAMIL
+  KANNADA
+  TELUGU
+  BENGALI
+  SPANISH
+  FRENCH
 }
 
 type Query {

@@ -15,6 +15,11 @@ import { Team } from 'src/teams/entities/team.entity';
 import { CreateInput } from './dto/create-input.dto';
 import { CredentialsService } from 'src/credentials/credentials.service';
 import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
+import { createReadStream } from 'fs';
+import { join } from 'path';
+import { Readable } from 'stream';
+import { driveConfig } from 'src/utils/googleApi.auth';
+// import { drive } from 'src/utils/googleApi.auth';
 
 @Injectable()
 export class CandidatesService {
@@ -126,7 +131,7 @@ export class CandidatesService {
       for (let index = 0; index < allData.length; index++) {
         const data = allData[index];
 
-        // creating a instance of Candidate 
+        // creating a instance of Candidate
         const input = new Candidate();
 
         // updating Value to candidate
@@ -350,6 +355,46 @@ export class CandidatesService {
     }
   }
 
+  async findOneByChesNoByFields(chestNO: number, fields: string[]) {
+    const allowedRelations = ['category', 'team', 'candidateProgrammes'];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+    try {
+      const queryBuilder = this.candidateRepository
+        .createQueryBuilder('candidate')
+        .where('candidate.chestNO = :chestNO', { chestNO })
+        .leftJoinAndSelect('candidate.category', 'category')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('candidate.candidateProgrammes', 'candidateProgrammes')
+        .leftJoinAndSelect('candidateProgrammes.programme', 'programme');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `candidate.${column}`;
+          }
+        }),
+      );
+      const candidate = await queryBuilder.getOne();
+      return candidate;
+    } catch (e) {
+      console.log(e);
+
+      throw new HttpException(
+        'An Error have when finding candidate ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
   // check is candidate in a programme
 
   async findOneByChestNoAndProgrammeId(chestNO: number, programmeCode: string) {
@@ -509,21 +554,78 @@ export class CandidatesService {
 
   // image upload to google drive and save id to candidate
 
-  async uploadImage(id: number, image:Express.Multer.File) {
+async uploadFiles(files: Express.Multer.File[]) {
+    
+  for (let index = 0; index < files.length; index++) {
+    const file = files[index];
+
+    const chestNo = parseInt(file.originalname.split('.')[0]);
+
+    await this.uploadFile(chestNo, file.buffer, file.originalname, file.mimetype);
+
+  }
+
+    return 'done';
+  }
+
+  async uploadFile(  chestNo: number , filePath: Buffer, fileName: string, mimeType: string) {
     // check the candidate exist
-    const candidate = await this.findOne(id, ['id']);
+    const candidate = await this.findOneByChesNoByFields(chestNo, ['id']);
 
     if (!candidate) {
-      throw new HttpException(`Cant find a candidate to add point`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `can't find candidate with chest no ${chestNo}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    // check the file is image 
-    if(!image.mimetype.includes('image')){
-      throw new HttpException(`File is not a image`, HttpStatus.BAD_REQUEST);
+    // check the file is image
+    if (!mimeType.includes('image')) {
+      throw new HttpException(`File is not an image`, HttpStatus.BAD_REQUEST);
     }
+    // check the file is image
+    const buffer = Buffer.from(filePath);
 
-    // upload image to google drive
+    // change the buffer to readable stream
+    const readableStream = new Readable({
+      read() {
+        this.push(buffer);
+        this.push(null);
+      },
+    });
 
-    
+    // get the folder id
+    const folderId = process.env.DRIVE_CANDIDATES_FOLDER_ID;
+
+    try {
+      // driveConfig
+      const drive = driveConfig();
+
+      const response = await drive.files.create({
+        requestBody: {
+          name: fileName, //file name
+          mimeType,
+          parents: folderId ? [folderId] : [],
+        },
+        media: {
+          mimeType,
+          body: readableStream,
+        },
+      });
+      // report the response from the request
+      console.log(response.data);
+
+      // save image id to candidate
+
+      const editedCandidate = await this.findOne(candidate.id, ['id']);
+
+      candidate.imageId = response.data.id;
+
+      await this.candidateRepository.save(editedCandidate);
+      return "done"
+    } catch (error) {
+      //report the error message
+      console.log(error);
+    }
   }
 }

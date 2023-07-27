@@ -25,7 +25,6 @@ import { CustomContextProvider } from './utils/custom';
 import { JudgeModule } from './judge/judge.module';
 import { SubstituteModule } from './substitute/substitute.module';
 import { FeedsModule } from './feeds/feeds.module';
-import { FieldSelectionMiddleware } from './field-selection.middleware';
 import { CustomSettingsModule } from './custom-settings/custom-settings.module';
 import { GalleryModule } from './gallery/gallery.module';
 
@@ -121,9 +120,4 @@ import { GalleryModule } from './gallery/gallery.module';
   providers: [AppService , CustomContextProvider],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(FieldSelectionMiddleware)
-      .forRoutes({ path: '/graphql', method: RequestMethod.POST });
-  }
  }
