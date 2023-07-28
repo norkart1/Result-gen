@@ -18,9 +18,6 @@ import { CandidateProgrammeModule } from './candidate-programme/candidate-progra
 import { DetailsModule } from './details/details.module';
 import { CategorySettingsModule } from './category-settings/category-settings.module';
 import { CredentialsModule } from './credentials/credentials.module';
-import { dataSourceOptions } from 'db/data-source';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
 import { CustomContextProvider } from './utils/custom';
 import { JudgeModule } from './judge/judge.module';
 import { SubstituteModule } from './substitute/substitute.module';

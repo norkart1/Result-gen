@@ -8,6 +8,7 @@ import { CategoryModule } from 'src/category/category.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([CustomSetting]) , ProgrammesModule , CategoryModule],
-  providers: [CustomSettingsResolver, CustomSettingsService]
+  providers: [CustomSettingsResolver, CustomSettingsService],
+  exports : [CustomSettingsService],
 })
 export class CustomSettingsModule {}

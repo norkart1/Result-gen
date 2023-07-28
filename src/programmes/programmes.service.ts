@@ -400,10 +400,15 @@ export class ProgrammesService {
   // find the programme by programme code know is the programme is there
 
   async findOneByCodeForCheck(programCode: string) {
+    
     try {
-    return  this.programmeRepository.query(
-        `SELECT id FROM programme WHERE programCode = "${programCode}"`,
-      );
+    const data =  await this.programmeRepository.createQueryBuilder('programme')
+     .where('programme.programCode = :programCode', { programCode })
+     .select('programme.id')
+     .getOne();
+     
+
+      return data;
     } catch (e) {
       throw new HttpException('An Error have when finding programme ', HttpStatus.INTERNAL_SERVER_ERROR);
     }

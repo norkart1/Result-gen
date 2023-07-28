@@ -385,8 +385,6 @@ export class CandidatesService {
       const candidate = await queryBuilder.getOne();
       return candidate;
     } catch (e) {
-      console.log(e);
-
       throw new HttpException(
         'An Error have when finding candidate ',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -561,6 +559,8 @@ async uploadFiles(files: Express.Multer.File[]) {
 
     const chestNo = parseInt(file.originalname.split('.')[0]);
 
+    
+
     await this.uploadFile(chestNo, file.buffer, file.originalname, file.mimetype);
 
   }
@@ -569,20 +569,11 @@ async uploadFiles(files: Express.Multer.File[]) {
   }
 
   async uploadFile(  chestNo: number , filePath: Buffer, fileName: string, mimeType: string) {
-    // check the candidate exist
-    const candidate = await this.findOneByChesNoByFields(chestNo, ['id']);
 
-    if (!candidate) {
-      throw new HttpException(
-        `can't find candidate with chest no ${chestNo}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
 
-    // check the file is image
-    if (!mimeType.includes('image')) {
-      throw new HttpException(`File is not an image`, HttpStatus.BAD_REQUEST);
-    }
+    const candidate = await this.candidateChecker(chestNo,mimeType)
+
+   
     // check the file is image
     const buffer = Buffer.from(filePath);
 
@@ -594,6 +585,10 @@ async uploadFiles(files: Express.Multer.File[]) {
       },
     });
 
+    // Get the file extension.
+  const fileExtension = fileName.split('.')[1];
+
+
     // get the folder id
     const folderId = process.env.DRIVE_CANDIDATES_FOLDER_ID;
 
@@ -603,7 +598,7 @@ async uploadFiles(files: Express.Multer.File[]) {
 
       const response = await drive.files.create({
         requestBody: {
-          name: fileName, //file name
+          name: `${chestNo}.${fileExtension}`, //file name
           mimeType,
           parents: folderId ? [folderId] : [],
         },
@@ -613,19 +608,38 @@ async uploadFiles(files: Express.Multer.File[]) {
         },
       });
       // report the response from the request
-      console.log(response.data);
 
       // save image id to candidate
 
-      const editedCandidate = await this.findOne(candidate.id, ['id']);
-
       candidate.imageId = response.data.id;
 
-      await this.candidateRepository.save(editedCandidate);
-      return "done"
+      return this.candidateRepository.save(candidate);
+      
     } catch (error) {
       //report the error message
-      console.log(error);
+      throw new HttpException(
+        `Error on google drive upload , check the image of ${chestNo}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
+  }
+
+ async candidateChecker(chestNo , mimeType ){
+    const candidate =await this.findOneByChesNoByFields(chestNo,['id'])
+
+    if (!candidate) {
+      throw new HttpException(
+        `can't find candidate with chest no ${chestNo}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+     // check the file is image
+     if (!mimeType.includes('image')) {
+      throw new HttpException(`File is not an image`, HttpStatus.BAD_REQUEST);
+    }
+
+    return candidate
+
   }
 }

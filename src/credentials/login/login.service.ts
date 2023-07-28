@@ -55,8 +55,10 @@ export class LoginService {
           team: user.team?.name,
           categories: user.categories?.map(category => category.name),
         };
+        
         const token = await this.generateJwtToken(payload);
 
+        
 
         return {
           user,
@@ -85,7 +87,8 @@ export class LoginService {
 
   // generate JWT token
   async generateJwtToken(user: JwtPayload) {
-    const token = this.jwtService.sign(user);
+    
+    const token = this.jwtService.sign(user );
     return token;
   }
 

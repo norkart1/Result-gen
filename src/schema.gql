@@ -37,9 +37,16 @@ type CustomSetting {
   """Example field (placeholder)"""
   id: Int!
   name: String
-  programmes: Programme
+  programmes: [Programme!]
+  category: Category
   max: Float
   min: Float
+
+  """Date of creation"""
+  createdAt: DateTime!
+
+  """Date of last update"""
+  updatedAt: DateTime!
 }
 
 type Judge {
@@ -263,10 +270,8 @@ type Feed {
   """Example field (placeholder)"""
   id: Int!
   name: String!
-  url: String!
-  category: String!
   language: Language!
-  contentType: String!
+  content: String!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -310,14 +315,14 @@ type Query {
   position(id: Int!): Position!
   categorySettings: [CategorySettings!]!
   categorySetting(id: Int!): CategorySettings!
+  customSettings: [CustomSetting!]!
+  customSetting(id: Int!): CustomSetting!
   judges: [Judge!]!
   judge(id: Int!): Judge!
   substitutes: [Substitute!]!
   substitute(id: Int!): Substitute!
   feeds: [Feed!]!
   feed(id: Int!): Feed!
-  customSettings: [CustomSetting!]!
-  customSetting(id: Int!): CustomSetting!
 }
 
 type Mutation {
@@ -369,6 +374,9 @@ type Mutation {
   createCategorySetting(createCategorySettingInput: CreateCategorySettingInput!): CategorySettings!
   updateCategorySetting(updateCategorySettingInput: UpdateCategorySettingInput!): CategorySettings!
   removeCategorySetting(id: Int!): CategorySettings!
+  createCustomSetting(createCustomSettingInput: CreateCustomSettingInput!): CustomSetting!
+  updateCustomSetting(updateCustomSettingInput: UpdateCustomSettingInput!): CustomSetting!
+  removeCustomSetting(id: Int!): CustomSetting!
   createJudge(createJudgeInput: CreateJudgeInput!): Judge!
   updateJudge(updateJudgeInput: UpdateJudgeInput!): Judge!
   removeJudge(id: Int!): Judge!
@@ -381,9 +389,6 @@ type Mutation {
   createFeed(createFeedInput: CreateFeedInput!): Feed!
   updateFeed(updateFeedInput: UpdateFeedInput!): Feed!
   removeFeed(id: Int!): Feed!
-  createCustomSetting(createCustomSettingInput: CreateCustomSettingInput!): CustomSetting!
-  updateCustomSetting(updateCustomSettingInput: UpdateCustomSettingInput!): CustomSetting!
-  removeCustomSetting(id: Int!): CustomSetting!
 }
 
 input CreateCandidateInput {
@@ -635,6 +640,23 @@ input UpdateCategorySettingInput {
   id: Int!
 }
 
+input CreateCustomSettingInput {
+  name: String!
+  programs: [String!]!
+  category: String!
+  max: Int!
+  min: Int!
+}
+
+input UpdateCustomSettingInput {
+  name: String
+  programs: [String!]
+  category: String
+  max: Int
+  min: Int
+  id: Int!
+}
+
 input CreateJudgeInput {
   username: String!
   password: String!
@@ -673,22 +695,5 @@ input CreateFeedInput {
 input UpdateFeedInput {
   """Example field (placeholder)"""
   exampleField: Int
-  id: Int!
-}
-
-input CreateCustomSettingInput {
-  name: String!
-  programs: [String!]!
-  category: String!
-  max: Int!
-  min: Int!
-}
-
-input UpdateCustomSettingInput {
-  name: String
-  programs: [String!]
-  category: String
-  max: Int
-  min: Int
   id: Int!
 }

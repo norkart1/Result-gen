@@ -45,7 +45,14 @@ export class CustomSettingsService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      const programmeInCustomSetting : CustomSetting = await this.findByProgramCode(program)
 
+      if(programmeInCustomSetting){
+        throw new HttpException(
+          `Program with code ${program} already exists in custom setting`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       programmes.push(programObj);
     }
 
@@ -59,6 +66,7 @@ export class CustomSettingsService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
 
     try {
       const newCustomSetting = this.customSettingRepository.create({
@@ -122,6 +130,8 @@ export class CustomSettingsService {
     // checking if fields contains id
     fields = fieldsIdChecker(fields);
 
+    console.log(fields);
+    
     try {
       const queryBuilder = this.customSettingRepository
         .createQueryBuilder('customSetting')
@@ -195,7 +205,7 @@ export class CustomSettingsService {
     // check the name is unique
     const customSetting: CustomSetting = await this.findOneByName(name , ['id']);
 
-    if (customSetting) {
+    if (customSetting && customSetting.id!== id) {
       throw new HttpException(
         `Custom Setting with name ${name} already exists`,
         HttpStatus.BAD_REQUEST,
@@ -213,6 +223,17 @@ export class CustomSettingsService {
       if (!programObj) {
         throw new HttpException(
           `Program with code ${program} does not exists`,
+          HttpStatus.BAD_REQUEST,
+        );
+
+        // check programme is already in custom setting
+      }
+
+      const programmeInCustomSetting : CustomSetting = await this.findByProgramCode(program)
+
+      if(programmeInCustomSetting && customSetting.id !== id){
+        throw new HttpException(
+          `Program with code ${program} already exists in custom setting`,
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -247,6 +268,15 @@ export class CustomSettingsService {
         { cause: e },
       );
     }
+  }
+
+ async findByProgramCode(programCode: string){
+    return this.customSettingRepository
+    .createQueryBuilder('customSetting')
+    .leftJoinAndSelect('customSetting.programmes', 'programmes')
+   .where('programmes.programCode = :programCode', { programCode })
+   .select('customSetting.id')
+   .getOne();
   }
 
   async remove(id: number) {

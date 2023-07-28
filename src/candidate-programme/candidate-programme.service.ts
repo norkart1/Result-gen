@@ -20,6 +20,8 @@ import { CategorySettingsService } from 'src/category-settings/category-settings
 import { Roles } from 'src/credentials/roles/roles.enum';
 import { CredentialsService } from 'src/credentials/credentials.service';
 import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
+import { CustomSettingsService } from 'src/custom-settings/custom-settings.service';
+import { CustomSetting } from 'src/custom-settings/entities/custom-setting.entity';
 
 @Injectable()
 export class CandidateProgrammeService {
@@ -38,6 +40,7 @@ export class CandidateProgrammeService {
     private readonly detailService: DetailsService,
     private readonly categorySettingsService: CategorySettingsService,
     private readonly credentialService: CredentialsService,
+    private readonly customSettingsService: CustomSettingsService,
   ) {}
 
   // same team candidates
@@ -63,11 +66,7 @@ export class CandidateProgrammeService {
 
     //  programme
     const programme: Programme = await this.programmeService.findOneByCode(programme_code);
-
-    // programme.category.name ...settings.id
-    // progamme.type  ..candidateCount ...groupCount
-    // candidateProgramme.candiate.team.name
-
+ 
     if (!programme) {
       throw new HttpException(
         `Can't find programme with programme id ${programme_code}`,
@@ -78,7 +77,7 @@ export class CandidateProgrammeService {
     const category = programme.category;
 
     // check permission on category
-    this.credentialService.checkPermissionOnCategories(user, category.name);
+    await this.credentialService.checkPermissionOnCategories(user, category.name);
 
     // checking the teamManager can add candidate to this programme
     if (user.roles === Roles.TeamManager) {
@@ -272,6 +271,16 @@ export class CandidateProgrammeService {
     if (!candidateProgramme) {
       throw new HttpException('The candidate programme is not exist', HttpStatus.BAD_REQUEST);
     }
+
+    // cant change the programme
+
+    if(updateCandidateProgrammeInput.programme_code !== candidateProgramme.programme.programCode) {
+      throw new HttpException(
+        `Can't change the programme`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     //  candidate
     const candidate: Candidate = await this.candidateService.findOneByChestNo(
       updateCandidateProgrammeInput.chestNo,
@@ -537,6 +546,35 @@ export class CandidateProgrammeService {
     const candidateGroupProgrammes: CandidateProgramme[] =
       await this.getCandidatesOfGroupOfCandidate(candidate.chestNO);
 
+      // check on custom settings
+
+      const customSetting = await this.customSettingsService.findByProgramCode(programme.programCode);
+
+      if(customSetting){
+        const customSettingId : CustomSetting = await this.customSettingsService.findOne(customSetting.id , ['max' , 'programmes.programCode' ,'programmes.id' ,'name']);
+
+        if(customSettingId){
+
+         const {max , programmes , name } = customSettingId;
+         const customProgramsOnCandidate = candidate.candidateProgrammes.filter((cp)=>{
+           for(let i = 0 ; i < programmes.length ; i++){
+             if(cp.programme.id == programmes[i].id){
+               return true;
+             }
+           }
+         })
+
+         if(customProgramsOnCandidate.length >= max){
+          throw new HttpException(
+            `The candidate ${candidate.name} can't participate in programme  ${programme.name}, maximum programmes on ${name} is ${max}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        }
+  
+  
+      }
+
     //  settings
     const settings: CategorySettings = category.settings;
 
@@ -736,4 +774,6 @@ export class CandidateProgrammeService {
 
     return candidatesOfGroups;
   }
+
+
 }

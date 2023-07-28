@@ -36,14 +36,6 @@ export class Feed {
   @Column()
   name : string
 
-  @Field(() => String )
-  @Column()
-  url : string
-
-  @Field(() => String )
-  @Column()
-  category : string
-
   @Field(() => Language )
   @Column({
     type: 'enum',
@@ -54,7 +46,7 @@ export class Feed {
 
   @Field(() => String )
   @Column()
-  contentType : string
+  content:string; 
 
   @CreateDateColumn()
   @Field(() => Date)

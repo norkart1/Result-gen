@@ -1,5 +1,5 @@
 import { Body, Controller, Param, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { CandidatesService } from './candidates.service';
 
 
@@ -22,10 +22,11 @@ export class CandidatesController {
   // upload multiple images 
   // neet to get array of files
   @Post('uploadMultiple')
-  @UseInterceptors(FileInterceptor('files'))
+  @UseInterceptors(FilesInterceptor('files',null))
   async uploadMultipleFiles(@UploadedFiles() files: Express.Multer.File[] ) {
-    console.log(files);
     
     return this.candidatesService.uploadFiles( files);
   }
+
+  
 }

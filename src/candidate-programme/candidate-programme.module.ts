@@ -14,6 +14,7 @@ import { CredentialsModule } from 'src/credentials/credentials.module';
 import { DetailsModule } from 'src/details/details.module';
 import { CategorySettingsModule } from 'src/category-settings/category-settings.module';
 import { TeamsModule } from 'src/teams/teams.module';
+import { CustomSettingsModule } from 'src/custom-settings/custom-settings.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { TeamsModule } from 'src/teams/teams.module';
     CredentialsModule,
     DetailsModule,
     CategorySettingsModule,
-    TeamsModule
+    TeamsModule,
+    CustomSettingsModule
   ],
   providers: [
     CandidateProgrammeResolver,

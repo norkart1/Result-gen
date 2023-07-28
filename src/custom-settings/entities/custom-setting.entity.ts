@@ -1,4 +1,4 @@
-import { Column, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Programme } from 'src/programmes/entities/programme.entity';
 import { Category } from 'src/category/entities/category.entity';
@@ -15,11 +15,12 @@ export class CustomSetting {
   name : string;
 
   @OneToMany(() => Programme, (programme) => programme.customSetting)
-  @Field(()=> Programme , { nullable: true })
+  @Field(()=> [Programme] , { nullable: true })
   @JoinTable()
   programmes : Programme[];
 
   @ManyToOne(() => Category, (category) => category.customSettings)
+  @Field(()=> Category, { nullable: true })
   category : Category;
 
   @Column()
@@ -30,4 +31,12 @@ export class CustomSetting {
   @Field({ nullable: true })
   min : number;
 
+
+  @CreateDateColumn()
+  @Field(() => Date, { description: 'Date of creation' })
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @Field(() => Date, { description: 'Date of last update' })
+  updatedAt: Date;
 }
