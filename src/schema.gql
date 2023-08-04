@@ -297,6 +297,7 @@ type Query {
   team(id: Int!): Team!
   credentials: [Credential!]!
   credential(id: Int!): Credential!
+  checkLoggedIn: Credential!
   getCookieValue: String!
   categories: [Category!]!
   category(id: Int!): Category!

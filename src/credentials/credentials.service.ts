@@ -10,6 +10,7 @@ import { Category } from 'src/category/entities/category.entity';
 import { LoginService } from './login/login.service';
 import { Roles } from './roles/roles.enum';
 import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
+import { JwtPayload } from './jwt/jwt.interface';
 
 @Injectable()
 export class CredentialsService {
@@ -162,6 +163,34 @@ export class CredentialsService {
         { cause: e },
       );
     }
+  }
+
+  async  checkLoggedIn( req : any ) {
+
+    const cookie = req.cookies['__user']
+
+    if(!cookie){
+      throw new HttpException('User not logged In', HttpStatus.FORBIDDEN);
+    }
+
+    const token: JwtPayload = await this.LoginService.validateJwtToken(cookie);
+   
+    const username = token.username;
+
+    if (!username) {
+       throw new HttpException('User not logged In', HttpStatus.FORBIDDEN);
+    }
+
+    // find the user in the database
+    const user = await this.findOneByUsername(username);
+
+    if (!user) {
+       throw new HttpException('User not logged In', HttpStatus.FORBIDDEN);
+    }
+
+    req.user = user
+
+    return user
   }
 
   findOneByUsername(username: string) {

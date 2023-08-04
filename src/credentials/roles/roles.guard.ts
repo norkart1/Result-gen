@@ -10,7 +10,7 @@ import { JwtPayload } from '../jwt/jwt.interface';
 export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private readonly CredendialService: CredentialsService,
+    private readonly CredentialService: CredentialsService,
     private readonly loginService: LoginService,
   ) {}
 
@@ -18,7 +18,7 @@ export class RolesGuard implements CanActivate {
     const requiredRoles = this.reflector.getAllAndOverride<Roles[]>('roles', [
       context.getHandler(),
       context.getClass(),
-    ]);
+    ]); 
 
     if (!requiredRoles) {
       return true; // No roles specified, allow access
@@ -51,7 +51,7 @@ export class RolesGuard implements CanActivate {
     }
 
     // find the user in the database
-    const user = await this.CredendialService.findOneByUsername(username);
+    const user = await this.CredentialService.findOneByUsername(username);
 
     if (!user) {
       return false;

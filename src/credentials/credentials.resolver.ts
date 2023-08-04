@@ -5,15 +5,13 @@ import { CreateCredentialInput } from './dto/create-credential.input';
 import { UpdateCredentialInput } from './dto/update-credential.input';
 import { HasRoles, RolesGuard } from './roles/roles.guard';
 import { Roles } from './roles/roles.enum';
-import { UseGuards, UsePipes } from '@nestjs/common';
-import { LoginService } from './login/login.service';
+import { UseGuards } from '@nestjs/common';
 import { fieldsProjection } from 'graphql-fields-list';
 
 @Resolver(() => Credential)
 export class CredentialsResolver {
   constructor(
-    private readonly credentialsService: CredentialsService,
-    private readonly LoginService: LoginService,
+    private readonly credentialsService: CredentialsService
   ) {}
 
   @Mutation(() => Credential)
@@ -40,8 +38,10 @@ export class CredentialsResolver {
   @HasRoles(Roles.Controller, Roles.Admin, Roles.TeamManager)
   @UseGuards(RolesGuard)
   @Query(() => Credential, { name: 'credential' })
-  findOne(@Args('id', { type: () => Int }) id: number, @Context('req') request: any) {
-    return this.credentialsService.findOne(id, request.user);
+  findOne(@Args('id', { type: () => Int }) id: number,
+  @Info() info : any) {
+    const fields = Object.keys(fieldsProjection(info));
+    return this.credentialsService.findOne(id, fields);
   }
 
   @Mutation(() => Credential)
@@ -59,5 +59,11 @@ export class CredentialsResolver {
   @UseGuards(RolesGuard)
   removeCredential(@Args('id', { type: () => Int }) id: number, @Context('req') request: any) {
     return this.credentialsService.remove(id, request.user);
+  }
+
+  @UseGuards(RolesGuard)
+  @Query(() => Credential)
+  checkLoggedIn( @Context('req') request: any) {
+    return this.credentialsService.checkLoggedIn(request);
   }
 }
