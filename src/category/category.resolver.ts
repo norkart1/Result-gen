@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Info, Context } from '@nestjs/graphql';
 import { CategoryService } from './category.service';
 import { Category } from './entities/category.entity';
 import { CreateCategoryInput } from './dto/create-category.input';
@@ -34,6 +34,17 @@ export class CategoryResolver {
     const fields = Object.keys(fieldsProjection(info));
     return this.categoryService.findOne(id , fields);
   }
+
+  @HasRoles(Roles.Controller , Roles.TeamManager)
+  @UseGuards(RolesGuard)
+  @Query(() => [Category], { name: 'categoriesByNames' })
+  findByName( @Info() info: any , @Context('req') request: any) {
+    const fields = Object.keys(fieldsProjection(info));
+    const names = request.user.categories.map((category) => category.name);
+    const team = request.user.team.name;
+    return this.categoryService.findManyByName(names , fields , team  );
+  }
+
 
   @UsePipes(CategoryPipe)
   @Mutation(() => Category)

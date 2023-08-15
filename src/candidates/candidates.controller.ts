@@ -7,15 +7,13 @@ import { CandidatesService } from './candidates.service';
 export class CandidatesController {
   constructor(
     private readonly candidatesService: CandidatesService,
-  ) // , private readonly googleDriveService: GoogleDriveService
+  ) 
   {}
 
   // upload image
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Body('chestNo') chestNo: number) {
-    // console.log(chestNo);  
-    
     return this.candidatesService.uploadFile(chestNo, file.buffer, file.originalname, file.mimetype);
   }
 

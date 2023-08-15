@@ -1,7 +1,14 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
+import { Language } from '../entities/feed.entity';
 
 @InputType()
 export class CreateFeedInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field(() => String )
+  name : string
+
+  @Field(() => Language )
+  language : Language
+
+  @Field(() => String )
+  content:string; 
 }

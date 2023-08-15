@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { Category } from './entities/category.entity';
@@ -67,7 +67,7 @@ export class CategoryService {
 
 
       queryBuilder.select(
-        fields.map(column => {
+        fields.map(column => {   
           const splitted = column.split('.');
 
           if (splitted.length > 1) {
@@ -94,7 +94,7 @@ export class CategoryService {
     'candidates',
     'programmes',
     'settings',
-    'candidates.team',
+    'candidates.team'
   ];
 
   // validating fields
@@ -160,6 +160,91 @@ export class CategoryService {
     }
   }
 
+  async findManyByName(names: string[] , fields: string[] , team : string ='') {
+    const allowedRelations = [
+      'section',
+      'candidates',
+      'programmes',
+      'programmes.candidateProgramme',
+      'programmes.candidateProgramme.candidate',
+      'programmes.candidateProgramme.grade',
+      'programmes.candidateProgramme.position',
+      'settings',
+      'candidates.team',
+    ];
+
+    // validating fields
+    names = fieldsValidator(names, allowedRelations);
+    // checking if fields contains id
+    names = fieldsIdChecker(names);
+
+    const queryBuilder = this.categoryRepository.createQueryBuilder('category')
+      .where('category.name IN (:...names)', { names })
+      .leftJoinAndSelect('category.section', 'section')
+      .leftJoinAndSelect('category.candidates', 'candidates')
+      .leftJoinAndSelect('category.programmes', 'programmes')
+      .leftJoinAndSelect('programmes.candidateProgramme', 'candidateProgramme')
+      .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+      .leftJoinAndSelect('candidateProgramme.grade', 'grade')
+      .leftJoinAndSelect('candidateProgramme.position', 'position')
+      .leftJoinAndSelect('category.settings', 'settings')
+      .leftJoinAndSelect('candidates.team', 'team');
+      
+    try {
+      queryBuilder.select(
+        fields.map(column => {  
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `category.${column}`;
+          }
+        }),
+      );
+
+      // if candidate is not empty then add the fields of team to the query
+      if(team){
+        queryBuilder.addSelect(['team.id' , 'team.name']);
+      }
+
+      const category = await queryBuilder.getMany();
+
+      if(team){
+        const filteredCategory = category.filter((category ) => {
+          if(category.candidates ){
+            console.log(category.candidates);
+            
+          const filteredCandidates = category.candidates.filter((candidate) => {
+            return candidate.team.name === team;
+          });
+          category.candidates = filteredCandidates;
+        }
+        })
+        
+        if(filteredCategory.length > 0){
+          return filteredCategory;
+        }
+      }
+
+      return category;
+    }
+    catch (e) {
+      console.log(e.message);
+      
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+
+
+  }
+
+
+
+
   async update(id: number, updateCategoryInput: UpdateCategoryInput) {
     //  checking is section exist
 
@@ -174,6 +259,7 @@ export class CategoryService {
 
     try {
       const newCategoryInput = this.categoryRepository.create({
+        id,
         name: updateCategoryInput.name,
         section,
       });
@@ -224,23 +310,5 @@ export class CategoryService {
       );
     }
   }
-
-   uploadFile = async (fileObject) => {
-    const bufferStream = new Stream.PassThrough();
-    bufferStream.end(fileObject.buffer);
-    const { data } = await google.drive({ version: 'v3' }).files.create({
-      media: {
-        mimeType: fileObject.mimeType,
-        body: bufferStream,
-      },
-      requestBody: {
-        name: fileObject.originalname,
-        parents: ['DRIVE_FOLDER_ID'],
-      },
-      fields: 'id,name',
-    });
-    console.log(`Uploaded file ${data.name} ${data.id}`);
-  };
-  
   
 }

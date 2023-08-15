@@ -35,6 +35,18 @@ export class CredentialsResolver {
     return this.credentialsService.findAll( fields);
   }
 
+  @Query(() => [Credential], { name: 'credentialsByTeam' })
+  findAllByTeam(@Args('team', { type: () => String }) team: string) {
+    return this.credentialsService.findByTeam(team);
+  }
+  
+  @Query(() => [Credential], { name: 'credentialsByRole' })
+  findAllByRole(@Args('role', { type: () => Roles }) role: Roles) {
+    return this.credentialsService.findByRole(role);
+  }
+
+
+
   @HasRoles(Roles.Controller, Roles.Admin, Roles.TeamManager)
   @UseGuards(RolesGuard)
   @Query(() => Credential, { name: 'credential' })

@@ -1,14 +1,12 @@
 import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { CandidateProgramme } from 'src/candidate-programme/entities/candidate-programme.entity';
 import { Category } from 'src/category/entities/category.entity';
-import { Section } from 'src/sections/entities/section.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinTable,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -32,13 +30,13 @@ export class Candidate {
   // Primary generated ID
 
   @PrimaryGeneratedColumn()
-  @Field(() => Int, { description: 'Example field (placeholder)' , nullable: true})
+  @Field(() => Int, { description: 'Example field (placeholder)', nullable: true })
   id: number;
 
   // Normal columns
 
   @Column()
-  @Field( { nullable: true })
+  @Field({ nullable: true })
   name: string;
 
   @Column({ nullable: true })
@@ -62,7 +60,7 @@ export class Candidate {
   imageId: string;
 
   @Column({ type: 'varchar', default: Gender.MALE })
-  @Field(() => Gender , { nullable: true })
+  @Field(() => Gender, { nullable: true })
   gender: Gender;
 
   @Column({ nullable: true })
@@ -102,10 +100,10 @@ export class Candidate {
   // Dates
 
   @CreateDateColumn()
-  @Field(() => Date , { nullable: true })
+  @Field(() => Date, { nullable: true })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Field(() => Date , { nullable: true })
+  @Field(() => Date, { nullable: true })
   updatedAt: Date;
 }

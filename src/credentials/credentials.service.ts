@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCredentialInput } from './dto/create-credential.input';
 import { UpdateCredentialInput } from './dto/update-credential.input';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { Credential } from './entities/credential.entity';
 import { CategoryService } from 'src/category/category.service';
 import { TeamsService } from 'src/teams/teams.service';
@@ -11,6 +11,7 @@ import { LoginService } from './login/login.service';
 import { Roles } from './roles/roles.enum';
 import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 import { JwtPayload } from './jwt/jwt.interface';
+import { Team } from 'src/teams/entities/team.entity';
 
 @Injectable()
 export class CredentialsService {
@@ -191,6 +192,53 @@ export class CredentialsService {
     req.user = user
 
     return user
+  }
+
+  async findByTeam(team: string) {
+   const teamId : Team = await this.teamService.findOneByName(team, ['id']);
+
+   if(!teamId) {
+    throw new HttpException('Team not found', HttpStatus.BAD_REQUEST);
+   }
+
+   try{
+    const findOptions :FindOneOptions<Credential> = {
+      where: {
+        team: teamId,
+      } as FindOptionsWhere<Team>,
+      relations: ['team', 'categories'],
+    };
+    const credential = await this.CredentialRepository.find(findOptions);
+    return credential;
+   }
+    catch(e) {
+      throw new HttpException(
+        'An Error have when finding credential ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+  async findByRole(roles: Roles) {
+    try{
+      const credential = this.CredentialRepository.find({
+        where:{
+          roles
+        }
+      })
+
+    return credential;
+    }
+
+    catch(err){
+      throw new HttpException(
+        'An Error have when finding credential ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: err },
+      );
+
+    }
   }
 
   findOneByUsername(username: string) {

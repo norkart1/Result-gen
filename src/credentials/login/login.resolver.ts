@@ -5,6 +5,7 @@ import { HttpException, HttpStatus, Res, UseGuards } from '@nestjs/common';
 import { LoginGuard } from './login.guard';
 import { Credential } from '../entities/credential.entity';
 import { Response } from 'express';
+import { LoginType } from '../dto/login.type';
 
 @Resolver(() => Credential)
 export class LoginResolver {
@@ -13,7 +14,7 @@ export class LoginResolver {
     private readonly loginService: LoginService,
   ) {}
 
-  @Mutation(() => Credential, { name: 'login' })
+  @Mutation(() => LoginType, { name: 'login' })
   @UseGuards(LoginGuard)
   async login(
     @Args('username') username: string,
@@ -30,7 +31,7 @@ export class LoginResolver {
       
       if (val.token) {
         context.res.cookie('__user', `${val.token}`, { httpOnly: true }, { maxAge: 1000 });
-        return val.user;
+        return val;
       }
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.UNAUTHORIZED);

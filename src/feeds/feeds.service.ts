@@ -1,26 +1,69 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateFeedInput } from './dto/create-feed.input';
 import { UpdateFeedInput } from './dto/update-feed.input';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Feed } from './entities/feed.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class FeedsService {
+
+  constructor(
+    @InjectRepository(Feed)
+    private feedRepository: Repository<Feed>,
+  ) {}
+
   create(createFeedInput: CreateFeedInput) {
-    return 'This action adds a new feed';
+    try {
+      const feed = this.feedRepository.create(createFeedInput);
+      return this.feedRepository.save(feed);
+    }
+    catch (error) {
+      throw new HttpException("Error on creating Feed", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   findAll() {
-    return `This action returns all feeds`;
+    try {
+      return this.feedRepository.find();
+    }
+    catch (error) {
+      throw new HttpException("Error on fetching Feeds", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} feed`;
+    try {
+      return this.feedRepository.findOne({
+        where: {
+          id: id
+        }
+      });
+    }
+    catch (error) {
+      throw new HttpException("Error on fetching Feed", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   update(id: number, updateFeedInput: UpdateFeedInput) {
-    return `This action updates a #${id} feed`;
+    
+    try {
+      const feed = this.feedRepository.create(updateFeedInput);
+      return this.feedRepository.save(feed);
+    }
+    catch (error) {
+      throw new HttpException("Error on updating Feed", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   remove(id: number) {
-    return `This action removes a #${id} feed`;
+    try {
+      return this.feedRepository.delete({
+        id: id
+      });
+    }
+    catch (error) {
+      throw new HttpException("Error on deleting Feed", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

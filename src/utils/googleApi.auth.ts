@@ -13,7 +13,6 @@ const oauth2Client = new google.auth.OAuth2(
   driveRedirectUri
 );
 
-console.log('driveClientId', driveClientId);
 
 
 oauth2Client.setCredentials({ refresh_token: driveRefreshToken });

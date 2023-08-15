@@ -266,6 +266,11 @@ type Detail {
   updatedAt: DateTime!
 }
 
+type LoginType {
+  admin: Credential!
+  token: String!
+}
+
 type Feed {
   """Example field (placeholder)"""
   id: Int!
@@ -290,17 +295,37 @@ enum Language {
   FRENCH
 }
 
+type Tag {
+  id: Int!
+  name: String!
+  galleries: [Gallery!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Gallery {
+  id: Int!
+  name: String!
+  imageId: String!
+  tags: [Tag!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Query {
   candidates: [Candidate!]!
   candidate(id: Int!): Candidate!
   teams: [Team!]!
   team(id: Int!): Team!
   credentials: [Credential!]!
+  credentialsByTeam(team: String!): [Credential!]!
+  credentialsByRole(role: Roles!): [Credential!]!
   credential(id: Int!): Credential!
   checkLoggedIn: Credential!
   getCookieValue: String!
   categories: [Category!]!
   category(id: Int!): Category!
+  categoriesByNames: [Category!]!
   sections: [Section!]!
   section(id: Int!): Section!
   candidateProgrammes: [CandidateProgramme!]!
@@ -324,6 +349,10 @@ type Query {
   substitute(id: Int!): Substitute!
   feeds: [Feed!]!
   feed(id: Int!): Feed!
+  galleries: [Gallery!]!
+  gallery(id: Int!): Gallery!
+  tags: [Tag!]!
+  tag(id: Int!): Tag!
 }
 
 type Mutation {
@@ -337,7 +366,7 @@ type Mutation {
   createCredential(createCredentialInput: CreateCredentialInput!): Credential!
   updateCredential(updateCredentialInput: UpdateCredentialInput!): Credential!
   removeCredential(id: Int!): Credential!
-  login(username: String!, password: String!): Credential!
+  login(username: String!, password: String!): LoginType!
   logout: Boolean!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
@@ -390,6 +419,10 @@ type Mutation {
   createFeed(createFeedInput: CreateFeedInput!): Feed!
   updateFeed(updateFeedInput: UpdateFeedInput!): Feed!
   removeFeed(id: Int!): Feed!
+  removeGallery(id: Float!): Gallery!
+  createTag(createTagInput: CreateTagInput!): Tag!
+  updateTag(updateTagInput: UpdateTagInput!): Tag!
+  removeTag(id: Int!): Tag!
 }
 
 input CreateCandidateInput {
@@ -689,12 +722,23 @@ input UpdateSubstituteInput {
 }
 
 input CreateFeedInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  name: String!
+  language: Language!
+  content: String!
 }
 
 input UpdateFeedInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  name: String
+  language: Language
+  content: String
+  id: Int!
+}
+
+input CreateTagInput {
+  name: String!
+}
+
+input UpdateTagInput {
+  name: String
   id: Int!
 }

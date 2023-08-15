@@ -24,6 +24,8 @@ import { SubstituteModule } from './substitute/substitute.module';
 import { FeedsModule } from './feeds/feeds.module';
 import { CustomSettingsModule } from './custom-settings/custom-settings.module';
 import { GalleryModule } from './gallery/gallery.module';
+import { TagModule } from './tag/tag.module';
+import dataSource from 'db/data-source';
 
 @Module({
   imports: [
@@ -75,6 +77,8 @@ import { GalleryModule } from './gallery/gallery.module';
       inject: [ConfigService],
     }
     ),
+    
+    
 
     // graphql configuration
 
@@ -112,6 +116,7 @@ import { GalleryModule } from './gallery/gallery.module';
     FeedsModule,
     CustomSettingsModule,
     GalleryModule,
+    TagModule,
   ],
   controllers: [AppController],
   providers: [AppService , CustomContextProvider],
