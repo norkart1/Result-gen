@@ -174,9 +174,9 @@ export class CategoryService {
     ];
 
     // validating fields
-    names = fieldsValidator(names, allowedRelations);
+    fields = fieldsValidator(fields, allowedRelations);
     // checking if fields contains id
-    names = fieldsIdChecker(names);
+    fields = fieldsIdChecker(fields);
 
     const queryBuilder = this.categoryRepository.createQueryBuilder('category')
       .where('category.name IN (:...names)', { names })
