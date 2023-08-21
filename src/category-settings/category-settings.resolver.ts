@@ -55,4 +55,14 @@ export class CategorySettingsResolver {
   removeCategorySetting(@Args('id', { type: () => Int }) id: number, @Context('req') req: any) {
     return this.categorySettingsService.remove(id, req.user);
   }
+
+  @Mutation(() => CategorySettings)
+  @HasRoles(Roles.Controller)
+  @UseGuards(RolesGuard)
+  changeProgrammeListUpdatable(
+    @Args('name') name: string,
+    @Context('req') req: any,
+  ) {
+    return this.categorySettingsService.updateStatus(name, req.user);
+  }
 }

@@ -40,8 +40,8 @@ export class CandidatesService {
     var allData: {
       adno: number;
       category: Category;
-      chestNO: number;
-      class: number;
+      chestNO: string;
+      class: string;
       dob: string;
       name: string;
       gender: Gender;
@@ -333,7 +333,7 @@ export class CandidatesService {
     }
   }
 
-  async findOneByChestNo(chestNO: number) {
+  async findOneByChestNo(chestNO: string) {
     try {
       const candidate = await this.candidateRepository.findOne({
         where: {
@@ -395,7 +395,7 @@ export class CandidatesService {
 
   // check is candidate in a programme
 
-  async findOneByChestNoAndProgrammeId(chestNO: number, programmeCode: string) {
+  async findOneByChestNoAndProgrammeId(chestNO: string, programmeCode: string) {
     // checking is candidate exist
 
     const candidate = await this.candidateRepository.findOne({

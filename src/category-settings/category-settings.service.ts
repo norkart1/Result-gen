@@ -46,10 +46,8 @@ export class CategorySettingsService {
     return savedSettings;
   }
 
- async findAll( fields: string[]) {
-    const allowedRelations = [
-      'category',
-    ];
+  async findAll(fields: string[]) {
+    const allowedRelations = ['category'];
 
     // validating fields
     fields = fieldsValidator(fields, allowedRelations);
@@ -57,7 +55,8 @@ export class CategorySettingsService {
     fields = fieldsIdChecker(fields);
 
     try {
-      const queryBuilder = this.categorySettingsRepository.createQueryBuilder('category_settings')
+      const queryBuilder = this.categorySettingsRepository
+        .createQueryBuilder('category_settings')
         .leftJoinAndSelect('category_settings.category', 'category');
 
       queryBuilder.select(
@@ -82,10 +81,8 @@ export class CategorySettingsService {
     }
   }
 
-  async findOne(id: number , fields: string[]) {
-    const allowedRelations = [
-      'category',
-    ];
+  async findOne(id: number, fields: string[]) {
+    const allowedRelations = ['category'];
 
     // validating fields
     fields = fieldsValidator(fields, allowedRelations);
@@ -93,7 +90,8 @@ export class CategorySettingsService {
     fields = fieldsIdChecker(fields);
 
     try {
-      const queryBuilder = this.categorySettingsRepository.createQueryBuilder('category_settings')
+      const queryBuilder = this.categorySettingsRepository
+        .createQueryBuilder('category_settings')
         .where('category_settings.id = :id', { id })
         .leftJoinAndSelect('category_settings.category', 'category');
 
@@ -167,7 +165,7 @@ export class CategorySettingsService {
 
   async remove(id: number, user: Credential) {
     // checking is category_settings exist
-    const category_settings = await this.findOne(id , ['category.name']);
+    const category_settings = await this.findOne(id, ['category.name']);
 
     // checking is category exist
     const category = await this.categoryService.findOneByName(category_settings.category.name);
@@ -188,6 +186,41 @@ export class CategorySettingsService {
     } catch (e) {
       throw new HttpException(
         'An Error have when deleting data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+  async updateStatus(categoryName: string, user: Credential) {
+    const category = await this.categoryService.findOneByName(categoryName);
+    if (!category) {
+      throw new HttpException(`Invalid category name`, HttpStatus.BAD_REQUEST);
+    }
+
+    // authenticating the user have permission to update the category
+
+    this.credentialService.checkPermissionOnCategories(user, category.name);
+
+    const categorySettings = category.settings;
+
+    if (!categorySettings) {
+      throw new HttpException(`Invalid category settings id`, HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const newData = this.categorySettingsRepository.create({
+        isProgrammeListUpdatable: !categorySettings.isProgrammeListUpdatable,
+      });
+
+      const savedSettings = await this.categorySettingsRepository.update(
+        categorySettings.id,
+        newData,
+      );
+      return savedSettings;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when updating data ',
         HttpStatus.INTERNAL_SERVER_ERROR,
         { cause: e },
       );

@@ -9,10 +9,8 @@ import { RolesGuard } from './roles/roles.guard';
 import { LoginService } from './login/login.service';
 import { LoginResolver } from './login/login.resolver';
 import { LocalStrategy } from './login/local.strategy';
-import { JwtStrategy } from './jwt/Jwt.Strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_PIPE } from '@nestjs/core';
 import { AuthPipe } from './pipe/auth.pipe';
 
 @Module({
@@ -24,7 +22,7 @@ import { AuthPipe } from './pipe/auth.pipe';
     JwtModule.registerAsync({
       useFactory: async () => ({
         secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: '1d' },
+        signOptions: { expiresIn: '30d' },
       }),
     }),
   ],

@@ -19,19 +19,24 @@ export class LoginResolver {
   async login(
     @Args('username') username: string,
     @Args('password') password: string,
-    @Res() res: Response,
-    @Context() context: any,
+    @Context("res") context: Response,
   ) {
-    
     try {
       const val = await this.loginService.login(username, password);
       if (!val) {
         throw new Error('Invalid Username or Password');
       }
-      
+
       if (val.token) {
-        context.res.cookie('__user', `${val.token}`, { httpOnly: true }, { maxAge: 1000 });
+        context.cookie('__user', val.token, {
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24 * 365,
+            sameSite: 'none',
+            secure: true,
+        });
+  
         return val;
+
       }
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.UNAUTHORIZED);

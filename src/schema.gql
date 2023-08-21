@@ -89,8 +89,9 @@ type Programme {
   id: Int
   programCode: String
   name: String
-  mode: Models
+  mode: Modes
   type: Types
+  model: Models
   groupCount: Int
   candidateCount: Int
   date: DateTime
@@ -112,7 +113,7 @@ type Programme {
   updatedAt: DateTime
 }
 
-enum Models {
+enum Modes {
   STAGE
   NON_STAGE
   OUTDOOR_STAGE
@@ -122,6 +123,11 @@ enum Types {
   SINGLE
   GROUP
   HOUSE
+}
+
+enum Models {
+  Arts
+  Sports
 }
 
 type CandidateProgramme {
@@ -188,7 +194,7 @@ type Candidate {
   class: Int
   adno: Float
   dob: String
-  chestNO: Int
+  chestNO: String
   imageId: String
   gender: Gender
   individualPoint: Float
@@ -216,14 +222,22 @@ type CategorySettings {
   maxStage: Int
   maxNonStage: Int
   maxOutDoor: Int
+  maxSports: Int
+  maxSportsSingle: Int
+  maxSportsGroup: Int
   minProgram: Int
   minSingle: Int
   minGroup: Int
   minStage: Int
   minNonStage: Int
   minOutDoor: Int
+  minSports: Int
+  minSportsSingle: Int
+  minSportsGroup: Int
   isProgrammeListUpdatable: Boolean!
   category: Category
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 type Section {
@@ -404,6 +418,7 @@ type Mutation {
   createCategorySetting(createCategorySettingInput: CreateCategorySettingInput!): CategorySettings!
   updateCategorySetting(updateCategorySettingInput: UpdateCategorySettingInput!): CategorySettings!
   removeCategorySetting(id: Int!): CategorySettings!
+  changeProgrammeListUpdatable(name: String!): CategorySettings!
   createCustomSetting(createCustomSettingInput: CreateCustomSettingInput!): CustomSetting!
   updateCustomSetting(updateCustomSettingInput: UpdateCustomSettingInput!): CustomSetting!
   removeCustomSetting(id: Int!): CustomSetting!
@@ -427,10 +442,10 @@ type Mutation {
 
 input CreateCandidateInput {
   name: String!
-  class: Int
+  class: String
   adno: Float
   dob: String
-  chestNO: Int
+  chestNO: String
   gender: Gender!
   team: String
   category: String
@@ -442,10 +457,10 @@ input CreateInput {
 
 input UpdateCandidateInput {
   name: String
-  class: Int
+  class: String
   adno: Float
   dob: String
-  chestNO: Int
+  chestNO: String
   gender: Gender
   team: String
   category: String
@@ -506,14 +521,14 @@ input UpdateSectionInput {
 
 input CreateCandidateProgrammeInput {
   programme_code: String!
-  chestNo: Int!
-  candidatesOfGroup: [Int!]
+  chestNo: String!
+  candidatesOfGroup: [String!]
 }
 
 input UpdateCandidateProgrammeInput {
   programme_code: String
-  chestNo: Int
-  candidatesOfGroup: [Int!]
+  chestNo: String
+  candidatesOfGroup: [String!]
   id: Int!
 }
 
@@ -522,7 +537,7 @@ input arrayInput {
 }
 
 input AddResult {
-  chestNo: Int!
+  chestNo: String!
   mark: Float
 }
 
@@ -531,6 +546,7 @@ input CreateProgrammeInput {
   name: String!
   mode: Mode!
   type: Type!
+  model: String!
   groupCount: Int
   candidateCount: Int!
   date: String
@@ -562,6 +578,7 @@ input UpdateProgrammeInput {
   name: String
   mode: Mode
   type: Type
+  model: String
   groupCount: Int
   candidateCount: Int
   date: String
@@ -657,20 +674,44 @@ input CreateCategorySettingInput {
   category: String!
   maxProgram: Int!
   maxSingle: Int!
+  maxGroup: Int!
+  maxStage: Int
+  maxNonStage: Int
+  maxOutDoor: Int
+  maxSports: Int
+  maxSportsSingle: Int
+  maxSportsGroup: Int
   minProgram: Int!
   minSingle: Int!
-  maxGroup: Int!
   minGroup: Int!
+  minStage: Int
+  minNonStage: Int
+  minOutDoor: Int
+  minSports: Int
+  minSportsSingle: Int
+  minSportsGroup: Int
 }
 
 input UpdateCategorySettingInput {
   category: String
   maxProgram: Int
   maxSingle: Int
+  maxGroup: Int
+  maxStage: Int
+  maxNonStage: Int
+  maxOutDoor: Int
+  maxSports: Int
+  maxSportsSingle: Int
+  maxSportsGroup: Int
   minProgram: Int
   minSingle: Int
-  maxGroup: Int
   minGroup: Int
+  minStage: Int
+  minNonStage: Int
+  minOutDoor: Int
+  minSports: Int
+  minSportsSingle: Int
+  minSportsGroup: Int
   id: Int!
 }
 
@@ -709,15 +750,15 @@ input UpdateJudgeInput {
 input CreateSubstituteInput {
   reason: String!
   programme: String!
-  oldCandidate: Int!
-  newCandidate: Int!
+  oldCandidate: String!
+  newCandidate: String!
 }
 
 input UpdateSubstituteInput {
   reason: String
   programme: String
-  oldCandidate: Int
-  newCandidate: Int
+  oldCandidate: String
+  newCandidate: String
   id: Int!
 }
 

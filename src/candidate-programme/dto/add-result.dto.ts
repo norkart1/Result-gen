@@ -2,12 +2,14 @@ import { InputType, Int, Field, Float } from '@nestjs/graphql'
 import { Type } from 'class-transformer'
 import { IsNotEmpty, Max, Min, ValidateNested , } from 'class-validator'
 import { arrayInput } from './array-input.dto'
+import { IsFourCharactersWithNumbers } from 'src/utils/Validator'
 
 @InputType()
 export class AddResult {
-  @Field(() => Int)
+  @Field()
   @IsNotEmpty()
-  chestNo: number
+  @IsFourCharactersWithNumbers({message:"chest number must be 4 characters and last 3 characters must be numbers"})
+  chestNo: string
 
   @Field(() => Float , {nullable:true})
   @IsNotEmpty()

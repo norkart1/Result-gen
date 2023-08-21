@@ -112,4 +112,97 @@ export class DetailsService {
       );
     }
   }
+
+  async NotReadyToResult() {
+    try {
+      const detail = await this.detailRepository.findOneBy({ id: 1 });
+
+      if (detail) {
+        return new HttpException(
+          'An Error have when finding data ',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      detail.isResultReady = false;
+
+      return this.detailRepository.save(detail);
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+ async updateIsMultipleResultAllowed(isMultipleResultAllowed: boolean) {
+    try {
+      const detail = await this.detailRepository.findOneBy({ id: 1 });
+
+      if (detail) {
+        return new HttpException(
+          'An Error have when finding data ',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      detail.isMultipleResultAllowed = !isMultipleResultAllowed;
+
+      return this.detailRepository.save(detail);
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+  async updateIsSkillHave(isSkillHave : boolean ){
+    try {
+      const detail = await this.detailRepository.findOneBy({ id: 1 });
+
+      if (detail) {
+        return new HttpException(
+          'An Error have when finding data ',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      detail.isSkillHave = !isSkillHave;
+
+      return this.detailRepository.save(detail);
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+  async updateIsMediaHave(isMediaHave : boolean ){
+    try {
+      const detail = await this.detailRepository.findOneBy({ id: 1 });
+
+      if (detail) {
+        return new HttpException(
+          'An Error have when finding data ',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      detail.isMediaHave = !isMediaHave;
+
+      return this.detailRepository.save(detail);
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding data ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
 }

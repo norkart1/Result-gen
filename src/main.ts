@@ -17,8 +17,18 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // cors origin
-  app.enableCors();
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  });
 
-  await app.listen(configService.get('PORT') || 3000);
+  // app.enableCors({
+  //   origin: '*',
+  //   credentials: true,
+  // });
+
+
+  await app.listen(configService.get('PORT') || 4000);
 }
 bootstrap();

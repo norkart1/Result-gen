@@ -7,7 +7,7 @@ import { CandidateProgramme } from './entities/candidate-programme.entity';
 import { CandidatesService } from 'src/candidates/candidates.service';
 import { ProgrammesService } from 'src/programmes/programmes.service';
 import { Category } from 'src/category/entities/category.entity';
-import { Mode, Programme } from 'src/programmes/entities/programme.entity';
+import { Mode, Model, Programme } from 'src/programmes/entities/programme.entity';
 import { Candidate } from 'src/candidates/entities/candidate.entity';
 import { CategorySettings } from 'src/category-settings/entities/category-setting.entity';
 import { Type } from 'src/programmes/dto/create-programme.input';
@@ -82,7 +82,7 @@ export class CandidateProgrammeService {
     // checking the teamManager can add candidate to this programme
     if (user.roles === Roles.TeamManager) {
       // check permission on team
-      this.credentialService.checkPermissionOnTeam(user, candidate.team.name);
+     await this.credentialService.checkPermissionOnTeam(user, candidate.team.name);
 
       const HaveAccess = (
         await this.categorySettingsService.findOne(category.settings.id, [
@@ -90,6 +90,9 @@ export class CandidateProgrammeService {
           'isProgrammeListUpdatable',
         ])
       ).isProgrammeListUpdatable;
+
+      console.log(HaveAccess);
+      
 
       if (!HaveAccess) {
         throw new HttpException(
@@ -579,7 +582,7 @@ export class CandidateProgrammeService {
     const settings: CategorySettings = category.settings;
 
     // checking is it covered maximum programme limit
-    if (programme.type !== Type.HOUSE) {
+    if (programme.type !== Type.HOUSE && programme.model !== Model.Sports) {
       if (settings.maxProgram && (programme.type == Type.SINGLE || programme.type == Type.GROUP)) {
         const programmes: CandidateProgramme[] = candidate.candidateProgrammes;
 
@@ -678,6 +681,51 @@ export class CandidateProgrammeService {
           );
         }
       }
+    } else if (programme.type !== Type.HOUSE && programme.model == Model.Sports){
+      // maximum sports programme
+      if (settings.maxSports && (programme.type == Type.SINGLE || programme.type == Type.GROUP)) {
+        const programmes: CandidateProgramme[] = candidate.candidateProgrammes;
+
+        if (programmes.length >= settings.maxSports) {
+          throw new HttpException(
+            'The candidate has covered maximum sports programme count',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      // maximum sports single programme
+
+      if (settings.maxSportsSingle && programme.type == Type.SINGLE) {
+        const SinglePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
+          (e: CandidateProgramme) => {
+            return e.programme.type == Type.SINGLE;
+          },
+        );
+        if (SinglePrograms.length >= settings.maxSportsSingle) {
+          throw new HttpException(
+            'The candidate has covered maximum sports single programme count',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      // maximum sports group programme
+
+      if (settings.maxSportsGroup && programme.type == Type.GROUP) {
+        const groupPrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
+          (e: CandidateProgramme) => {
+            return e.programme.type == Type.GROUP;
+          },
+        );
+        if (groupPrograms.length >= settings.maxSportsGroup) {
+          throw new HttpException(
+            'The candidate has covered maximum sports group programme count',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
     }
   }
 
@@ -734,7 +782,7 @@ export class CandidateProgrammeService {
     }
   }
 
-  async getCandidatesOfGroupOfCandidate(chessNo: number) {
+  async getCandidatesOfGroupOfCandidate(chessNo: string) {
     const Query = this.candidateProgrammeRepository
       .createQueryBuilder('c')
       .leftJoinAndSelect('c.candidate', 'candidate')
@@ -755,7 +803,7 @@ export class CandidateProgrammeService {
     return candidatesOfGroups;
   }
 
-  async checkCandidateInGroupProgramme(chestNO: number, programCode: string) {
+  async checkCandidateInGroupProgramme(chestNO: string, programCode: string) {
     const Query = this.candidateProgrammeRepository
       .createQueryBuilder('c')
       .leftJoinAndSelect('c.programme', 'programme')

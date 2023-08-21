@@ -41,7 +41,7 @@ export class Candidate {
 
   @Column({ nullable: true })
   @Field(() => Int, { nullable: true })
-  class: number;
+  class: string;
 
   @Column({ nullable: true })
   @Field({ nullable: true })
@@ -52,8 +52,8 @@ export class Candidate {
   dob: string;
 
   @Column({ nullable: true, unique: true })
-  @Field(() => Int, { nullable: true })
-  chestNO: number;
+  @Field({ nullable: true })
+  chestNO: string;
 
   @Column({ nullable: true })
   @Field({ nullable: true })

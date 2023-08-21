@@ -1,6 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Category } from 'src/category/entities/category.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -10,7 +10,7 @@ export class CategorySettings {
   @PrimaryGeneratedColumn()
   id: number
 
-  // MAX 
+  // MAX
 
   @Field(() => Int , {nullable : true})
   @Column()
@@ -35,6 +35,20 @@ export class CategorySettings {
   @Field(() => Int , {nullable : true})
   @Column()
   maxOutDoor: number;
+
+  // ON SPORTS
+
+  @Field(() => Int , {nullable : true})
+  @Column()
+  maxSports: number;
+
+  @Field(() => Int , {nullable : true})
+  @Column()
+  maxSportsSingle: number;
+
+  @Field(() => Int , {nullable : true})
+  @Column()
+  maxSportsGroup : number;
 
   // MIN
   @Field(() => Int , {nullable : true})
@@ -61,6 +75,19 @@ export class CategorySettings {
   @Column()
   minOutDoor: number;
   
+  // ON SPORTS
+
+  @Field(() => Int , {nullable : true})
+  @Column()
+  minSports: number;
+
+  @Field(() => Int , {nullable : true})
+  @Column()
+  minSportsSingle: number;
+
+  @Field(() => Int , {nullable : true})
+  @Column()
+  minSportsGroup : number;
 
   @Field(() => Boolean , {defaultValue : false})
   @Column({default : false})
@@ -69,5 +96,14 @@ export class CategorySettings {
   @OneToOne(()=> Category , (category)=> category.settings)
   @Field(()=>Category , {nullable : true})
   category:Category;
+
+  // Date Time
+  @Field(() => Date , {nullable : true})
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Field(() => Date , {nullable : true})
+  @UpdateDateColumn()
+  updatedAt: Date;
 
 }

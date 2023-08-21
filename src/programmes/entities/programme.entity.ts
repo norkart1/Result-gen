@@ -29,12 +29,21 @@ export enum Type {
   HOUSE = 'HOUSE',
 }
 
+export enum  Model {
+  Arts = 'Arts',
+  Sports = 'Sports',
+}
+
 registerEnumType(Mode, {
-  name: 'Models',
+  name: 'Modes',
 });
 
 registerEnumType(Type, {
   name: 'Types',
+});
+
+registerEnumType(Model, {
+  name: 'Models',
 });
 
 @ObjectType()
@@ -63,6 +72,10 @@ export class Programme {
   @Column()
   @Field(() => Type, { nullable: true })
   type: Type;
+
+  @Column()
+  @Field(() => Model, { nullable: true })
+  model: Model;
 
   @Column({ nullable: true })
   @Field(() => Int, { nullable: true })
@@ -107,6 +120,7 @@ export class Programme {
   @Column({ default: false })
   @Field(() => Boolean, { defaultValue: false })
   anyIssue: boolean;
+
 
   // OneToMany relations
 

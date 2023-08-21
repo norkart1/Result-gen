@@ -1,5 +1,6 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsFourCharactersWithNumbers } from 'src/utils/Validator';
 
 @InputType()
 export class CreateSubstituteInput {
@@ -14,12 +15,12 @@ export class CreateSubstituteInput {
     programme : string  ;
 
     @IsNotEmpty()
-    @IsNumber()
-    @Field(()=>Int)
-    oldCandidate : number;
+    @Field()
+    @IsFourCharactersWithNumbers({message:"chest number must be 4 characters and last 3 characters must be numbers"})
+    oldCandidate : string;
 
     @IsNotEmpty()
-    @IsNumber()
-    @Field(()=>Int )
-    newCandidate : number;
+    @Field( )
+    @IsFourCharactersWithNumbers({message:"chest number must be 4 characters and last 3 characters must be numbers"})
+    newCandidate : string;
 }

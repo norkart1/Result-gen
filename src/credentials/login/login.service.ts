@@ -5,15 +5,12 @@ import { Credential } from '../entities/credential.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from '../jwt/jwt.interface';
 import { JwtService } from '@nestjs/jwt';
-import { CategoryService } from 'src/category/category.service';
-import { Category } from 'src/category/entities/category.entity';
 
 @Injectable()
 export class LoginService {
   constructor(
     @InjectRepository(Credential) private CredentialRepository: Repository<Credential>,
-    private readonly jwtService: JwtService,
-    private readonly categoryService: CategoryService,
+    private readonly jwtService: JwtService
   ) {}
 
   async verifyUser(username: string) {
@@ -58,7 +55,7 @@ export class LoginService {
         
         const token = await this.generateJwtToken(payload);
 
-        
+
 
         return {
           admin : user,
@@ -88,7 +85,7 @@ export class LoginService {
   // generate JWT token
   async generateJwtToken(user: JwtPayload) {
     
-    const token = this.jwtService.sign(user );
+    const token = this.jwtService.sign(user);
     return token;
   }
 

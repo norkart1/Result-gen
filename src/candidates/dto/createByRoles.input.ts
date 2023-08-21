@@ -1,6 +1,7 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 import { Gender } from '../entities/candidate.entity';
 import { IsEnum, IsInt, IsNotEmpty } from 'class-validator';
+import { IsFourCharactersWithNumbers } from 'src/utils/Validator';
 
 @InputType()
 export class createByRolesInput {
@@ -9,8 +10,8 @@ export class createByRolesInput {
   name: string;
 
   @IsInt()
-  @Field(() => Int, { nullable: true })
-  class: number;
+  @Field({ nullable: true })
+  class: string;
 
   @IsInt()
   @Field({ nullable: true })
@@ -19,9 +20,9 @@ export class createByRolesInput {
   @Field({ nullable: true })
   dob: string;
 
-  @IsInt()
-  @Field(() => Int, { nullable: true })
-  chestNO: number;
+  @IsFourCharactersWithNumbers({message:"chest number must be 4 characters and last 3 characters must be numbers"})
+  @Field({ nullable: true })
+  chestNO: string;
 
   @IsEnum(Gender)
   @Field(() => Gender)

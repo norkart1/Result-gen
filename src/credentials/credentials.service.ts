@@ -329,7 +329,7 @@ export class CredentialsService {
     const userRole = user.roles;
 
     if (userRole === Roles.Admin) {
-      // admin can remove preimum users only
+      // admin can remove premium users only
       return this.CredentialRepository.delete(id);
     } else if (
       userRole === Roles.Controller &&

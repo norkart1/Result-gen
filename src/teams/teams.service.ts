@@ -206,6 +206,27 @@ export class TeamsService {
     }
   }
 
+  async setLastResult(id: number, lastResult: number) {
+    const team = await this.teamRepository.findOneBy({ id });
+
+    if (!team) {
+      throw new HttpException(`cant find team with id ${id}`, HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      return this.teamRepository.save({
+        ...team,
+        lastResultPoint: lastResult,
+      });
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when inserting last result ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
   async setTeamPoint(
     id: number,
     tPoint: number,

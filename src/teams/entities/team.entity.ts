@@ -60,9 +60,6 @@ export class Team {
   @Field({ nullable: true })
   IndividualPoint: number;
 
-  // @Column({ nullable: true, type: 'json' })
-  // coverPhoto: Photo;
-
   @Expose({ name: 'chest_no_series' })
   @Column({ nullable: true })
   @Field(() => Int, { nullable: true })

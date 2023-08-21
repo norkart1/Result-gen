@@ -2,8 +2,16 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
+  getHello() {
     
-    return 'Hello World!';
+    return {
+      message : "Server Successfully started"
+    };
+  }
+
+  postHello() {
+    return {
+      message : "You Posted Successfully"
+    };
   }
 }

@@ -25,7 +25,6 @@ import { FeedsModule } from './feeds/feeds.module';
 import { CustomSettingsModule } from './custom-settings/custom-settings.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { TagModule } from './tag/tag.module';
-import dataSource from 'db/data-source';
 
 @Module({
   imports: [
@@ -91,12 +90,13 @@ import dataSource from 'db/data-source';
         settings: {
           'request.credentials': 'include',
         },
+        
       },
       cors: {
+        origin: true,
         credentials: true,
-        origin: true
-      }
-   
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      },
     }),
 
     CandidatesModule,
