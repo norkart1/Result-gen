@@ -113,7 +113,7 @@ export class JudgeService {
     }
   }
 
-async  findOne(id: number , fields: string[]) {
+  async findOne(id: number, fields: string[]) {
     const allowedRelations = ['programme'];
 
     // validating fields
@@ -153,8 +153,10 @@ async  findOne(id: number , fields: string[]) {
   async update(id: number, updateJudgeInput: UpdateJudgeInput, user: Credential) {
     const { username, password, judgeName, programmeCode } = updateJudgeInput;
 
+    const judge = await this.findOne(id, ['id']);
+
     // check if username already exists
-    const isAlreadyExist = this.judgeRepository.findOneBy({ username });
+    const isAlreadyExist = await this.judgeRepository.findOneBy({ username });
 
     if (isAlreadyExist) {
       throw new HttpException('Username already exists', HttpStatus.BAD_REQUEST);
@@ -177,14 +179,15 @@ async  findOne(id: number , fields: string[]) {
     const hashedPassword = await this.LoginService.hashPassword(password);
 
     // update judge
+    Object.assign(judge, {
+      username,
+      password: hashedPassword,
+      judgeName,
+      programme: programmeId,
+    });
 
     try {
-      const updatedJudge = this.judgeRepository.update(id, {
-        username,
-        password: hashedPassword,
-        judgeName,
-        programme: programmeId,
-      });
+      const updatedJudge = this.judgeRepository.save(judge)
       return updatedJudge;
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -216,7 +219,11 @@ async  findOne(id: number , fields: string[]) {
   ) {
     // check if judge exist
 
-    const judge: Judge = await this.findOne(judgeId , ['programme.name' , 'judgeName' , 'programme.id']);
+    const judge: Judge = await this.findOne(judgeId, [
+      'programme.name',
+      'judgeName',
+      'programme.id',
+    ]);
 
     if (!judge) {
       throw new HttpException('Judge does not exist', HttpStatus.BAD_REQUEST);

@@ -13,7 +13,7 @@ export class SubstituteResolver {
   constructor(private readonly substituteService: SubstituteService) {}
 
   @Mutation(() => Substitute)
-  @HasRoles(Roles.TeamManager)
+  @HasRoles(Roles.TeamManager , Roles.Controller)
   @UseGuards(RolesGuard)
   createSubstitute(
     @Args('createSubstituteInput') createSubstituteInput: CreateSubstituteInput,
@@ -37,7 +37,7 @@ export class SubstituteResolver {
   }
 
   @Mutation(() => Substitute)
-  @HasRoles(Roles.TeamManager)
+  @HasRoles(Roles.TeamManager  , Roles.Controller)
   @UseGuards(RolesGuard)
   updateSubstitute(@Args('updateSubstituteInput') updateSubstituteInput: UpdateSubstituteInput ,
   @Context('req') req: any,
@@ -46,7 +46,7 @@ export class SubstituteResolver {
   }
 
   @Mutation(() => Substitute)
-  @HasRoles(Roles.TeamManager)
+  @HasRoles(Roles.TeamManager  , Roles.Controller)
   @UseGuards(RolesGuard)
   removeSubstitute(@Args('id', { type: () => Int }) id: number ,
   @Context('req') req: any,

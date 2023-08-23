@@ -16,8 +16,10 @@ export class DetailsService {
     // check how many row are there currently
     const count: number = await this.detailRepository.count();
     if (count > 1) {
+      const detail = await this.findIt()
+      Object.assign(detail,createDetailInput)
       // if there is already a row, update it
-      return this.detailRepository.update(1, createDetailInput);
+      return this.detailRepository.save(detail)
     }
 
     // create a new row
@@ -68,7 +70,9 @@ export class DetailsService {
 
   findIt() {
     try {
-      return this.detailRepository.find()[0];
+      return this.detailRepository.findOne({where:{
+        id : 1
+      }})
     } catch (e) {
       throw new HttpException(
         'An Error have when finding data ',
@@ -78,9 +82,11 @@ export class DetailsService {
     }
   }
 
-  update(id: number = 1, updateDetailInput: UpdateDetailInput) {
+async  update(id: number = 1, updateDetailInput: UpdateDetailInput) {
+    const detail = await this.findIt()
+    Object.assign(detail,UpdateDetailInput)
     try {
-      return this.detailRepository.update(id, updateDetailInput);
+      return this.detailRepository.save(detail);
     } catch (e) {
       throw new HttpException(
         'An Error have when updating data ',

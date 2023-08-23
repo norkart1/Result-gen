@@ -432,6 +432,15 @@ export class ProgrammesService {
   }
 
   async update(id: number, updateProgrammeInput: UpdateProgrammeInput, user: Credential) {
+
+        // checking is programme exist
+
+        const programme = await this.programmeRepository.findOneBy({ id });
+
+        if (!programme) {
+          throw new HttpException(`Cant find a programme to update`, HttpStatus.BAD_REQUEST);
+        }
+
     //  checking is category exist
 
     const category_id = await this.categoryService.findOneByName(updateProgrammeInput.category);
@@ -447,17 +456,11 @@ export class ProgrammesService {
 
     this.CredentialService.checkPermissionOnCategories(user, category_id.name);
 
-    // checking is candidate exist
-
-    const programme = await this.programmeRepository.findOneBy({ id });
-
-    if (!programme) {
-      throw new HttpException(`Cant find a programme to update`, HttpStatus.BAD_REQUEST);
-    }
 
     //  checking is skill exist
 
-    const IS_SKILL_REQUIRED = (await this.detailsService.findIt()).isSkillHave;
+    const IS_SKILL_REQUIRED = (await this.detailsService.findIt()).isSkillHave
+    
 
     //  checking is skill exist
 
@@ -483,22 +486,21 @@ export class ProgrammesService {
 
     try {
       // creating a instance of Programme
-      const input = new Programme();
 
       // updating Value to Programme
-      input.candidateCount = updateProgrammeInput.candidateCount;
-      input.category = category_id;
-      input.duration = updateProgrammeInput.duration;
-      input.mode = updateProgrammeInput.mode;
-      input.name = updateProgrammeInput.name;
-      input.programCode = updateProgrammeInput.programCode;
-      input.skill = skill_id;
-      input.type = updateProgrammeInput.type;
-      input.venue = updateProgrammeInput.venue || null;
-      input.groupCount = updateProgrammeInput.groupCount;
-      input.conceptNote = updateProgrammeInput.conceptNote;
+      programme.candidateCount = updateProgrammeInput.candidateCount;
+      programme.category = category_id;
+      programme.duration = updateProgrammeInput.duration;
+      programme.mode = updateProgrammeInput.mode;
+      programme.name = updateProgrammeInput.name;
+      programme.programCode = updateProgrammeInput.programCode;
+      programme.skill = skill_id;
+      programme.type = updateProgrammeInput.type;
+      programme.venue = updateProgrammeInput.venue || null;
+      programme.groupCount = updateProgrammeInput.groupCount;
+      programme.conceptNote = updateProgrammeInput.conceptNote;
 
-      return this.programmeRepository.update(id, input);
+      return this.programmeRepository.save(programme)
     } catch {
       throw new HttpException(
         'An Error have when updating programme , please check the all required fields are filled ',

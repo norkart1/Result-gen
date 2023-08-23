@@ -13,7 +13,6 @@ import { CategorySettings } from 'src/category-settings/entities/category-settin
 import { Type } from 'src/programmes/dto/create-programme.input';
 import { Team } from 'src/teams/entities/team.entity';
 import { CategoryService } from 'src/category/category.service';
-import { ResultGenService } from './result-gen.service';
 import { Credential } from 'src/credentials/entities/credential.entity';
 import { DetailsService } from 'src/details/details.service';
 import { CategorySettingsService } from 'src/category-settings/category-settings.service';

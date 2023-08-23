@@ -462,21 +462,18 @@ export class CandidatesService {
     }
 
     try {
-      // creating a instance of Candidate
-      const input = new Candidate();
 
       // updating Value to candidate
-      input.adno = updateCandidateInput.adno;
-      input.category = category_id;
-      input.chestNO = updateCandidateInput.chestNO;
-      input.class = updateCandidateInput.class;
-      input.dob = updateCandidateInput.dob;
-      input.gender = updateCandidateInput.gender;
-      input.name = updateCandidateInput.name;
-      input.team = team_id;
+      candidate.adno = updateCandidateInput.adno;
+      candidate.category = category_id;
+      candidate.chestNO = updateCandidateInput.chestNO;
+      candidate.class = updateCandidateInput.class;
+      candidate.dob = updateCandidateInput.dob;
+      candidate.gender = updateCandidateInput.gender;
+      candidate.name = updateCandidateInput.name;
+      candidate.team = team_id;
 
-      return this.candidateRepository.update(id, input);
-      // return this.candidateRepository.save(input)
+      return this.candidateRepository.save(candidate)
     } catch (e) {
       throw new HttpException(
         'An Error have when updating data , please check the all required fields are filled ',

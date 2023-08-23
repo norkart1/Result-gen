@@ -128,16 +128,16 @@ async  findOne(id: number , fields: string[]) {
     }
   }
 
-  update(id: number, updateSkillInput: UpdateSkillInput) {
-    const skill = this.skillRepository.findOneBy({ id });
+ async update(id: number, updateSkillInput: UpdateSkillInput) {
+    const skill = await this.skillRepository.findOneBy({ id });
 
     if (!skill) {
       throw new HttpException(`Cant find a skill `, HttpStatus.BAD_REQUEST);
     }
     // trying to return data
-
+    Object.assign(skill,updateSkillInput)
     try {
-      return this.skillRepository.update(id, updateSkillInput);
+      return this.skillRepository.save(skill)
     } catch (e) {
       throw new HttpException(
         'An Error have when updating data ',
@@ -147,8 +147,8 @@ async  findOne(id: number , fields: string[]) {
     }
   }
 
-  remove(id: number) {
-    const skill = this.skillRepository.findOneBy({ id });
+ async remove(id: number) {
+    const skill = await this.skillRepository.findOneBy({ id });
 
     if (!skill) {
       throw new HttpException(`Cant find a skill `, HttpStatus.BAD_REQUEST);

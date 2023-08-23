@@ -114,8 +114,10 @@ export class PositionService {
     }
     // trying to return position
 
+    Object.assign(position,updatePositionInput)
+
     try {
-      return this.positionRepository.update(id, updatePositionInput);
+      return this.positionRepository.save(position);
     } catch (e) {
       throw new HttpException(
         'An Error have when updating position ',

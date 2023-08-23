@@ -253,6 +253,8 @@ export class CredentialsService {
   async update(updateCredentialInput: UpdateCredentialInput, user: Credential) {
     let { id, categories, team, password, roles, username } = updateCredentialInput;
 
+    const credential = await this.findOne(id , ['id'])
+
     const alreadyUser = await this.CredentialRepository.findOne({
       where: {
         username,
@@ -305,13 +307,15 @@ export class CredentialsService {
 
     let hashedPassword = await this.LoginService.hashPassword(password);
 
-    return this.CredentialRepository.update(id, {
+    Object.assign(credential, {
       username,
       password: hashedPassword,
-      roles: roles,
+      roles,
       team: teamId,
       categories: categoriesId,
     });
+
+    return this.CredentialRepository.save(credential)
   }
 
   async remove(id: number, user: Credential) {

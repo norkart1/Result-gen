@@ -246,6 +246,9 @@ export class CategoryService {
 
 
   async update(id: number, updateCategoryInput: UpdateCategoryInput) {
+
+    const category = await this.findOne(id , ['id'])
+
     //  checking is section exist
 
     const section = await this.sectionService.findOneByName(updateCategoryInput.section , ['id']);
@@ -258,12 +261,12 @@ export class CategoryService {
     }
 
     try {
-      const newCategoryInput = this.categoryRepository.create({
+      Object.assign(category,{
         id,
         name: updateCategoryInput.name,
         section,
-      });
-      return this.categoryRepository.save(newCategoryInput);
+      })
+      return this.categoryRepository.save(category);
     } catch (e) {
       throw new HttpException(
         'An Error have when updating data , please check the all required fields are filled ',

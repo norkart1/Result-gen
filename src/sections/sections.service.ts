@@ -153,8 +153,11 @@ async  findOneByName(name: string , fields: string[]) {
     }
     // trying to return data
 
+    Object.assign(section,updateSectionInput)
+
     try {
-      return this.sectionRepository.update(id, updateSectionInput);
+      return this.sectionRepository.save(section)
+      // this.sectionRepository.update(id, updateSectionInput);
     } catch (e) {
       throw new HttpException(
         'An Error have when updating section ',
