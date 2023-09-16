@@ -41,7 +41,7 @@ export class CategoryResolver {
   findByName( @Info() info: any , @Context('req') request: any) {
     const fields = Object.keys(fieldsProjection(info));
     const names = request.user.categories.map((category : Category) => category.name);
-    const team = request.user.team.name;
+    const team = request.user.team?.name;
     return this.categoryService.findManyByName(names , fields , team );
   }
 

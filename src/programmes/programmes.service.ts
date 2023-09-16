@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CreateProgrammeInput } from './dto/create-programme.input';
 import { UpdateProgrammeInput } from './dto/update-programme.input';
-import { Mode, Programme, Type } from './entities/programme.entity';
+import { Mode, Model, Programme, Type } from './entities/programme.entity';
 import { CategoryService } from 'src/category/category.service';
 import { SkillService } from 'src/skill/skill.service';
 import { CreateSchedule } from './dto/create-schedule.dto';
@@ -42,6 +42,7 @@ export class ProgrammesService {
       candidateCount: number;
       groupCount: number;
       conceptNote: string;
+      model : Model;
     }[] = [];
 
     // Iterate the values and taking all the individuals
@@ -128,6 +129,7 @@ export class ProgrammesService {
         candidateCount: createProgrammeInput.candidateCount,
         groupCount: createProgrammeInput.groupCount,
         conceptNote: createProgrammeInput.conceptNote,
+        model : createProgrammeInput.model,
       });
     }
 
@@ -160,6 +162,7 @@ export class ProgrammesService {
         input.type = data.type;
         input.groupCount = data.groupCount;
         input.conceptNote = data.conceptNote;
+        input.model = data.model;
 
         let saveData = await this.programmeRepository.save(input);
 
@@ -248,7 +251,8 @@ export class ProgrammesService {
       input.venue = createProgrammeInput.venue || null;
       input.groupCount = createProgrammeInput.groupCount || null;
       input.conceptNote = createProgrammeInput.conceptNote;
-
+      input.model = createProgrammeInput.model;
+      
       return this.programmeRepository.save(input);
     } catch (e) {
       throw new HttpException(
@@ -325,6 +329,7 @@ export class ProgrammesService {
       'candidateProgramme.candidatesOfGroup',
       'candidateProgramme.grade',
       'candidateProgramme.position',
+      'judges'
     ];
 
     // validating fields
@@ -338,6 +343,7 @@ export class ProgrammesService {
         .where('programme.id = :id', { id })
         .leftJoinAndSelect('programme.category', 'category')
         .leftJoinAndSelect('programme.skill', 'skill')
+        .leftJoinAndSelect('programme.judges', 'judges')
         .leftJoinAndSelect('programme.candidateProgramme', 'candidateProgramme')
         .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
         .leftJoinAndSelect('candidate.team', 'team')
@@ -397,6 +403,35 @@ export class ProgrammesService {
     }
   }
 
+  async findOneByCodeWithouError(programCode: string) {
+    try {
+      const programme = await this.programmeRepository.findOne({
+        where: {
+          programCode,
+        },
+        relations: [
+          'category',
+          'skill',
+          'candidateProgramme',
+          'category.settings',
+          'candidateProgramme.candidate',
+          'candidateProgramme.candidate.team',
+          'candidateProgramme.candidatesOfGroup',
+          'candidateProgramme.grade',
+          'candidateProgramme.position',
+        ],
+      });
+
+      if(!programme){
+        return null;
+      }
+
+      return programme;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // find the programme by programme code know is the programme is there
 
   async findOneByCodeForCheck(programCode: string) {
@@ -414,23 +449,47 @@ export class ProgrammesService {
     }
   }
 
-  findByCategories(categories: string[]) {
+ async findByCategories(categories: string[] , fields: string[]) {
+    const allowedRelations = [
+      'category',
+      'skill',
+    ];
+    
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
     try {
-      return this.programmeRepository.find({
-        where: {
-          category: In(categories),
-        },
-        relations: ['category', 'skill', 'candidateProgramme'],
-      });
-    } catch (e) {
-      throw new HttpException(
-        'An Error have when finding programme ',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        { cause: e },
-      );
-    }
+      const queryBuilder = this.programmeRepository
+        .createQueryBuilder('programme')
+        .leftJoinAndSelect('programme.category', 'category')
+        .where('category.name IN (:...categories)', { categories })
+        .leftJoinAndSelect('programme.skill', 'skill')
+
+        queryBuilder.select(
+          fields.map(column => {
+            const splitted = column.split('.');
+  
+            if (splitted.length > 1) {
+              return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+            } else {
+              return `programme.${column}`;
+            }
+          }),
+        );
+        const programme = await queryBuilder.getMany();
+        return programme;
+      } catch (e) {
+        throw new HttpException(
+          'An Error have when finding programme ',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          { cause: e },
+        );
+      }
   }
 
+ 
   async update(id: number, updateProgrammeInput: UpdateProgrammeInput, user: Credential) {
 
         // checking is programme exist
@@ -499,6 +558,7 @@ export class ProgrammesService {
       programme.venue = updateProgrammeInput.venue || null;
       programme.groupCount = updateProgrammeInput.groupCount;
       programme.conceptNote = updateProgrammeInput.conceptNote;
+      programme.model = updateProgrammeInput.model;
 
       return this.programmeRepository.save(programme)
     } catch {
