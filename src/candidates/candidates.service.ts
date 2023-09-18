@@ -42,9 +42,7 @@ export class CandidatesService {
       category: Category;
       chestNO: string;
       class: string;
-      dob: string;
       name: string;
-      gender: Gender;
       team: Team;
     }[] = [];
 
@@ -109,9 +107,7 @@ export class CandidatesService {
         category: category_id,
         chestNO: createCandidateInput.chestNO,
         class: createCandidateInput.class,
-        dob: createCandidateInput.dob,
         name: createCandidateInput.name,
-        gender: createCandidateInput.gender,
         team: team_id,
       });
     }
@@ -139,8 +135,6 @@ export class CandidatesService {
         input.category = data.category;
         input.chestNO = data.chestNO;
         input.class = data.class;
-        input.dob = data.dob;
-        input.gender = data.gender;
         input.name = data.name;
         input.team = data.team;
 
@@ -210,8 +204,6 @@ export class CandidatesService {
       input.category = category_id;
       input.chestNO = createCandidateInput.chestNO;
       input.class = createCandidateInput.class;
-      input.dob = createCandidateInput.dob;
-      input.gender = createCandidateInput.gender;
       input.name = createCandidateInput.name;
       input.team = team_id;
 
@@ -231,6 +223,7 @@ export class CandidatesService {
       'team',
       'candidateProgrammes',
       'candidateProgrammes.programme',
+
     ];
 
     // validating fields
@@ -268,27 +261,83 @@ export class CandidatesService {
     }
   }
 
-  findByCategories(categories: string[]) {
-    try {
-      const candidates = this.candidateRepository.find({
-        where: {
-          category: In(categories),
-        },
-        relations: ['category', 'team', 'candidateProgrammes'],
-      });
+ async findByCategories(categories: string[] , fields: string[]) {
+    const allowedRelations = ['category', 'team'];
+    
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
 
-      if (!candidates) {
+    try {
+      const queryBuilder = this.candidateRepository
+        .createQueryBuilder('candidate')
+        .leftJoinAndSelect('candidate.category', 'category')
+        .where('category.name IN (:...categories)', { categories })
+        .leftJoinAndSelect('candidate.team', 'team');
+
+        queryBuilder.select(
+          fields.map(column => {
+            const splitted = column.split('.');
+  
+            if (splitted.length > 1) {
+              return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+            } else {
+              return `candidate.${column}`;
+            }
+          }),
+        );
+        const candidate = await queryBuilder.getMany();
+        return candidate;
+      } catch (e) {
         throw new HttpException(
-          `Cant find candidates with categories ${categories} `,
-          HttpStatus.BAD_REQUEST,
+          'An Error have when finding candidate ',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          { cause: e },
         );
       }
-
-      return candidates;
-    } catch (e) {
-      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR, { cause: e });
-    }
   }
+
+  // find candidates by category name and team name
+
+  async findByCategoryNamesAndTeamName(categories: string[], teamName: string , fields: string[]) {
+    
+    const allowedRelations = ['category', 'team'];
+    
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+    try{
+    const queryBuilder = this.candidateRepository
+    .createQueryBuilder('candidate')
+    .where('candidate.category.name IN (:...categories)', { categories })
+    .andWhere('candidate.team.name = :teamName', { teamName })
+    .leftJoinAndSelect('candidate.category', 'category')
+    .leftJoinAndSelect('candidate.team', 'team')
+
+    queryBuilder.select(
+      fields.map(column => {
+        const splitted = column.split('.');
+
+        if (splitted.length > 1) {
+          return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+        } else {
+          return `candidate.${column}`;
+        }
+      }),
+    );
+    const candidate = await queryBuilder.getMany();
+    return candidate;
+  } catch (e) {
+    throw new HttpException(
+      'An Error have when finding candidate ',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      { cause: e },
+    );
+  }
+}
+  
 
   async findOne(id: number, fields: string[]) {
     const allowedRelations = [
@@ -296,6 +345,8 @@ export class CandidatesService {
       'team',
       'candidateProgrammes',
       'candidateProgrammes.programme',
+      'candidateProgrammes.position',
+      'candidateProgrammes.grade',
     ];
 
     // validating fields
@@ -309,7 +360,9 @@ export class CandidatesService {
         .leftJoinAndSelect('candidate.category', 'category')
         .leftJoinAndSelect('candidate.team', 'team')
         .leftJoinAndSelect('candidate.candidateProgrammes', 'candidateProgrammes')
-        .leftJoinAndSelect('candidateProgrammes.programme', 'programme');
+        .leftJoinAndSelect('candidateProgrammes.programme', 'programme')
+        .leftJoinAndSelect('candidateProgrammes.position', 'position')
+        .leftJoinAndSelect('candidateProgrammes.grade', 'grade');
 
       queryBuilder.select(
         fields.map(column => {
@@ -355,7 +408,26 @@ export class CandidatesService {
     }
   }
 
-  async findOneByChesNoByFields(chestNO: number, fields: string[]) {
+  async findOneByChestNoWithoutError(chestNO: string) {
+    try {
+      const candidate = await this.candidateRepository.findOne({
+        where: {
+          chestNO,
+        },
+        relations: ['category', 'team', 'candidateProgrammes'],
+      });
+
+      if (!candidate) {
+        return null;
+      }
+
+      return candidate;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async findOneByChesNoByFields(chestNO: string, fields: string[]) {
     const allowedRelations = ['category', 'team', 'candidateProgrammes'];
 
     // validating fields
@@ -468,8 +540,6 @@ export class CandidatesService {
       candidate.category = category_id;
       candidate.chestNO = updateCandidateInput.chestNO;
       candidate.class = updateCandidateInput.class;
-      candidate.dob = updateCandidateInput.dob;
-      candidate.gender = updateCandidateInput.gender;
       candidate.name = updateCandidateInput.name;
       candidate.team = team_id;
 
@@ -554,18 +624,18 @@ async uploadFiles(files: Express.Multer.File[]) {
   for (let index = 0; index < files.length; index++) {
     const file = files[index];
 
-    const chestNo = parseInt(file.originalname.split('.')[0]);
+    const chestNo = file.originalname.split('.')[0]
 
     
 
-    await this.uploadFile(chestNo, file.buffer, file.originalname, file.mimetype);
+    await this.uploadFile(chestNo , file.buffer, file.originalname, file.mimetype);
 
   }
 
     return 'done';
   }
 
-  async uploadFile(  chestNo: number , filePath: Buffer, fileName: string, mimeType: string) {
+  async uploadFile(  chestNo: string , filePath: Buffer, fileName: string, mimeType: string) {
 
 
     const candidate = await this.candidateChecker(chestNo,mimeType)
@@ -621,7 +691,7 @@ async uploadFiles(files: Express.Multer.File[]) {
     }
   }
 
- async candidateChecker(chestNo , mimeType ){
+ async candidateChecker(chestNo : string , mimeType ){
     const candidate =await this.findOneByChesNoByFields(chestNo,['id'])
 
     if (!candidate) {

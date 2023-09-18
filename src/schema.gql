@@ -91,7 +91,7 @@ type Programme {
   name: String
   mode: Modes
   type: Types
-  model: Models
+  model: Model
   groupCount: Int
   candidateCount: Int
   date: DateTime
@@ -125,7 +125,7 @@ enum Types {
   HOUSE
 }
 
-enum Models {
+enum Model {
   Arts
   Sports
 }
@@ -191,7 +191,7 @@ type Candidate {
   """Example field (placeholder)"""
   id: Int
   name: String
-  class: Int
+  class: String
   adno: Float
   dob: String
   chestNO: String
@@ -285,6 +285,11 @@ type LoginType {
   token: String!
 }
 
+type ObjectManyCandidateProgramme {
+  result: [CandidateProgramme!]!
+  errors: [String!]
+}
+
 type Feed {
   """Example field (placeholder)"""
   id: Int!
@@ -328,6 +333,8 @@ type Gallery {
 
 type Query {
   candidates: [Candidate!]!
+  candidatesByCategory(categoriesName: [String!]!): [Candidate!]!
+  candidatesByCategoriesAndTeam(categoriesName: [String!]!, teamName: String!): [Candidate!]!
   candidate(id: Int!): Candidate!
   teams: [Team!]!
   team(id: Int!): Team!
@@ -346,6 +353,7 @@ type Query {
   candidateProgramme(id: Int!): CandidateProgramme!
   programmes: [Programme!]!
   programme(id: Int!): Programme!
+  programmesByCategory(categoriesName: [String!]!): [Programme!]!
   skills: [Skill!]!
   skill(id: Int!): Skill!
   details: Detail!
@@ -389,6 +397,7 @@ type Mutation {
   updateSection(updateSectionInput: UpdateSectionInput!): Section!
   removeSection(id: Int!): Section!
   createCandidateProgramme(createCandidateProgrammeInput: CreateCandidateProgrammeInput!): CandidateProgramme!
+  createManyCandidateProgramme(createManyCandidateProgrammeInput: CreateManyCP!): ObjectManyCandidateProgramme!
   updateCandidateProgramme(updateCandidateProgrammeInput: UpdateCandidateProgrammeInput!): CandidateProgramme!
   removeCandidateProgramme(id: Int!): CandidateProgramme!
   addNormalResult(programmeCode: String!, addResult: arrayInput!): [CandidateProgramme!]!
@@ -443,10 +452,8 @@ type Mutation {
 input CreateCandidateInput {
   name: String!
   class: String
-  adno: Float
-  dob: String
+  adno: Int
   chestNO: String
-  gender: Gender!
   team: String
   category: String
 }
@@ -458,10 +465,8 @@ input CreateInput {
 input UpdateCandidateInput {
   name: String
   class: String
-  adno: Float
-  dob: String
+  adno: Int
   chestNO: String
-  gender: Gender
   team: String
   category: String
   id: Int!
@@ -525,6 +530,10 @@ input CreateCandidateProgrammeInput {
   candidatesOfGroup: [String!]
 }
 
+input CreateManyCP {
+  inputs: [CreateCandidateProgrammeInput!]!
+}
+
 input UpdateCandidateProgrammeInput {
   programme_code: String
   chestNo: String
@@ -546,7 +555,7 @@ input CreateProgrammeInput {
   name: String!
   mode: Mode!
   type: Type!
-  model: String!
+  model: Model!
   groupCount: Int
   candidateCount: Int!
   date: String
@@ -578,7 +587,7 @@ input UpdateProgrammeInput {
   name: String
   mode: Mode
   type: Type
-  model: String
+  model: Model
   groupCount: Int
   candidateCount: Int
   date: String
