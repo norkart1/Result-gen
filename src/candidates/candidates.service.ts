@@ -19,6 +19,7 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
 import { driveConfig } from 'src/utils/googleApi.auth';
+import { Model } from 'src/programmes/entities/programme.entity';
 // import { drive } from 'src/utils/googleApi.auth';
 
 @Injectable()
@@ -525,21 +526,33 @@ export class CandidatesService {
 
   // add individual or group point to candidate
 
-  async addPoint(id: number, indPoint: number = 0, groupPoint: number = 0) {
+  async addPoint(id: number, indPoint: number = 0, groupPoint: number = 0, model: Model) {
     const candidate = await this.candidateRepository.findOneBy({ id });
 
     if (!candidate) {
       throw new HttpException(`Cant find a candidate to add point`, HttpStatus.BAD_REQUEST);
     }
 
-    const individualPoint = candidate.individualPoint + indPoint;
-    const groupPointTotal = candidate.groupPoint + groupPoint;
+    let individualPoint = 0;
+    let groupGeneralPoint = 0;
+    let groupSportsPoint = 0;
+    let individualSportsPoint = 0;
+
+    if (model === Model.Arts) {
+      individualPoint = candidate.individualPoint + indPoint;
+      groupGeneralPoint = candidate.groupPoint + groupPoint;
+    } else if (model === Model.Sports) {
+      individualSportsPoint = candidate.individualSportsPoint + indPoint;
+      groupSportsPoint = candidate.groupSportsPoint + groupPoint;
+    }
 
     try {
       return this.candidateRepository.save({
         ...candidate,
         individualPoint,
-        groupPoint: groupPointTotal,
+        groupPoint: groupGeneralPoint,
+        individualSportsPoint,
+        groupSportsPoint,
       });
     } catch (err) {
       throw new HttpException(
@@ -552,28 +565,21 @@ export class CandidatesService {
 
   // image upload to google drive and save id to candidate
 
-async uploadFiles(files: Express.Multer.File[]) {
-    
-  for (let index = 0; index < files.length; index++) {
-    const file = files[index];
+  async uploadFiles(files: Express.Multer.File[]) {
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
 
-    const chestNo = parseInt(file.originalname.split('.')[0]);
+      const chestNo = parseInt(file.originalname.split('.')[0]);
 
-    
-
-    await this.uploadFile(chestNo, file.buffer, file.originalname, file.mimetype);
-
-  }
+      await this.uploadFile(chestNo, file.buffer, file.originalname, file.mimetype);
+    }
 
     return 'done';
   }
 
-  async uploadFile(  chestNo: number , filePath: Buffer, fileName: string, mimeType: string) {
+  async uploadFile(chestNo: number, filePath: Buffer, fileName: string, mimeType: string) {
+    const candidate = await this.candidateChecker(chestNo, mimeType);
 
-
-    const candidate = await this.candidateChecker(chestNo,mimeType)
-
-   
     // check the file is image
     const buffer = Buffer.from(filePath);
 
@@ -586,8 +592,7 @@ async uploadFiles(files: Express.Multer.File[]) {
     });
 
     // Get the file extension.
-  const fileExtension = fileName.split('.')[1];
-
+    const fileExtension = fileName.split('.')[1];
 
     // get the folder id
     const folderId = process.env.DRIVE_CANDIDATES_FOLDER_ID;
@@ -614,7 +619,6 @@ async uploadFiles(files: Express.Multer.File[]) {
       candidate.imageId = response.data.id;
 
       return this.candidateRepository.save(candidate);
-      
     } catch (error) {
       //report the error message
       throw new HttpException(
@@ -624,8 +628,8 @@ async uploadFiles(files: Express.Multer.File[]) {
     }
   }
 
- async candidateChecker(chestNo , mimeType ){
-    const candidate =await this.findOneByChesNoByFields(chestNo,['id'])
+  async candidateChecker(chestNo, mimeType) {
+    const candidate = await this.findOneByChesNoByFields(chestNo, ['id']);
 
     if (!candidate) {
       throw new HttpException(
@@ -634,12 +638,11 @@ async uploadFiles(files: Express.Multer.File[]) {
       );
     }
 
-     // check the file is image
-     if (!mimeType.includes('image')) {
+    // check the file is image
+    if (!mimeType.includes('image')) {
       throw new HttpException(`File is not an image`, HttpStatus.BAD_REQUEST);
     }
 
-    return candidate
-
+    return candidate;
   }
 }

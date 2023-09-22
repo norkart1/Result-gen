@@ -7,11 +7,13 @@ import { UseGuards } from '@nestjs/common';
 import { HasRoles, RolesGuard } from 'src/credentials/roles/roles.guard';
 import { Roles } from 'src/credentials/roles/roles.enum';
 import { fieldsProjection } from 'graphql-fields-list';
+import { CredentialsService } from 'src/credentials/credentials.service';
 
 @Resolver(() => CandidateProgramme)
 export class CandidateProgrammeResolver {
   constructor(
     private readonly candidateProgrammeService: CandidateProgrammeService,
+    private readonly credentialsService: CredentialsService,
   ) {}
 
   // @UsePipes(CandidateProgrammePipe)
@@ -20,22 +22,22 @@ export class CandidateProgrammeResolver {
   @Mutation(() => CandidateProgramme)
   createCandidateProgramme(
     @Args('createCandidateProgrammeInput')
-    createCandidateProgrammeInput: CreateCandidateProgrammeInput ,
+    createCandidateProgrammeInput: CreateCandidateProgrammeInput,
     @Context('req') req: any,
   ) {
     return this.candidateProgrammeService.create(createCandidateProgrammeInput, req.user);
   }
 
   @Query(() => [CandidateProgramme], { name: 'candidateProgrammes' })
-  findAll(
-    @Info() info: any,
-  ) {
+  async findAll(@Info() info: any, @Args('api_key') api_key: string) {
+    await this.credentialsService.ValidateApiKey(api_key);
     const fields = Object.keys(fieldsProjection(info));
-    return this.candidateProgrammeService.findAll( fields);
+    return this.candidateProgrammeService.findAll(fields);
   }
 
   @Query(() => CandidateProgramme, { name: 'candidateProgramme' })
-  findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
+  async findOne(@Args('id', { type: () => Int }) id: number, @Args('api_key') api_key: string, @Info() info: any) {
+    await this.credentialsService.ValidateApiKey(api_key);
     const fields = Object.keys(fieldsProjection(info));
     return this.candidateProgrammeService.findOne(id);
   }
