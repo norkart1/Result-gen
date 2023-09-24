@@ -318,6 +318,123 @@ export class ProgrammesService {
     }
   }
 
+  // find the result entered programmes
+
+  async findResultEnteredProgrammes(fields: string[]) {
+    const allowedRelations = [
+      'category',
+      'skill',
+      'candidateProgramme',
+      'candidateProgramme.candidate',
+      'candidateProgramme.candidate.team',
+      'category.settings',
+      'candidateProgramme.candidatesOfGroup',
+      'candidateProgramme.grade',
+      'candidateProgramme.position',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
+    try {
+      const queryBuilder = this.programmeRepository
+        .createQueryBuilder('programme')
+        .where('programme.resultEntered = true')
+        .leftJoinAndSelect('programme.category', 'category')
+        .leftJoinAndSelect('programme.skill', 'skill')
+        .leftJoinAndSelect('programme.candidateProgramme', 'candidateProgramme')
+        .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('category.settings', 'settings')
+        .leftJoinAndSelect('candidateProgramme.candidatesOfGroup', 'candidatesOfGroup')
+        .leftJoinAndSelect('candidateProgramme.grade', 'grade')
+        .leftJoinAndSelect('candidateProgramme.position', 'position');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `programme.${column}`;
+          }
+        }),
+      );
+      const programme = await queryBuilder.getMany();
+      return programme;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding programme ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+    
+  }
+
+  // result published programmes
+
+
+  async findResultPublishedProgrammes( fields: string[]){
+    const allowedRelations = [
+      'category',
+      'skill',
+      'candidateProgramme',
+      'candidateProgramme.candidate',
+      'candidateProgramme.candidate.team',
+      'category.settings',
+      'candidateProgramme.candidatesOfGroup',
+      'candidateProgramme.grade',
+      'candidateProgramme.position',
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
+    try {
+      const queryBuilder = this.programmeRepository
+        .createQueryBuilder('programme')
+        .where('programme.resultPublished = true')
+        .leftJoinAndSelect('programme.category', 'category')
+        .leftJoinAndSelect('programme.skill', 'skill')
+        .leftJoinAndSelect('programme.candidateProgramme', 'candidateProgramme')
+        .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('category.settings', 'settings')
+        .leftJoinAndSelect('candidateProgramme.candidatesOfGroup', 'candidatesOfGroup')
+        .leftJoinAndSelect('candidateProgramme.grade', 'grade')
+        .leftJoinAndSelect('candidateProgramme.position', 'position');
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `programme.${column}`;
+          }
+        }),
+      );
+      const programme = await queryBuilder.getMany();
+      return programme;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding programme ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+
   async findOne(id: number, fields: string[]) {
     const allowedRelations = [
       'category',

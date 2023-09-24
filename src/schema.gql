@@ -180,6 +180,10 @@ type Team {
   HousePoint: Float
   GroupPoint: Float
   IndividualPoint: Float
+  totalSportsPoint: Float
+  HouseSportsPoint: Float
+  GroupSportsPoint: Float
+  IndividualSportsPoint: Float
   chestNoSeries: Int
   credentials: [Credential!]
   candidates: [Candidate!]
@@ -192,13 +196,16 @@ type Candidate {
   id: Int
   name: String
   class: String
-  adno: Float
+  adno: Int
+
   dob: String
   chestNO: String
   imageId: String
   gender: Gender
   individualPoint: Float
   groupPoint: Float
+  individualSportsPoint: Float
+  groupSportsPoint: Float
   candidateProgrammes: [CandidateProgramme!]
   substitutesOld: [Substitute!]
   substitutesNew: [Substitute!]
@@ -332,49 +339,49 @@ type Gallery {
 }
 
 type Query {
-  candidates: [Candidate!]!
+  teams(api_key: String!): [Team!]!
+  team(id: Int!, api_key: String!): Team!
   candidatesByCategory(categoriesName: [String!]!): [Candidate!]!
   candidatesByCategoriesAndTeam(categoriesName: [String!]!, teamName: String!): [Candidate!]!
-  candidate(id: Int!): Candidate!
-  teams: [Team!]!
-  team(id: Int!): Team!
   credentials: [Credential!]!
-  credentialsByTeam(team: String!): [Credential!]!
-  credentialsByRole(role: Roles!): [Credential!]!
+  credentialsByTeam(team: String!, api_key: String!): [Credential!]!
+  credentialsByRole(role: Roles!, api_key: String!): [Credential!]!
   credential(id: Int!): Credential!
   checkLoggedIn: Credential!
   getCookieValue: String!
-  categories: [Category!]!
-  category(id: Int!): Category!
-  categoriesByNames: [Category!]!
-  sections: [Section!]!
-  section(id: Int!): Section!
-  candidateProgrammes: [CandidateProgramme!]!
-  candidateProgramme(id: Int!): CandidateProgramme!
-  programmes: [Programme!]!
-  programme(id: Int!): Programme!
-  programmesByCategory(categoriesName: [String!]!): [Programme!]!
-  skills: [Skill!]!
-  skill(id: Int!): Skill!
-  details: Detail!
-  grades: [Grade!]!
-  grade(id: Int!): Grade!
-  positions: [Position!]!
-  position(id: Int!): Position!
-  categorySettings: [CategorySettings!]!
-  categorySetting(id: Int!): CategorySettings!
-  customSettings: [CustomSetting!]!
-  customSetting(id: Int!): CustomSetting!
-  judges: [Judge!]!
-  judge(id: Int!): Judge!
-  substitutes: [Substitute!]!
-  substitute(id: Int!): Substitute!
-  feeds: [Feed!]!
-  feed(id: Int!): Feed!
-  galleries: [Gallery!]!
-  gallery(id: Int!): Gallery!
-  tags: [Tag!]!
-  tag(id: Int!): Tag!
+  categories(api_key: String!): [Category!]!
+  category(id: Int!, api_key: String!): Category!
+  categoriesByNames(api_key: String!): [Category!]!
+  sections(api_key: String!): [Section!]!
+  section(id: Int!, api_key: String!): Section!
+  candidateProgrammes(api_key: String!): [CandidateProgramme!]!
+  candidateProgramme(id: Int!, api_key: String!): CandidateProgramme!
+  programmes(api_key: String!): [Programme!]!
+  programme(id: Int!, api_key: String!): Programme!
+  resultEnteredProgrammes(api_key: String!): [Programme!]!
+  resultPublishedProgrammes(api_key: String!): [Programme!]!
+  skills(api_key: String!): [Skill!]!
+  skill(id: Int!, api_key: String!): Skill!
+  details(api_key: String!): Detail!
+  grades(api_key: String!): [Grade!]!
+  grade(id: Int!, api_key: String!): Grade!
+  positions(api_key: String!): [Position!]!
+  position(id: Int!, api_key: String!): Position!
+  categorySettings(api_key: String!): [CategorySettings!]!
+  categorySetting(id: Int!, api_key: String!): CategorySettings!
+  customSettings(api_key: String!): [CustomSetting!]!
+  customSetting(id: Int!, api_key: String!): CustomSetting!
+  judges(api_key: String!): [Judge!]!
+  judge(id: Int!, api_key: String!): Judge!
+  substitutes(api_key: String!): [Substitute!]!
+  substitute(id: Int!, api_key: String!): Substitute!
+  feeds(api_key: String!): [Feed!]!
+  feed(id: Int!, api_key: String!): Feed!
+  galleries(api_key: String!): [Gallery!]!
+  gallery(id: Int!, api_key: String!): Gallery!
+  tags(api_key: String!): [Tag!]!
+  tag(id: Int!, api_key: String!): Tag!
+
 }
 
 type Mutation {

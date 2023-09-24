@@ -402,6 +402,15 @@ export class CredentialsService {
     }
   }
 
+  // checking the api key
+  async ValidateApiKey(apiKey: string) {
+  // check the given api is as on the env file
+    if (apiKey !== process.env.API_KEY) {
+      throw new HttpException('😬😬 You are not allowed to perform this!', HttpStatus.UNAUTHORIZED);
+    }
+  }
+  
+} 
   async checkPermissionOnTeamWithouError(user: Credential, teamName: string) {
     const teamExists = user.team?.name === teamName;
 

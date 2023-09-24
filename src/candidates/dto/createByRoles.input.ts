@@ -14,7 +14,7 @@ export class createByRolesInput {
   class: string;
 
   @IsInt()
-  @Field({ nullable: true })
+  @Field(() => Int,{ nullable: true })
   adno: number;
 
   @Field({ nullable: true })
