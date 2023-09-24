@@ -45,10 +45,12 @@ export class FeedsService {
     }
   }
 
-  update(id: number, updateFeedInput: UpdateFeedInput) {
-    
+ async update(id: number, updateFeedInput: UpdateFeedInput) {
+
+    const feed = await this.findOne(id)
+    Object.assign(feed,updateFeedInput)
     try {
-      const feed = this.feedRepository.create(updateFeedInput);
+      
       return this.feedRepository.save(feed);
     }
     catch (error) {

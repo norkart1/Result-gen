@@ -79,6 +79,7 @@ export class PositionService {
     try {
       const queryBuilder = this.positionRepository
         .createQueryBuilder('position')
+        .where('position.id = :id', { id })
         .leftJoinAndSelect('position.candidateProgramme', 'candidateProgramme')
         .leftJoinAndSelect('candidateProgramme.candidate', 'candidate')
         .leftJoinAndSelect('candidateProgramme.programme', 'programme');
@@ -114,8 +115,10 @@ export class PositionService {
     }
     // trying to return position
 
+    Object.assign(position,updatePositionInput)
+
     try {
-      return this.positionRepository.update(id, updatePositionInput);
+      return this.positionRepository.save(position);
     } catch (e) {
       throw new HttpException(
         'An Error have when updating position ',

@@ -115,8 +115,10 @@ export class GradesService {
     }
     // trying to return data
 
+    Object.assign(grade,updateGradeInput)
+
     try {
-      this.gradeRepository.update(id, updateGradeInput);
+      this.gradeRepository.save(grade)
       return grade;
     } catch (e) {
       throw new HttpException(

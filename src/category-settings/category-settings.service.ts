@@ -140,18 +140,11 @@ export class CategorySettingsService {
 
     this.credentialService.checkPermissionOnCategories(user, category.name);
 
-    const newData = this.categorySettingsRepository.create({
-      maxGroup: updateCategorySettingInput.maxGroup,
-      maxSingle: updateCategorySettingInput.maxSingle,
-      maxProgram: updateCategorySettingInput.maxProgram,
-      minGroup: updateCategorySettingInput.minGroup,
-      minSingle: updateCategorySettingInput.minSingle,
-      minProgram: updateCategorySettingInput.minProgram,
-    });
+    Object.assign(category_settings,updateCategorySettingInput)
 
-    const savedSettings = await this.categorySettingsRepository.update(id, newData);
+    const savedSettings = await this.categorySettingsRepository.save(category_settings)
 
-    category.settings = newData;
+    category.settings = category_settings;
     try {
       return this.categoryService.addSettingsToCategory(category.id, category);
     } catch (e) {
@@ -209,14 +202,10 @@ export class CategorySettingsService {
     }
 
     try {
-      const newData = this.categorySettingsRepository.create({
-        isProgrammeListUpdatable: !categorySettings.isProgrammeListUpdatable,
-      });
 
-      const savedSettings = await this.categorySettingsRepository.update(
-        categorySettings.id,
-        newData,
-      );
+      categorySettings.isProgrammeListUpdatable = !categorySettings.isProgrammeListUpdatable ;
+
+      const savedSettings = await this.categorySettingsRepository.save(categorySettings)
       return savedSettings;
     } catch (e) {
       throw new HttpException(

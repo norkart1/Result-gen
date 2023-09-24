@@ -101,9 +101,11 @@ console.log(id);
     }
   }
 
-  update(id: number, updateTagInput: UpdateTagInput) {
+async  update(id: number, updateTagInput: UpdateTagInput) {
+    const tag =await this.tagRepository.findOne({where : {id}})
+    Object.assign(tag , updateTagInput)
     try{
-      return this.tagRepository.update(id, updateTagInput);
+      return this.tagRepository.save(tag)
     }
     catch(error){
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

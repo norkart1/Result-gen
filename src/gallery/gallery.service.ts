@@ -92,7 +92,7 @@ export class GalleryService {
   }
 
  async update(id: number, updateGalleryDto: UpdateGalleryDto , file: Express.Multer.File) {
-    const gallery = this.galleryRepository.create(updateGalleryDto);
+    const gallery = await this.findOne(id)
     const imageId : string = await this.uploadFile(file.buffer, file.originalname, file.mimetype)
 
     const tags = await Promise.all(updateGalleryDto.tag.map(async (tag) => {
@@ -104,8 +104,9 @@ export class GalleryService {
         throw new HttpException(`tag ${tag} is not exist`, HttpStatus.BAD_REQUEST);
       }
     }))
+    
     try{
-
+      gallery.name = updateGalleryDto.name;
       const Gallery = await this.galleryRepository.save({
         ...gallery,
         imageId,

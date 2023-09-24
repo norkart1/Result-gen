@@ -179,8 +179,11 @@ export class TeamsService {
     if (!team) {
       throw new HttpException(`cant find team with id ${id}`, HttpStatus.BAD_REQUEST);
     }
+
+    Object.assign(team , updateTeamInput)
+    
     try {
-      return this.teamRepository.update(id, updateTeamInput);
+      return this.teamRepository.save(team)
     } catch (e) {
       throw new HttpException(
         'An Error have when updating team ',
