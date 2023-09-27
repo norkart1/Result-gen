@@ -20,6 +20,8 @@ import { join } from 'path';
 import { Readable } from 'stream';
 import { driveConfig } from 'src/utils/googleApi.auth';
 import { Model } from 'src/programmes/entities/programme.entity';
+import { CategorySettingsService } from 'src/category-settings/category-settings.service';
+import { CategorySettings } from 'src/category-settings/entities/category-setting.entity';
 // import { drive } from 'src/utils/googleApi.auth';
 
 @Injectable()
@@ -31,6 +33,7 @@ export class CandidatesService {
     private sectionService: SectionsService,
     private candidateProgrammeService: CandidateProgrammeService,
     private credentialService: CredentialsService,
+    private categorySettingsService: CategorySettingsService,
   ) {}
 
   //  To create many candidates at a time , Normally using on Excel file upload
@@ -491,6 +494,90 @@ export class CandidatesService {
     return candidateProgramme;
   }
 
+  // STATIC CODE 
+  // find overall toppers
+  async findOverallToppers(fields: string[]){
+    const allowedRelations = [
+      'category',
+      'team',
+      'candidateProgrammes',
+      'candidateProgrammes.programme',
+
+    ];
+
+    // validating fields
+    fields = fieldsValidator(fields, allowedRelations);
+    // checking if fields contains id
+    fields = fieldsIdChecker(fields);
+
+    try {
+      const queryBuilder = this.candidateRepository
+        .createQueryBuilder('candidate')
+        .leftJoinAndSelect('candidate.category', 'category')
+        .leftJoinAndSelect('candidate.team', 'team')
+        .leftJoinAndSelect('candidate.candidateProgrammes', 'candidateProgrammes')
+        .leftJoinAndSelect('candidateProgrammes.programme', 'programme')
+        .orderBy('candidate.individualPoint', 'ASC')
+
+      queryBuilder.select(
+        fields.map(column => {
+          const splitted = column.split('.');
+
+          if (splitted.length > 1) {
+            return `${splitted[splitted.length - 2]}.${splitted[splitted.length - 1]}`;
+          } else {
+            return `candidate.${column}`;
+          }
+        }),
+      );
+      const candidates : Candidate[] = await queryBuilder.getMany() 
+      
+    
+      // sort the candidates by individual point
+      const candidatePromises = candidates.map(async (candidate: Candidate) => {
+        const total : CategorySettings = await this.categorySettingsService.findOne(candidate.category.id, ['id' , 'maxSingle' ]);
+        console.log(total);
+        
+        return { candidate, total };
+      });
+      
+      Promise.all(candidatePromises)
+        .then((candidateTotals) => {
+          // Sort the candidates based on the totals
+          const sortedCandidates = candidateTotals.sort((a, b) => {
+            const aMax = a.total.maxSingle * 8;
+            const bMax = b.total.maxSingle * 8;
+            const aTotal = a.candidate.individualPoint ? a.candidate.individualPoint : 0 / aMax *100;
+            const bTotal = b.candidate.individualPoint ? b.candidate.individualPoint : 0 / bMax *100;
+
+            if(a.candidate.category.name == 'THANAWIYYA' || 'ALIYA'){
+              return bTotal - aTotal;
+            }
+            return bTotal - aTotal;
+          });
+      
+          // Now you have sortedCandidates as an array of objects with candidate and total properties
+          console.log(sortedCandidates);
+        })
+        .catch((error) => {
+          // Handle any errors that occurred during data retrieval or sorting
+          console.error(error);
+        });
+      
+
+
+
+      return candidates;
+    } catch (e) {
+      throw new HttpException(
+        'An Error have when finding candidate ',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        { cause: e },
+      );
+    }
+  }
+
+
   // Update data
 
   async update(id: number, updateCandidateInput: UpdateCandidateInput, user: Credential) {
@@ -632,8 +719,7 @@ export class CandidatesService {
 
   // image upload to google drive and save id to candidate
 
-
-async uploadFiles(files: Express.Multer.File[]) {
+  async uploadFiles(files: Express.Multer.File[]) {
     
   for (let index = 0; index < files.length; index++) {
     const file = files[index];
@@ -653,6 +739,7 @@ async uploadFiles(files: Express.Multer.File[]) {
 
   async uploadFile(  chestNo: string , filePath: Buffer, fileName: string, mimeType: string) {
 
+    const candidate = await this.candidateChecker(chestNo,mimeType)
 
     // check the file is image
     const buffer = Buffer.from(filePath);

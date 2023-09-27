@@ -1,14 +1,14 @@
 import { InputType, Field } from '@nestjs/graphql'
 import { IsArray, ValidateNested, } from 'class-validator'
-import { AddResult } from './add-result.dto';
 import { Type } from 'class-transformer';
+import { AddManual } from './add-manual.dto';
 
 @InputType()
-export class arrayInput {
+export class arrayManualInput {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => AddResult)
-  @Field(() => [AddResult])
-  inputs: AddResult[];
+  @Type(() => AddManual)
+  @Field(() => [AddManual])
+  inputs: AddManual[];
 }

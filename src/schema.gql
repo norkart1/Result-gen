@@ -197,7 +197,6 @@ type Candidate {
   name: String
   class: String
   adno: Int
-
   dob: String
   chestNO: String
   imageId: String
@@ -339,10 +338,14 @@ type Gallery {
 }
 
 type Query {
-  teams(api_key: String!): [Team!]!
-  team(id: Int!, api_key: String!): Team!
+  candidates(api_key: String!): [Candidate!]!
+  candidateByChestNo(chestNo: String!, api_key: String!): Candidate!
   candidatesByCategory(categoriesName: [String!]!): [Candidate!]!
   candidatesByCategoriesAndTeam(categoriesName: [String!]!, teamName: String!): [Candidate!]!
+  candidate(id: Int!, api_key: String!): Candidate!
+  findOverallToppers(api_key: String!): [Candidate!]!
+  teams(api_key: String!): [Team!]!
+  team(id: Int!, api_key: String!): Team!
   credentials: [Credential!]!
   credentialsByTeam(team: String!, api_key: String!): [Credential!]!
   credentialsByRole(role: Roles!, api_key: String!): [Credential!]!
@@ -354,12 +357,16 @@ type Query {
   categoriesByNames(api_key: String!): [Category!]!
   sections(api_key: String!): [Section!]!
   section(id: Int!, api_key: String!): Section!
+  categorySettings(api_key: String!): [CategorySettings!]!
+  categorySetting(id: Int!, api_key: String!): CategorySettings!
   candidateProgrammes(api_key: String!): [CandidateProgramme!]!
   candidateProgramme(id: Int!, api_key: String!): CandidateProgramme!
   programmes(api_key: String!): [Programme!]!
   programme(id: Int!, api_key: String!): Programme!
+  programmeByCode(code: String!, api_key: String!): Programme!
   resultEnteredProgrammes(api_key: String!): [Programme!]!
   resultPublishedProgrammes(api_key: String!): [Programme!]!
+  programmesByCategory(categoriesName: [String!]!): [Programme!]!
   skills(api_key: String!): [Skill!]!
   skill(id: Int!, api_key: String!): Skill!
   details(api_key: String!): Detail!
@@ -367,8 +374,6 @@ type Query {
   grade(id: Int!, api_key: String!): Grade!
   positions(api_key: String!): [Position!]!
   position(id: Int!, api_key: String!): Position!
-  categorySettings(api_key: String!): [CategorySettings!]!
-  categorySetting(id: Int!, api_key: String!): CategorySettings!
   customSettings(api_key: String!): [CustomSetting!]!
   customSetting(id: Int!, api_key: String!): CustomSetting!
   judges(api_key: String!): [Judge!]!
@@ -381,7 +386,6 @@ type Query {
   gallery(id: Int!, api_key: String!): Gallery!
   tags(api_key: String!): [Tag!]!
   tag(id: Int!, api_key: String!): Tag!
-
 }
 
 type Mutation {
@@ -403,6 +407,10 @@ type Mutation {
   createSection(createSectionInput: CreateSectionInput!): Section!
   updateSection(updateSectionInput: UpdateSectionInput!): Section!
   removeSection(id: Int!): Section!
+  createCategorySetting(createCategorySettingInput: CreateCategorySettingInput!): CategorySettings!
+  updateCategorySetting(updateCategorySettingInput: UpdateCategorySettingInput!): CategorySettings!
+  removeCategorySetting(id: Int!): CategorySettings!
+  changeProgrammeListUpdatable(name: String!): CategorySettings!
   createCandidateProgramme(createCandidateProgrammeInput: CreateCandidateProgrammeInput!): CandidateProgramme!
   createManyCandidateProgramme(createManyCandidateProgrammeInput: CreateManyCP!): ObjectManyCandidateProgramme!
   updateCandidateProgramme(updateCandidateProgrammeInput: UpdateCandidateProgrammeInput!): CandidateProgramme!
@@ -431,10 +439,6 @@ type Mutation {
   createPosition(createPositionInput: CreatePositionInput!): Position!
   updatePosition(updatePositionInput: UpdatePositionInput!): Position!
   removePosition(id: Int!): Position!
-  createCategorySetting(createCategorySettingInput: CreateCategorySettingInput!): CategorySettings!
-  updateCategorySetting(updateCategorySettingInput: UpdateCategorySettingInput!): CategorySettings!
-  removeCategorySetting(id: Int!): CategorySettings!
-  changeProgrammeListUpdatable(name: String!): CategorySettings!
   createCustomSetting(createCustomSettingInput: CreateCustomSettingInput!): CustomSetting!
   updateCustomSetting(updateCustomSettingInput: UpdateCustomSettingInput!): CustomSetting!
   removeCustomSetting(id: Int!): CustomSetting!
@@ -528,6 +532,51 @@ input CreateSectionInput {
 
 input UpdateSectionInput {
   name: String
+  id: Int!
+}
+
+input CreateCategorySettingInput {
+  category: String!
+  maxProgram: Int!
+  maxSingle: Int!
+  maxGroup: Int!
+  maxStage: Int
+  maxNonStage: Int
+  maxOutDoor: Int
+  maxSports: Int
+  maxSportsSingle: Int
+  maxSportsGroup: Int
+  minProgram: Int!
+  minSingle: Int!
+  minGroup: Int!
+  minStage: Int
+  minNonStage: Int
+  minOutDoor: Int
+  minSports: Int
+  minSportsSingle: Int
+  minSportsGroup: Int
+}
+
+input UpdateCategorySettingInput {
+  category: String
+  maxProgram: Int
+  maxSingle: Int
+  maxGroup: Int
+  maxStage: Int
+  maxNonStage: Int
+  maxOutDoor: Int
+  maxSports: Int
+  maxSportsSingle: Int
+  maxSportsGroup: Int
+  minProgram: Int
+  minSingle: Int
+  minGroup: Int
+  minStage: Int
+  minNonStage: Int
+  minOutDoor: Int
+  minSports: Int
+  minSportsSingle: Int
+  minSportsGroup: Int
   id: Int!
 }
 
@@ -683,51 +732,6 @@ input UpdatePositionInput {
   pointGroup: Int
   pointSingle: Int
   pointHouse: Int
-  id: Int!
-}
-
-input CreateCategorySettingInput {
-  category: String!
-  maxProgram: Int!
-  maxSingle: Int!
-  maxGroup: Int!
-  maxStage: Int
-  maxNonStage: Int
-  maxOutDoor: Int
-  maxSports: Int
-  maxSportsSingle: Int
-  maxSportsGroup: Int
-  minProgram: Int!
-  minSingle: Int!
-  minGroup: Int!
-  minStage: Int
-  minNonStage: Int
-  minOutDoor: Int
-  minSports: Int
-  minSportsSingle: Int
-  minSportsGroup: Int
-}
-
-input UpdateCategorySettingInput {
-  category: String
-  maxProgram: Int
-  maxSingle: Int
-  maxGroup: Int
-  maxStage: Int
-  maxNonStage: Int
-  maxOutDoor: Int
-  maxSports: Int
-  maxSportsSingle: Int
-  maxSportsGroup: Int
-  minProgram: Int
-  minSingle: Int
-  minGroup: Int
-  minStage: Int
-  minNonStage: Int
-  minOutDoor: Int
-  minSports: Int
-  minSportsSingle: Int
-  minSportsGroup: Int
   id: Int!
 }
 
