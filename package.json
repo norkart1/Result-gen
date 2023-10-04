@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@nestjs/apollo": "^10.1.7",
+    "@nestjs/azure-func-http": "^0.10.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.0",
     "@nestjs/core": "^9.0.0",
