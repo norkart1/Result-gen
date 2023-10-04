@@ -653,6 +653,7 @@ async uploadFiles(files: Express.Multer.File[]) {
 
   async uploadFile(  chestNo: string , filePath: Buffer, fileName: string, mimeType: string) {
 
+   const candidate = await this.findOneByChestNo(chestNo)
 
     // check the file is image
     const buffer = Buffer.from(filePath);

@@ -197,7 +197,6 @@ type Candidate {
   name: String
   class: String
   adno: Int
-
   dob: String
   chestNO: String
   imageId: String
@@ -339,10 +338,12 @@ type Gallery {
 }
 
 type Query {
-  teams(api_key: String!): [Team!]!
-  team(id: Int!, api_key: String!): Team!
+  candidates(api_key: String!): [Candidate!]!
   candidatesByCategory(categoriesName: [String!]!): [Candidate!]!
   candidatesByCategoriesAndTeam(categoriesName: [String!]!, teamName: String!): [Candidate!]!
+  candidate(id: Int!, api_key: String!): Candidate!
+  teams(api_key: String!): [Team!]!
+  team(id: Int!, api_key: String!): Team!
   credentials: [Credential!]!
   credentialsByTeam(team: String!, api_key: String!): [Credential!]!
   credentialsByRole(role: Roles!, api_key: String!): [Credential!]!
@@ -360,6 +361,7 @@ type Query {
   programme(id: Int!, api_key: String!): Programme!
   resultEnteredProgrammes(api_key: String!): [Programme!]!
   resultPublishedProgrammes(api_key: String!): [Programme!]!
+  programmesByCategory(categoriesName: [String!]!): [Programme!]!
   skills(api_key: String!): [Skill!]!
   skill(id: Int!, api_key: String!): Skill!
   details(api_key: String!): Detail!
@@ -381,7 +383,6 @@ type Query {
   gallery(id: Int!, api_key: String!): Gallery!
   tags(api_key: String!): [Tag!]!
   tag(id: Int!, api_key: String!): Tag!
-
 }
 
 type Mutation {
@@ -417,7 +418,7 @@ type Mutation {
   updateProgramme(updateProgrammeInput: UpdateProgrammeInput!): Programme!
   removeProgramme(id: Int!): Programme!
   setSchedule(createScheduleInput: CreateSchedule!): Programme!
-  setManySchedule(createScheduleInput: [ScheduleCreate!]!): [Programme!]!
+  setManySchedule(createScheduleInput: ScheduleCreate!): [Programme!]!
   removeSchedule(code: Int!): Programme!
   setAnyIssue(code: String!, issue: Boolean!): Programme!
   createSkill(createSkillInput: CreateSkillInput!): Skill!
@@ -441,6 +442,7 @@ type Mutation {
   createJudge(createJudgeInput: CreateJudgeInput!): Judge!
   updateJudge(updateJudgeInput: UpdateJudgeInput!): Judge!
   removeJudge(id: Int!): Judge!
+  judgeLogin(username: String!, password: String!): Judge!
   uploadMarkByJudge(programmeCode: String!, jugdeId: Float!, addResult: arrayInput!): String!
   createSubstitute(createSubstituteInput: CreateSubstituteInput!): Substitute!
   updateSubstitute(updateSubstituteInput: UpdateSubstituteInput!): Substitute!

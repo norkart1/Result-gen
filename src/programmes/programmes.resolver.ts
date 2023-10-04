@@ -108,7 +108,7 @@ export class ProgrammesResolver {
   @HasRoles(Roles.Controller)
   @UseGuards(RolesGuard)
   setManySchedule(
-    @Args('createScheduleInput', { type: () => [ScheduleCreate] }) createSchedule: ScheduleCreate,
+    @Args('createScheduleInput', { type: () => ScheduleCreate }) createSchedule: ScheduleCreate,
     @Context('req') req: any,
   ) {
     return this.programmesService.setManySchedule(createSchedule, req.user);

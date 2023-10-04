@@ -40,7 +40,7 @@ export class CandidateProgrammeService {
     private readonly categorySettingsService: CategorySettingsService,
     private readonly credentialService: CredentialsService,
     private readonly customSettingsService: CustomSettingsService,
-  ) {}
+  ) { }
 
   // to get same team candidates
   teamCandidates(candidateProgrammes: CandidateProgramme[], team: Team) {
@@ -48,6 +48,10 @@ export class CandidateProgrammeService {
       return e.candidate?.team?.name == team.name;
     });
   }
+
+  hasDuplicateValues = (arr) => {
+    return new Set(arr).size !== arr.length;
+  };
 
   // create candidate programme
   async create(createCandidateProgrammeInput: CreateCandidateProgrammeInput, user: Credential) {
@@ -102,6 +106,13 @@ export class CandidateProgrammeService {
 
     if (programme.type !== Type.SINGLE) {
       const candidatesOfGroup = createCandidateProgrammeInput.candidatesOfGroup;
+
+
+      const hasDuplicateValues = this.hasDuplicateValues(candidatesOfGroup)
+
+      if (hasDuplicateValues) {
+        throw new HttpException(`Duplicate chestNo detected`, HttpStatus.BAD_REQUEST);
+      }
 
       if (!candidatesOfGroup) {
         throw new HttpException(`Can't find candidates of group`, HttpStatus.BAD_REQUEST);
@@ -241,6 +252,12 @@ export class CandidateProgrammeService {
 
       if (programme.type !== Type.SINGLE) {
         const candidatesOfGroup = cp.candidatesOfGroup;
+
+        const hasDuplicateValues = this.hasDuplicateValues(candidatesOfGroup)
+
+        if (hasDuplicateValues) {
+          errors.push(`duplicate chestNo detected on programme ${programme.programCode}`)
+        }
 
         if (!candidatesOfGroup) {
           errors.push(`Can't find candidates of group on programme ${programme.programCode}`);
@@ -508,6 +525,13 @@ export class CandidateProgrammeService {
 
     // checking eligibility on single and group
     if (programme.type !== Type.SINGLE) {
+
+      const hasDuplicateValues = this.hasDuplicateValues(updateCandidateProgrammeInput.candidatesOfGroup)
+
+      if (hasDuplicateValues) {
+        throw new HttpException(`Duplicate chestNo detected`, HttpStatus.BAD_REQUEST);
+      }
+
       // checking the group is full
       if (updateCandidateProgrammeInput.candidatesOfGroup.length !== programme.candidateCount) {
         throw new HttpException(

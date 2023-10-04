@@ -9,6 +9,7 @@ import { Roles } from 'src/credentials/roles/roles.enum';
 import { fieldsProjection } from 'graphql-fields-list';
 import { CreateManyCP } from './dto/creade-many-cp';
 import { ObjectManyCandidateProgramme } from './dto/many-upload.input';
+import { CredentialsService } from 'src/credentials/credentials.service';
 
 @Resolver(() => CandidateProgramme)
 export class CandidateProgrammeResolver {
@@ -54,11 +55,11 @@ export class CandidateProgrammeResolver {
     return this.candidateProgrammeService.findOne(id);
   }
 
-    @Query(() => CandidateProgramme, { name: 'candidateProgramme' })
-    findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
-      const fields = Object.keys(fieldsProjection(info));
-      return this.candidateProgrammeService.findOne(id);
-    }
+    // @Query(() => CandidateProgramme, { name: 'candidateProgramme' })
+    // findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
+    //   const fields = Object.keys(fieldsProjection(info));
+    //   return this.candidateProgrammeService.findOne(id);
+    // }
 
     // @UsePipes(CandidateProgrammePipe)
     @Mutation(() => CandidateProgramme)
