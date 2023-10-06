@@ -100,5 +100,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "bin": {
+  "nest": "/home/site/wwwroot/node_modules/@nestjs/cli/bin/nest.js"
+}
 }
