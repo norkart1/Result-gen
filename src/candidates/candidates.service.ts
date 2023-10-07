@@ -741,6 +741,7 @@ export class CandidatesService {
 
     const candidate = await this.candidateChecker(chestNo,mimeType)
 
+
     // check the file is image
     const buffer = Buffer.from(filePath);
 

@@ -410,7 +410,8 @@ export class CredentialsService {
     }
   }
 
-  async checkPermissionOnTeamWithouError(user: Credential, teamName: string) {
+async checkPermissionOnTeamWithouError(user: Credential, teamName: string) {
+
     const teamExists = user.team?.name === teamName;
 
     if (!teamExists) {

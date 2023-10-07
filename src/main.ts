@@ -28,7 +28,7 @@ async function bootstrap() {
   //   credentials: true,
   // });
 
-
-  await app.listen(configService.get('PORT') || 4000);
+const port = process.env.port || 8080;
+  await app.listen(port);
 }
 bootstrap();

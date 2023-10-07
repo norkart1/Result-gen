@@ -708,13 +708,18 @@ export class ProgrammesService {
     }
   }
 
-  async setManySchedule(scheduleData: ScheduleCreate, user: Credential) {
+  async setManySchedule(scheduleData: any, user: Credential) {
     const allData: {
       code: string;
       date: Date;
       venue: number;
       programme: Programme;
     }[] = [];
+
+    const UploadedProgrammes : Programme[] = []
+
+    console.log(scheduleData);
+    
 
     for (let index = 0; index < scheduleData.inputs.length; index++) {
       const data: CreateSchedule = scheduleData.inputs[index];
@@ -756,7 +761,15 @@ export class ProgrammesService {
           throw new HttpException(`Venue must be a number`, HttpStatus.BAD_REQUEST);
         }
       }
+      allData.push({
+        code: code ,
+        date: date ,
+        venue: venue,
+        programme: programme
+      })
     }
+
+    
 
     try {
       if (allData.length !== scheduleData.inputs.length) {
@@ -776,8 +789,16 @@ export class ProgrammesService {
         programme.date = date;
         programme.venue = venue;
 
-        return this.programmeRepository.save(programme);
+        console.log("pushed");
+        const upload = await this.programmeRepository.save(programme);
+
+        UploadedProgrammes.push(upload)
+
+
       }
+
+      return UploadedProgrammes;
+      
     } catch (e) {
       throw new HttpException(
         'An Error have when updating programme ',

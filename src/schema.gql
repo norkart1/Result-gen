@@ -344,6 +344,7 @@ type Query {
   candidatesByCategoriesAndTeam(categoriesName: [String!]!, teamName: String!): [Candidate!]!
   candidate(id: Int!, api_key: String!): Candidate!
   findOverallToppers(api_key: String!): [Candidate!]!
+
   teams(api_key: String!): [Team!]!
   team(id: Int!, api_key: String!): Team!
   credentials: [Credential!]!
@@ -425,7 +426,7 @@ type Mutation {
   updateProgramme(updateProgrammeInput: UpdateProgrammeInput!): Programme!
   removeProgramme(id: Int!): Programme!
   setSchedule(createScheduleInput: CreateSchedule!): Programme!
-  setManySchedule(createScheduleInput: [ScheduleCreate!]!): [Programme!]!
+  setManySchedule(createScheduleInput: ScheduleCreate!): [Programme!]!
   removeSchedule(code: Int!): Programme!
   setAnyIssue(code: String!, issue: Boolean!): Programme!
   createSkill(createSkillInput: CreateSkillInput!): Skill!
@@ -445,6 +446,7 @@ type Mutation {
   createJudge(createJudgeInput: CreateJudgeInput!): Judge!
   updateJudge(updateJudgeInput: UpdateJudgeInput!): Judge!
   removeJudge(id: Int!): Judge!
+  judgeLogin(username: String!, password: String!): Judge!
   uploadMarkByJudge(programmeCode: String!, jugdeId: Float!, addResult: arrayInput!): String!
   createSubstitute(createSubstituteInput: CreateSubstituteInput!): Substitute!
   updateSubstitute(updateSubstituteInput: UpdateSubstituteInput!): Substitute!
