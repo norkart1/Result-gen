@@ -265,6 +265,7 @@ export class ResultGenService {
         return grade;
       }
     }
+    return null;
   }
 
   // generate position
