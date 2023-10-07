@@ -409,9 +409,9 @@ export class CredentialsService {
       throw new HttpException('😬😬 You are not allowed to perform this!', HttpStatus.UNAUTHORIZED);
     }
   }
-  
 
 async checkPermissionOnTeamWithouError(user: Credential, teamName: string) {
+
     const teamExists = user.team?.name === teamName;
 
     if (!teamExists) {
@@ -420,4 +420,6 @@ async checkPermissionOnTeamWithouError(user: Credential, teamName: string) {
 
     return true;
   }
-}
+  
+} 
+ 

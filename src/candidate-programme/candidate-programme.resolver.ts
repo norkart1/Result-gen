@@ -55,11 +55,6 @@ export class CandidateProgrammeResolver {
     return this.candidateProgrammeService.findOne(id);
   }
 
-    // @Query(() => CandidateProgramme, { name: 'candidateProgramme' })
-    // findOne(@Args('id', { type: () => Int }) id: number , @Info() info: any) {
-    //   const fields = Object.keys(fieldsProjection(info));
-    //   return this.candidateProgrammeService.findOne(id);
-    // }
 
     // @UsePipes(CandidateProgrammePipe)
     @Mutation(() => CandidateProgramme)
