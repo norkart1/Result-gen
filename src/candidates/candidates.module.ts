@@ -19,7 +19,7 @@ import { CategorySettingsModule } from 'src/category-settings/category-settings.
     CategoryModule,
     SectionsModule,
     CredentialsModule,
-    CategorySettingsModule,
+    CategorySettingsModule ,
     forwardRef(() => CandidateProgrammeModule),
   ],
   providers: [CandidatesResolver, CandidatesService],

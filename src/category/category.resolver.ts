@@ -47,7 +47,7 @@ export class CategoryResolver {
     await this.credentialsService.ValidateApiKey(api_key);
     const fields = Object.keys(fieldsProjection(info));
     const names = request.user.categories.map((category : Category) => category.name);
-    const team = request.user.team?.name;
+    const team = request.user.team.name;
     return this.categoryService.findManyByName(names , fields , team );
   }
 

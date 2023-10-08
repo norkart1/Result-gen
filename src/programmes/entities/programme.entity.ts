@@ -29,7 +29,7 @@ export enum Type {
   HOUSE = 'HOUSE',
 }
 
-export enum  Model { 
+export enum  Model {
   Arts = 'Arts',
   Sports = 'Sports',
 }

@@ -26,8 +26,6 @@
   },
   "dependencies": {
     "@nestjs/apollo": "^10.1.7",
-    "@nestjs/cli": "^9.0.0",
-    "@nestjs/azure-func-http": "^0.10.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.0",
     "@nestjs/core": "^9.0.0",
@@ -100,8 +98,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "bin": {
-  "nest": "/home/site/wwwroot/node_modules/@nestjs/cli/bin/nest.js"
-}
+  }
 }

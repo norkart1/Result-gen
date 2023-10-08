@@ -150,7 +150,7 @@ export class JudgeService {
     }
   }
 
-  async findOneByUsername(username: string, fields: string[]) {
+async findOneByUsername(username: string, fields: string[]) {
     const allowedRelations = ['programme'];
 
     // validating fields
@@ -186,7 +186,7 @@ export class JudgeService {
       );
     }
   }
-
+    
   async update(id: number, updateJudgeInput: UpdateJudgeInput, user: Credential) {
     const { username, password, judgeName, programmeCode } = updateJudgeInput;
 
@@ -265,7 +265,7 @@ export class JudgeService {
 
     return judge
   }
-
+  
   async uploadMarkByJudge(
     // DO FIRST THE DTO SETTING OF CANDIDATE AND PROGRAMME EXCEL UPLOAD
     judgeId: number,
@@ -313,7 +313,7 @@ export class JudgeService {
         throw new HttpException("can't add mark to candidates", HttpStatus.BAD_REQUEST);
       }
 
-     await this.remove(judgeId);
+      this.remove(judgeId);
 
       return 'Mark added successfully';
     } catch (err) {

@@ -8,7 +8,7 @@ import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class GradesService {
-  constructor(@InjectRepository(Grade) private gradeRepository: Repository<Grade>) {}
+  constructor(@InjectRepository(Grade) private gradeRepository: Repository<Grade>) { }
 
   create(createGradeInput: CreateGradeInput) {
     try {
@@ -23,7 +23,7 @@ export class GradesService {
     }
   }
 
- async findAll( fields: string[]) {
+  async findAll(fields: string[]) {
     const allowedRelations = [
       'candidateProgramme',
       'candidateProgramme.candidate',
@@ -64,7 +64,7 @@ export class GradesService {
     }
   }
 
-  async findOne(id: number , fields: string[]) {
+  async findOne(id: number, fields: string[]) {
     const allowedRelations = [
       'candidateProgramme',
       'candidateProgramme.candidate',
@@ -107,8 +107,7 @@ export class GradesService {
   }
 
 
-  // find by name
-  async findOneByName(name: string , fields: string[]) {
+  async findOneByName(name: string, fields: string[]) {
     const allowedRelations = [
       'candidateProgramme',
       'candidateProgramme.candidate',
@@ -150,7 +149,6 @@ export class GradesService {
     }
   }
 
-
   async update(id: number, updateGradeInput: UpdateGradeInput) {
     // checking is grade exist
     const grade = await this.gradeRepository.findOneBy({ id });
@@ -160,7 +158,7 @@ export class GradesService {
     }
     // trying to return data
 
-    Object.assign(grade,updateGradeInput)
+    Object.assign(grade, updateGradeInput)
 
     try {
       this.gradeRepository.save(grade)

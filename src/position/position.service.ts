@@ -8,7 +8,7 @@ import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
 
 @Injectable()
 export class PositionService {
-  constructor(@InjectRepository(Position) private positionRepository: Repository<Position>) {}
+  constructor(@InjectRepository(Position) private positionRepository: Repository<Position>) { }
 
   create(createPositionInput: CreatePositionInput) {
     try {
@@ -106,6 +106,8 @@ export class PositionService {
     }
   }
 
+
+  // find by name
   async findOneByName(name: string, fields: string[]) {
     const allowedRelations = [
       'candidateProgramme',
@@ -158,7 +160,7 @@ export class PositionService {
     }
     // trying to return position
 
-    Object.assign(position,updatePositionInput)
+    Object.assign(position, updatePositionInput)
 
     try {
       return this.positionRepository.save(position);

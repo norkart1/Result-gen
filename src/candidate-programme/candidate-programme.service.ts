@@ -24,11 +24,7 @@ import { CustomSetting } from 'src/custom-settings/entities/custom-setting.entit
 
 @Injectable()
 export class CandidateProgrammeService {
-  getCandidatesOfProgramme(
-    programCode: string,
-  ): CandidateProgramme[] | PromiseLike<CandidateProgramme[]> {
-    throw new Error('Method not implemented.');
-  }
+  
   constructor(
     @InjectRepository(CandidateProgramme)
     private candidateProgrammeRepository: Repository<CandidateProgramme>,
@@ -40,7 +36,7 @@ export class CandidateProgrammeService {
     private readonly categorySettingsService: CategorySettingsService,
     private readonly credentialService: CredentialsService,
     private readonly customSettingsService: CustomSettingsService,
-  ) { }
+  ) {}
 
   // to get same team candidates
   teamCandidates(candidateProgrammes: CandidateProgramme[], team: Team) {
@@ -49,7 +45,7 @@ export class CandidateProgrammeService {
     });
   }
 
-  hasDuplicateValues = (arr) => {
+   hasDuplicateValues = (arr) => {
     return new Set(arr).size !== arr.length;
   };
 
@@ -107,6 +103,9 @@ export class CandidateProgrammeService {
     if (programme.type !== Type.SINGLE) {
       const candidatesOfGroup = createCandidateProgrammeInput.candidatesOfGroup;
 
+      if (!candidatesOfGroup) {
+        throw new HttpException(`Can't find candidates of group`, HttpStatus.BAD_REQUEST);
+      }
 
       const hasDuplicateValues = this.hasDuplicateValues(candidatesOfGroup)
 
@@ -114,9 +113,6 @@ export class CandidateProgrammeService {
         throw new HttpException(`Duplicate chestNo detected`, HttpStatus.BAD_REQUEST);
       }
 
-      if (!candidatesOfGroup) {
-        throw new HttpException(`Can't find candidates of group`, HttpStatus.BAD_REQUEST);
-      }
 
       // checking the group is full
       if (candidatesOfGroup.length !== programme.candidateCount) {
@@ -253,15 +249,16 @@ export class CandidateProgrammeService {
       if (programme.type !== Type.SINGLE) {
         const candidatesOfGroup = cp.candidatesOfGroup;
 
+        if (!candidatesOfGroup) {
+          errors.push(`Can't find candidates of group on programme ${programme.programCode}`);
+          continue;
+        }
+
+        
         const hasDuplicateValues = this.hasDuplicateValues(candidatesOfGroup)
 
         if (hasDuplicateValues) {
           errors.push(`duplicate chestNo detected on programme ${programme.programCode}`)
-        }
-
-        if (!candidatesOfGroup) {
-          errors.push(`Can't find candidates of group on programme ${programme.programCode}`);
-          continue;
         }
 
         // checking the group is full
@@ -526,12 +523,11 @@ export class CandidateProgrammeService {
     // checking eligibility on single and group
     if (programme.type !== Type.SINGLE) {
 
-      const hasDuplicateValues = this.hasDuplicateValues(updateCandidateProgrammeInput.candidatesOfGroup)
+        const hasDuplicateValues = this.hasDuplicateValues(updateCandidateProgrammeInput.candidatesOfGroup)
 
       if (hasDuplicateValues) {
         throw new HttpException(`Duplicate chestNo detected`, HttpStatus.BAD_REQUEST);
       }
-
       // checking the group is full
       if (updateCandidateProgrammeInput.candidatesOfGroup.length !== programme.candidateCount) {
         throw new HttpException(
@@ -1291,4 +1287,11 @@ export class CandidateProgrammeService {
 
     return candidatesOfGroups;
   }
+
+   async getCandidatesOfProgramme(programCode: string) {
+    const programme: Programme = await this.programmeService.findOneByCode(programCode);
+
+    return programme.candidateProgramme;
+  }
+  
 }

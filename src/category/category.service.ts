@@ -5,7 +5,7 @@ import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { Category } from './entities/category.entity';
 import { SectionsService } from 'src/sections/sections.service';
-import { fieldsIdChecker, fieldsValidator } from 'src/utils/util';
+import { fieldsIdChecker, fieldsValidator } from '../utils/util';
 import { Stream } from 'stream';
 import { google } from 'googleapis';
 
@@ -47,7 +47,6 @@ export class CategoryService {
     const allowedRelations = [
       'section',
       'candidates',
-      'programmes',
       'settings',
       'candidates.team',
     ];
@@ -61,7 +60,6 @@ export class CategoryService {
       const queryBuilder = this.categoryRepository.createQueryBuilder('category')
         .leftJoinAndSelect('category.section', 'section')
         .leftJoinAndSelect('category.candidates', 'candidates')
-        .leftJoinAndSelect('category.programmes', 'programmes')
         .leftJoinAndSelect('category.settings', 'settings')
         .leftJoinAndSelect('candidates.team', 'team');
 
@@ -241,9 +239,6 @@ export class CategoryService {
 
 
   }
-
-
-
 
   async update(id: number, updateCategoryInput: UpdateCategoryInput) {
 

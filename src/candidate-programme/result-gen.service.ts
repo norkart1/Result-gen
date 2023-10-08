@@ -72,12 +72,12 @@ export class ResultGenService {
 
     // verify the result
     await this.verifyResult(input.inputs, programCode);
-    
+
     for (let index = 0; index < programme.candidateProgramme.length; index++) {
-        const candidate = candidatesOfProgramme[index];
-  
-        candidate.mark = input.inputs[index].mark
-      }
+      const candidate = candidatesOfProgramme[index];
+
+      candidate.mark = input.inputs[index].mark
+    }
 
     // process the result
     candidatesOfProgramme = await this.processResult(programme);
@@ -342,7 +342,7 @@ export class ResultGenService {
     CandidateProgramme.point = 0;
 
     if (grade) {
-      const grageWithPoint = await this.gradeService.findOne(grade.id , ['id' , 'name' , 'pointSingle' , 'pointGroup' , 'pointHouse'])
+      const grageWithPoint = await this.gradeService.findOne(grade.id, ['id', 'name', 'pointSingle', 'pointGroup', 'pointHouse'])
       if (CandidateProgramme.programme.type == Type.SINGLE) {
         CandidateProgramme.point = grade.pointSingle;
         CandidateProgramme.point = grageWithPoint.pointSingle;
@@ -560,7 +560,7 @@ export class ResultGenService {
       }
 
       if (candidateProgramme.candidate.team) {
-        this.teamService.setTeamPoint(
+        await this.teamService.setTeamPoint(
           candidateProgramme.candidate.team.id,
           candidateProgramme.point,
           Gpoint,
@@ -572,7 +572,7 @@ export class ResultGenService {
 
       // set the point to candidate
 
-      this.candidateService.addPoint(candidateProgramme.candidate.id, ICpoint, GCpoint, candidateProgramme.programme.model);
+      await this.candidateService.addPoint(candidateProgramme.candidate.id, ICpoint, GCpoint, candidateProgramme.programme.model);
     }
 
     // set the result published to true
@@ -583,12 +583,14 @@ export class ResultGenService {
   }
 
   async publishResults(programCode: [string]) {
+    let data = []
     for (let index = 0; index < programCode.length; index++) {
       const program = programCode[index];
-      await this.publishResult(program);
+      let programme = await this.publishResult(program);
+      data.push(programme)
     }
 
-    return 'success';
+    return data;
   }
 
   // live result using firebase
@@ -685,6 +687,8 @@ export class ResultGenService {
         clearInterval(intervalId);
       }
     }, timeInSec * 3000);
+
+    return 0
   }
 
   // upload result mannualy by controller
@@ -747,7 +751,7 @@ export class ResultGenService {
       const candidateProgramme: CandidateProgramme = sortedCandidateProgramme[index];
 
       let mark = 0;
-
+      candidateProgramme.grade = null;
       if (input.grade) {
         const grade: Grade = await this.gradeService.findOneByName(input.grade, ['id', 'pointSingle', 'pointGroup', 'pointHouse', 'percentage']);
 
@@ -768,6 +772,8 @@ export class ResultGenService {
 
 
       }
+
+      candidateProgramme.position = null;
 
       if (input.position) {
         const position: Position = await this.positionService.findOneByName(input.position, ['id', 'pointSingle', 'pointGroup', 'pointHouse', 'name']);
@@ -791,20 +797,20 @@ export class ResultGenService {
       }
 
 
-      candidateProgramme.mark = mark;
+      candidateProgramme.point = mark;
 
       // save the candidate programme
 
-    await  this.candidateProgrammeRepository.save(candidateProgramme);
+      await this.candidateProgrammeRepository.save(candidateProgramme);
 
     }
 
     // make the programme result entered
 
-   const updatedResult = await this.programmeService.enterResult(programCode);
+    const updatedResult = await this.programmeService.enterResult(programCode);
 
-   return updatedResult;
+    return programme;
 
   }
-  
+
 }
