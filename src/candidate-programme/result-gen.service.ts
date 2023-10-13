@@ -682,12 +682,18 @@ export class ResultGenService {
 
       count++;
 
-      if (count === datList.length) {
-        console.log('stopped');
-        firebasedb.update(firebasedb.ref(this.db), { '/current': 'no data' });
-        clearInterval(intervalId);
-      }
+     if (count === datList.length) {
+    console.log("stopped");
+    clearInterval(intervalId);
+    setTimeout(() => {
+      firebasedb.update(firebasedb.ref(db), {
+        "/current": "congratulations",
+      });
     }, timeInSec * 1000);
+    setTimeout(() => {
+      firebasedb.update(firebasedb.ref(db), { "/current": "no data" });
+    }, 10000);
+  }
 
     return 0
   }
