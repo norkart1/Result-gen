@@ -686,12 +686,12 @@ export class ResultGenService {
     console.log("stopped");
     clearInterval(intervalId);
     setTimeout(() => {
-      firebasedb.update(firebasedb.ref(db), {
+      firebasedb.update(firebasedb.ref(this.db), {
         "/current": "congratulations",
       });
     }, timeInSec * 1000);
     setTimeout(() => {
-      firebasedb.update(firebasedb.ref(db), { "/current": "no data" });
+      firebasedb.update(firebasedb.ref(this.db), { "/current": "no data" });
     }, 10000);
   }
     }, timeInSec * 1000);
