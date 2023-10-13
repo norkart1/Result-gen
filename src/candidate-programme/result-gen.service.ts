@@ -694,7 +694,7 @@ export class ResultGenService {
       firebasedb.update(firebasedb.ref(db), { "/current": "no data" });
     }, 10000);
   }
-
+    }
     return 0
   }
 
