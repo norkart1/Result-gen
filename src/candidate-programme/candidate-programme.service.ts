@@ -696,7 +696,7 @@ export class CandidateProgrammeService {
 
     // checking the candidate is already in the programme
 
-    if (programme.type == Type.SINGLE) {
+    if (programme?.type == Type.SINGLE) {
       // finding on his programmes
       const isAlreadyDone = await Query.where('programme.id = :id', { id: programme.id })
         .andWhere('candidate.id = :candidateId', { candidateId: candidate.id })
@@ -727,7 +727,7 @@ export class CandidateProgrammeService {
 
     // checking the category
 
-    if (programme.type != Type.HOUSE) {
+    if (programme.type && programme.type  != Type.HOUSE) {
       const isSameCategory: boolean = candidate.category?.name == programme.category?.name;
 
       if (!isSameCategory) {
@@ -781,6 +781,8 @@ export class CandidateProgrammeService {
     const settings: CategorySettings = category.settings;
 
     // checking is it covered maximum programme limit
+    if(programme.type && programme.model){
+    
     if (programme.type !== Type.HOUSE && programme.model !== Model.Sports) {
       if (settings.maxProgram && (programme.type == Type.SINGLE || programme.type == Type.GROUP)) {
         const programmes: CandidateProgramme[] = candidate.candidateProgrammes;
@@ -928,6 +930,7 @@ export class CandidateProgrammeService {
           );
         }
       }
+    }
     }
   }
 
