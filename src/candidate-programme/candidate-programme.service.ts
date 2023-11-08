@@ -473,7 +473,7 @@ export class CandidateProgrammeService {
 
     // cant change the programme
 
-    if (updateCandidateProgrammeInput.programme_code !== candidateProgramme.programme.programCode) {
+    if (updateCandidateProgrammeInput.programme_code !== candidateProgramme.programme?.programCode) {
       throw new HttpException(`Can't change the programme`, HttpStatus.BAD_REQUEST);
     }
 
@@ -640,7 +640,7 @@ export class CandidateProgrammeService {
       relations: ['programme', 'programme.category', 'candidate', 'candidate.team'],
     });
 
-    const category = candidateProgramme.programme.category;
+    const category = candidateProgramme.programme?.category;
     const team = candidateProgramme.candidate.team;
 
     // check permission on category
@@ -800,7 +800,7 @@ export class CandidateProgrammeService {
       if (settings.maxSingle && programme.type == Type.SINGLE) {
         const SinglePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.SINGLE && e.programme.model !== Model.Sports;
+            return e.programme?.type == Type.SINGLE && e.programme?.model !== Model.Sports;
           },
         );
         if (SinglePrograms.length >= settings.maxSingle) {
@@ -816,7 +816,7 @@ export class CandidateProgrammeService {
       if (settings.maxGroup && programme.type == Type.GROUP) {
         const groupPrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.GROUP && e.programme.model !== Model.Sports;
+            return e.programme?.type == Type.GROUP && e.programme?.model !== Model.Sports;
           },
         );
         if (groupPrograms.length >= settings.maxGroup) {
@@ -832,7 +832,7 @@ export class CandidateProgrammeService {
       if (settings.maxStage && programme.mode == Mode.STAGE && programme.type == Type.SINGLE) {
         const stagePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.mode == Mode.STAGE && e.programme.type == Type.SINGLE && e.programme.model !== Model.Sports;
+            return e.programme?.mode == Mode.STAGE && e.programme?.type == Type.SINGLE && e.programme?.model !== Model.Sports;
           },
         );
         if (stagePrograms.length >= settings.maxStage) {
@@ -852,7 +852,7 @@ export class CandidateProgrammeService {
       ) {
         const nonStagePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.mode == Mode.NON_STAGE && e.programme.type == Type.SINGLE && e.programme.model !== Model.Sports;
+            return e.programme?.mode == Mode.NON_STAGE && e.programme?.type == Type.SINGLE && e.programme?.model !== Model.Sports;
           },
         );
         if (nonStagePrograms.length >= settings.maxNonStage) {
@@ -872,7 +872,7 @@ export class CandidateProgrammeService {
       ) {
         const outDoorPrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.mode == Mode.OUTDOOR_STAGE && e.programme.type == Type.SINGLE && e.programme.model !== Model.Sports;;
+            return e.programme?.mode == Mode.OUTDOOR_STAGE && e.programme?.type == Type.SINGLE && e.programme?.model !== Model.Sports;;
           },
         );
         if (outDoorPrograms.length >= settings.maxOutDoor) {
@@ -887,7 +887,7 @@ export class CandidateProgrammeService {
       if (settings.maxSports && (programme.type == Type.SINGLE || programme.type == Type.GROUP)) {
         const programmes: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.model == Model.Sports;
+            return e.programme?.model == Model.Sports;
           },
         );
 
@@ -904,7 +904,7 @@ export class CandidateProgrammeService {
       if (settings.maxSportsSingle && programme.type == Type.SINGLE) {
         const SinglePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.SINGLE && e.programme.model == Model.Sports;
+            return e.programme?.type == Type.SINGLE && e.programme?.model == Model.Sports;
           },
         );
         if (SinglePrograms.length >= settings.maxSportsSingle) {
@@ -920,7 +920,7 @@ export class CandidateProgrammeService {
       if (settings.maxSportsGroup && programme.type == Type.GROUP) {
         const groupPrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.GROUP && e.programme.model == Model.Sports;;
+            return e.programme?.type == Type.GROUP && e.programme?.model == Model.Sports;;
           },
         );
         if (groupPrograms.length >= settings.maxSportsGroup) {
@@ -1040,7 +1040,7 @@ export class CandidateProgrammeService {
       if (settings.maxSingle && programme.type == Type.SINGLE) {
         const SinglePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.SINGLE;
+            return e.programme?.type == Type.SINGLE;
           },
         );
         if (SinglePrograms.length >= settings.maxSingle) {
@@ -1053,7 +1053,7 @@ export class CandidateProgrammeService {
       if (settings.maxGroup && programme.type == Type.GROUP) {
         const groupPrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.GROUP;
+            return e.programme?.type == Type.GROUP;
           },
         );
         if (groupPrograms.length >= settings.maxGroup) {
@@ -1066,7 +1066,7 @@ export class CandidateProgrammeService {
       if (settings.maxStage && programme.mode == Mode.STAGE && programme.type == Type.SINGLE) {
         const stagePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.mode == Mode.STAGE && e.programme.type == Type.SINGLE;
+            return e.programme?.mode == Mode.STAGE && e.programme?.type == Type.SINGLE;
           },
         );
         if (stagePrograms.length >= settings.maxStage) {
@@ -1083,7 +1083,7 @@ export class CandidateProgrammeService {
       ) {
         const nonStagePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.mode == Mode.NON_STAGE && e.programme.type == Type.SINGLE;
+            return e.programme?.mode == Mode.NON_STAGE && e.programme?.type == Type.SINGLE;
           },
         );
         if (nonStagePrograms.length >= settings.maxNonStage) {
@@ -1100,7 +1100,7 @@ export class CandidateProgrammeService {
       ) {
         const outDoorPrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.mode == Mode.OUTDOOR_STAGE && e.programme.type == Type.SINGLE;
+            return e.programme?.mode == Mode.OUTDOOR_STAGE && e.programme?.type == Type.SINGLE;
           },
         );
         if (outDoorPrograms.length >= settings.maxOutDoor) {
@@ -1122,7 +1122,7 @@ export class CandidateProgrammeService {
       if (settings.maxSportsSingle && programme.type == Type.SINGLE) {
         const SinglePrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.SINGLE;
+            return e.programme?.type == Type.SINGLE;
           },
         );
         if (SinglePrograms.length >= settings.maxSportsSingle) {
@@ -1135,7 +1135,7 @@ export class CandidateProgrammeService {
       if (settings.maxSportsGroup && programme.type == Type.GROUP) {
         const groupPrograms: CandidateProgramme[] = candidate.candidateProgrammes.filter(
           (e: CandidateProgramme) => {
-            return e.programme.type == Type.GROUP;
+            return e.programme?.type == Type.GROUP;
           },
         );
         if (groupPrograms.length >= settings.maxSportsGroup) {

@@ -81,6 +81,11 @@ export class CandidatesResolver {
     return this.candidatesService.getCategoryBasedToppers();
   }
 
+  @Query(() => [Category], { name: 'getPublishedCategoryBasedToppers' })
+  getPublishedCategoryBasedToppers(){
+    return this.candidatesService.getPublishedCategoryBasedToppers();
+  }
+
 
   @Query(() => Candidate, { name: 'candidate' })
   async findOne(@Args('id', { type: () => Int }) id: number, @Args('api_key') api_key: string, @Info() info: any) {

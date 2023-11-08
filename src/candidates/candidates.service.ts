@@ -19,7 +19,7 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
 import { driveConfig } from 'src/utils/googleApi.auth';
-import { Model } from 'src/programmes/entities/programme.entity';
+import { Model, Type } from 'src/programmes/entities/programme.entity';
 import { CategorySettings } from 'src/category-settings/entities/category-setting.entity';
 import { CategorySettingsService } from 'src/category-settings/category-settings.service';
 // import { drive } from 'src/utils/googleApi.auth';
@@ -578,41 +578,129 @@ export class CandidatesService {
 
   // category based toppers
 
-  async getCategoryBasedToppers(){
-    // get candidates by category and sort by individual point , only get the top 5 candidates
+  async getCategoryBasedToppers() {
 
-    const categories = await this.categoryService.findAll(['name']);
+    // get all candidates and their candidate programmes then add the points in candiate programmes to candiate and sort them by points and return the top 5
+    // candidates must be category based
 
-    // usign quuery builder 
-    const queryBuilder = this.candidateRepository.createQueryBuilder('candidate')
-    .leftJoinAndSelect('candidate.team', 'team')
-    .leftJoinAndSelect('candidate.category', 'category');
+    // get all candidates
+
+    const candidates = await this.candidateRepository.find({
+      relations: ['candidateProgrammes', 'category' , 'candidateProgrammes.programme' , 'team'],
+    });
+
+    const categories = await this.categoryService.findAll(['id', 'name']);
+
+    const pointedCandidates = candidates.map((candidate , i) => {
+      let total = 0;
+      let totalSports = 0;
+      candidate.candidateProgrammes.forEach(candidateProgramme => {
+
+        if(candidateProgramme.programme?.model === Model.Arts && candidateProgramme.programme?.type === Type.SINGLE){
+          total = total + candidateProgramme.point;
+        }
+
+        if(candidateProgramme.programme?.model === Model.Sports && candidateProgramme.programme?.type === Type.SINGLE){
+          totalSports = totalSports + candidateProgramme.point;
+        }
+
+      });
 
 
-    // selecting the fields
+      return {
+        ...candidate,
+        individualPoint: total,
+        individualSportsPoint: totalSports,
+      }
 
-    queryBuilder.select(['candidate.name', 'candidate.individualPoint', 'candidate.category' , 'candidate.chestNO' , 'candidate.id' , 'candidate.imageId' , 'team.name' , 'team.id' , 'category.name' , 'category.id']);
 
-    // looping the categories                                                                                                                                                                                  
-
-    for (let index = 0; index < categories.length; index++) {
-      const category = categories[index];
-
-      // get the candidates by category
-
-      const candidates = await queryBuilder
-        .where('candidate.category = :category', { category: category.id })
-        .orderBy('candidate.individualPoint', 'DESC')
-        .limit(5)
-        .getMany();
-
-      // add the candidates to category
-      category.candidates = candidates;
     }
-    
-    return categories;
+    );
 
+    // setting the category based toppers
+
+    const candaidatedByCategory = categories.map(category => {
+      const candidates = pointedCandidates.filter(candidate => candidate.category.name === category.name);
+
+      const sortedCandidates = candidates.slice().sort((a, b) => b.individualPoint - a.individualPoint);
+      const sortedSportsCandidates = candidates.slice().sort((a, b) => b.individualSportsPoint - a.individualSportsPoint);
+
+      return {
+        ...category,
+       candidates: [...sortedCandidates.slice(0, 5) , ...sortedSportsCandidates.slice(0, 5)]
+      }
+    }
+    );
+
+    // log first 5 candidates
+    // console.log(pointedCandidates.sort((a, b) => b.total - a.total).slice(0, 5));
+    
+
+    return candaidatedByCategory;
   }
+
+
+  async getPublishedCategoryBasedToppers() {
+
+    // get all candidates and their candidate programmes then add the points in candiate programmes to candiate and sort them by points and return the top 5
+    // candidates must be category based
+
+    // get all candidates
+
+    const candidates = await this.candidateRepository.find({
+      relations: ['candidateProgrammes', 'category' , 'candidateProgrammes.programme' , 'team'],
+    });
+
+    const categories = await this.categoryService.findAll(['id', 'name']);
+
+    const pointedCandidates = candidates.map((candidate , i) => {
+      let total = 0;
+      let totalSports = 0;
+      candidate.candidateProgrammes.forEach(candidateProgramme => {
+
+        if(candidateProgramme.programme?.model === Model.Arts && candidateProgramme.programme?.type === Type.SINGLE && candidateProgramme.programme?.resultPublished){
+          total = total + candidateProgramme.point;
+        }
+
+        if(candidateProgramme.programme?.model === Model.Sports && candidateProgramme.programme?.type === Type.SINGLE && candidateProgramme.programme?.resultPublished){
+          totalSports = totalSports + candidateProgramme.point;
+        }
+
+      });
+
+
+      return {
+        ...candidate,
+        individualPoint: total,
+        individualSportsPoint: totalSports,
+      }
+
+
+    }
+    );
+
+    // setting the category based toppers
+
+    const candaidatedByCategory = categories.map(category => {
+      const candidates = pointedCandidates.filter(candidate => candidate.category.name === category.name);
+
+      const sortedCandidates = candidates.slice().sort((a, b) => b.individualPoint - a.individualPoint);
+      const sortedSportsCandidates = candidates.slice().sort((a, b) => b.individualSportsPoint - a.individualSportsPoint);
+
+      return {
+        ...category,
+       candidates: [...sortedCandidates.slice(0, 5) , ...sortedSportsCandidates.slice(0, 5)]
+      }
+    }
+    );
+
+    // log first 5 candidates
+    // console.log(pointedCandidates.sort((a, b) => b.total - a.total).slice(0, 5));
+    
+
+    return candaidatedByCategory;
+  }
+
 
 
   // Update data
