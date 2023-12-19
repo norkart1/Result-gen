@@ -22,6 +22,7 @@ import { driveConfig } from 'src/utils/googleApi.auth';
 import { Model, Type } from 'src/programmes/entities/programme.entity';
 import { CategorySettings } from 'src/category-settings/entities/category-setting.entity';
 import { CategorySettingsService } from 'src/category-settings/category-settings.service';
+import { ProgrammesService } from 'src/programmes/programmes.service';
 // import { drive } from 'src/utils/googleApi.auth';
 
 @Injectable()
@@ -34,6 +35,7 @@ export class CandidatesService {
     private candidateProgrammeService: CandidateProgrammeService,
     private credentialService: CredentialsService,
     private categorySettingsService: CategorySettingsService,
+     private programmeService: ProgrammesService,
   ) { }
 
   //  To create many candidates at a time , Normally using on Excel file upload
@@ -390,13 +392,14 @@ export class CandidatesService {
     }
   }
 
-  async findOneByChestNo(chestNO: string) {
+   async findOneByChestNo(chestNO: string) { 
     try {
+
       const candidate = await this.candidateRepository.findOne({
         where: {
           chestNO,
         },
-        relations: ['category', 'team', 'candidateProgrammes'],
+        relations: ['category', 'team', 'candidateProgrammes' , 'cgp'],
       });
 
       if (!candidate) {
@@ -405,6 +408,53 @@ export class CandidatesService {
           HttpStatus.BAD_REQUEST,
         );
       }
+
+      // change what in cgp to candidateProgrammes with what already in candidateProgrammes
+      const cgp = candidate.cgp || [];
+
+      const candidateProgrammes = candidate.candidateProgrammes || [];
+
+      // if cgp.programme is not already in candidateProgrammes.programme then push cgp to 
+      // candidateProgrammes  
+
+      cgp.forEach(async cgp => {
+        const isAlready = candidateProgrammes.some(candidateProgramme => candidateProgramme.programme.id === cgp.programme.id);
+
+        // if not already exist then push to candidateProgrammes with the candidateProgramme of that cgp to get the position and grade and the candidate should be the candidate of that cgp
+
+        if (!isAlready) {
+
+          // const program = await this.programmeService.findOneByCode(cgp.programme.programCode);
+
+          // if(!program){
+          //   throw new HttpException(
+          //     `Cant find programme with code ${cgp.programme.programCode} `,
+          //     HttpStatus.BAD_REQUEST,
+          //   );
+          // }
+
+          // const candidateProgramme : CandidateProgramme  = program.candidateProgramme.find(candidateProgramme => candidateProgramme.candidatesOfGroup.some(candidateOfGroup => candidateOfGroup.id === candidate.id));
+
+          // if(!candidateProgramme){
+          //   throw new HttpException(
+          //     `Cant find candidate programme with candidate id ${candidate.id} `,
+          //     HttpStatus.BAD_REQUEST,
+          //   );
+          // }
+
+          // candidateProgrammes.push({
+          //   ...candidateProgramme,
+          //   candidate: candidate,
+          // });
+
+          candidateProgrammes.push(cgp);
+        }
+
+
+
+      });
+
+      candidate.candidateProgrammes = candidateProgrammes;
 
       return candidate;
     } catch (e) {
