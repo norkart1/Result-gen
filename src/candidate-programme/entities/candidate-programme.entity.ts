@@ -100,11 +100,7 @@ export class CandidateProgramme {
   candidate: Candidate;
 
   @Field(() => [Candidate] , { nullable: true } )  
-  @ManyToMany(() => Candidate ,{
-    cascade: true,
-    // eager: true,
-    // onDelete: 'SET NULL',
-  })
+  @ManyToMany(() => Candidate , candidate => candidate.cgp)
   @JoinTable()
   candidatesOfGroup : Candidate[];
 
